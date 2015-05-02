@@ -1,0 +1,43 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion android_compile_version
+    buildToolsVersion android_version
+
+
+    defaultConfig {
+        minSdkVersion android_min_sdk_version
+        targetSdkVersion android_compile_version
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+
+    if (!hasProperty('appcompat_library_version')) {
+        ext.appcompat_library_version = '20.0.+'
+    }
+    if (!hasProperty('support_library_version')) {
+        ext.support_library_version = '20.0.+'
+    }
+    if (!hasProperty('gms_library_version')) {
+        ext.gms_library_version = '6.5+'
+    }
+    compile "com.android.support:appcompat-v7:${appcompat_library_version}"
+    compile "com.android.support:support-v4:${support_library_version}"
+    compile "com.google.android.gms:play-services:${gms_library_version}"
+    compile project(':libraries:BaseGameUtils')
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) 2013 Google Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<resources>
+    <string name="signing_in">Signing in with Google</string>
+    <string name="signing_out">Signing out</string>
+    <string name="app_name">Classic Warlord Prototype</string>
+    <string name="game_title">Classic Warlord!</string>
+    <string name="game_blurb">A turn based strategy game where players attempt to dominate the board by force and cunning. \nTo play this game with friends, you must sign in with Google.</string>
+    <string name="single_player">Single Player</string>
+    <string name="single_player_explanation">Currently unavailable</string>
+    <string name="quick_game">Quick game</string>
+    <string name="invite_players">Invite friends</string>
+    <string name="see_invitations">See invitations</string>
+    <string name="quick_game_explanation">Challenge a random opponent.</string>
+    <string name="invite_players_explanation">Invite friends to play a game.</string>
+    <string name="see_invitations_explanation">See who is inviting you right now.</string>
+    <string name="inv_popup_text">Incoming invitation!</string>
+    <string name="accept_popup_invite">Accept!</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="provinceselectinstructions">Select a province!</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="your_score">Your score:</string>
+    <string name="error">Error</string>
+    <string name="game_problem">An error occurred while starting the game. Please try again.</string>
+    <string name="click_me">Click me!</string>
+    <string name="is_inviting_you">is challenging you to a game!</string>
+    <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
+    <string name="victory">You are victorious!</string>
+    <string name="defeat">You are defeated!</string>
+    <string name="attack">Select an amount of armies to attack with (Must be between 1 and the amount of armies you have).</string>
+    <string name="defend">You are under attack! Choose how many armies you think you opponent used.</string>
+    <string name="exitgamebutton">Exit</string>
+</resources>

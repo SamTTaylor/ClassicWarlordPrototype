@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) 2013 Google Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+
+    <RelativeLayout android:id="@+id/screen_sign_in"
+        android:visibility="gone"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        style="@style/LLScreen"
+        android:layout_gravity="right">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="visible"
+            android:layout_toRightOf="@+id/imgTitle"
+            android:id="@+id/linearLayout">
+
+            <Button android:id="@+id/button_single_player"
+                style="@style/MainScreenButton"
+                android:text="@string/single_player"
+                android:layout_weight="1" />
+
+            <com.google.android.gms.common.SignInButton android:id="@+id/button_sign_in"
+                style="@style/SignInButton"
+                android:layout_weight="1"
+                android:layout_marginBottom="20dp" />
+
+        </LinearLayout>
+
+        <ImageView style="@style/TitleImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imgTitle"
+            android:src="@drawable/title"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView style="@style/GameBlurb"
+            android:id="@+id/txtBlurb"
+            android:layout_weight="3"
+            android:layout_below="@+id/imgTitle"
+            android:layout_toStartOf="@+id/linearLayout"
+            android:layout_alignParentStart="true" />
+
+    </RelativeLayout>
+
+    <RelativeLayout android:id="@+id/screen_main" style="@style/LLScreen"
+        android:visibility="gone"
+        android:layout_gravity="center">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_toRightOf="@+id/imageView"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <Button android:id="@+id/button_single_player_2"
+                style="@style/MainScreenButton"
+                android:text="@string/single_player"
+                android:layout_weight="2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView style="@style/MainScreenButtonBlurb"
+                android:text="@string/single_player_explanation"
+                android:id="@+id/textView"
+                android:layout_weight="1" />
+
+            <Button android:id="@+id/button_sign_out"
+                style="@style/SignOutButton"
+                android:text="@string/sign_out"
+                android:layout_weight="2"
+                android:layout_gravity="center_horizontal" />
+
+            <Button android:id="@+id/button_quick_game"
+                style="@style/MainScreenButton"
+                android:text="@string/quick_game"
+                android:layout_weight="2" />
+
+            <TextView style="@style/MainScreenButtonBlurb"
+                android:text="@string/quick_game_explanation"
+                android:id="@+id/textView3"
+                android:layout_weight="1" />
+
+            <Button android:id="@+id/button_invite_players"
+                style="@style/MainScreenButton"
+                android:text="@string/invite_players"
+                android:layout_weight="2" />
+
+            <TextView style="@style/MainScreenButtonBlurb"
+                android:text="@string/invite_players_explanation"
+                android:id="@+id/textView4"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
+
+            <Button android:id="@+id/button_see_invitations"
+                style="@style/MainScreenButton"
+                android:text="@string/see_invitations"
+                android:layout_weight="2"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView style="@style/MainScreenButtonBlurb"
+                android:text="@string/see_invitations_explanation"
+                android:id="@+id/textView2"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
+
+        </LinearLayout>
+
+        <ImageView
+            style="@style/TitleImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:src="@drawable/title"
+            android:adjustViewBounds="false"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+    <LinearLayout android:id="@+id/invitation_popup" style="@style/InvPopup"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:alpha="1">
+        <TextView android:id="@+id/incoming_invitation_text" style="@style/InvPopupText" />
+        <Button android:id="@+id/button_accept_popup_invitation"
+            style="@style/InvPopupButton"
+            android:text="@string/accept_popup_invite" />
+    </LinearLayout>
+
+    <RelativeLayout android:id="@+id/screen_wait" style="@style/LLScreen"
+        android:visibility="gone"
+        android:layout_gravity="center">
+        <TextView style="@style/Blurb" android:text="@string/please_wait" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/mapLayout"
+        android:visibility="gone"
+        android:background="#000000">
+
+
+        <samueltaylor.classicwarlordprototype.TouchImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="false"
+            android:layout_centerHorizontal="true"
+            tools:ignore="ContentDescription"
+            android:id="@+id/imgMap"
+            android:src="@drawable/map" />
+
+        <LinearLayout android:id="@+id/screen_game" style="@style/MapScreen"
+            android:visibility="visible"
+            android:orientation="vertical"
+            android:layout_height="fill_parent"
+            android:layout_width="fill_parent">
+
+            <TextView android:id="@+id/instructions"
+                style="@style/Instructions" android:text="@string/provinceselectinstructions"
+                android:layout_weight="0.1" />
+
+            <Button android:id="@+id/button_click_me"
+                style="@style/GameButton"
+                android:text="@string/click_me"
+                android:layout_weight="0.1"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView android:id="@+id/my_score" style="@style/ScoreDisplay"
+                android:layout_weight="1"
+                android:layout_gravity="left" />
+
+            <TextView android:id="@+id/countdown" style="@style/FigureLabel"
+                android:layout_weight="0.2"
+                android:layout_gravity="left" />
+
+            <RelativeLayout style="@style/ScoresBox"
+                android:layout_weight="1">
+                <TextView android:id="@+id/score0" style="@style/ScoreText" />
+                <TextView android:id="@+id/score1" style="@style/ScoreText" />
+                <TextView android:id="@+id/score2" style="@style/ScoreText" />
+                <TextView android:id="@+id/score3" style="@style/ScoreText" />
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>
