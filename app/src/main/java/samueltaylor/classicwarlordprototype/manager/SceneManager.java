@@ -5,6 +5,7 @@ import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.ui.IGameInterface;
 
+import samueltaylor.classicwarlordprototype.GameActivity;
 import samueltaylor.classicwarlordprototype.scenes.BaseScene;
 import samueltaylor.classicwarlordprototype.scenes.GameScene;
 import samueltaylor.classicwarlordprototype.scenes.LoadingScene;
@@ -20,14 +21,16 @@ public class SceneManager
     // SCENES
     //---------------------------------------------
 
-    private BaseScene splashScene;
-    private BaseScene menuScene;
-    private BaseScene gameScene;
-    private BaseScene loadingScene;
+    public BaseScene splashScene;
+    public BaseScene menuScene;
+    public BaseScene gameScene;
+    public BaseScene loadingScene;
 
     //---------------------------------------------
     // VARIABLES
     //---------------------------------------------
+
+    private static GameActivity ge;
 
     private static final SceneManager INSTANCE = new SceneManager();
 
@@ -36,6 +39,7 @@ public class SceneManager
     private BaseScene currentScene;
 
     private Engine engine = ResourcesManager.getInstance().engine;
+
 
     public enum SceneType
     {
@@ -48,6 +52,10 @@ public class SceneManager
     //---------------------------------------------
     // CLASS LOGIC
     //---------------------------------------------
+
+    public SceneManager(){
+        this.ge=ResourcesManager.getInstance().activity;
+    }
 
     public void setScene(BaseScene scene)
     {
@@ -107,7 +115,7 @@ public class SceneManager
     public void createMenuScene()
     {
         ResourcesManager.getInstance().loadMenuResources();
-        menuScene = new MainMenuScene();
+        menuScene = new MainMenuScene(ge);
         loadingScene = new LoadingScene();
         SceneManager.getInstance().setScene(menuScene);
         disposeSplashScene();

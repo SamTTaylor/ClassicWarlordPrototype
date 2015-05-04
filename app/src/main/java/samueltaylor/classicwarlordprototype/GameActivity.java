@@ -64,8 +64,7 @@ import samueltaylor.classicwarlordprototype.scenes.MainMenuScene;
  * @author www.matim-dev.com
  * @version 1.0
  */
-public class GameActivity extends BaseGameActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        MenuScene.IOnMenuItemClickListener, RealTimeMessageReceivedListener,
+public class GameActivity extends BaseGameActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener
 {
     private Camera camera;
@@ -186,69 +185,63 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
                 .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                 .build();
+
+        if(mGoogleApiClient.isConnected()==true){
+            signedin = true;
+        } else {
+            signedin = false;
+        }
     }
 
-    private MenuScene menuChildScene;
-    private final int MENU_PLAY = 0;
-    private final int MENU_OPTIONS = 1;
-    private final int MENU_INVITE = 2;
-    private final int MENU_SEEINVITES = 3;
-    private final int MENU_SIGNOUT = 4;
-    private final int MENU_SIGNIN = 5;
-    @Override
-    public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY)
-    {
-        Log.d("myTag","This is my message");
+    public void invite() {
+
         Intent intent;
-        switch(pMenuItem.getID())
-        {
-            case MENU_PLAY:
-                //Load Game Scene!
-                //SceneManager.getInstance().loadGameScene(mEngine);
-                // user wants to play against a random opponent right now
-                startQuickGame();
-                return true;
-            case MENU_OPTIONS:
+        // show list of invitable players
+        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
+        SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
+        startActivityForResult(intent, RC_SELECT_PLAYERS);
+    }
 
-                return true;
-            case MENU_INVITE:
-                // show list of invitable players
-                intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
-                SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
-                startActivityForResult(intent, RC_SELECT_PLAYERS);
-                return true;
-            case MENU_SEEINVITES:
-                // show list of pending invitations
-                intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
-                SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
-                startActivityForResult(intent, RC_INVITATION_INBOX);
-                return true;
-            case MENU_SIGNOUT:
-                // user wants to sign out
-                // sign out.
-                Log.d(TAG, "Sign-out button clicked");
-                mSignInClicked = false;
-                Games.signOut(mGoogleApiClient);
-                mGoogleApiClient.disconnect();
-                SceneManager.getInstance().loadMenuScene(mEngine);
-                return true;
-            case MENU_SIGNIN:
-                // user wants to sign in
-                // Check to see the developer who's running this sample code read the instructions :-)
-                // NOTE: this check is here only because this is a sample! Don't include this
-                // check in your actual production app.
-                if (!BaseGameUtils.verifySampleSetup(this, samueltaylor.classicwarlordprototype.R.string.app_id)) {
-                    Log.w(TAG, "*** Warning: setup problems detected. Sign in may not work!");
-                }
+    public void playgame() {
+        //Load Game Scene!
+        //SceneManager.getInstance().loadGameScene(mEngine);
+        // user wants to play against a random opponent right now
+        startQuickGame();
+    }
 
-                // start the sign-in flow
-                Log.d(TAG, "Sign-in button clicked");
-                mSignInClicked = true;
-                mGoogleApiClient.connect();
-                return true;
-            default:
-                return false;
+    public void seeinvites(){
+        Intent intent;
+        // show list of pending invitations
+        intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
+        SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
+        startActivityForResult(intent, RC_INVITATION_INBOX);
+    }
+
+    public boolean signedin;
+    public void signout(){
+        // user wants to sign out
+        // sign out.
+        Log.d(TAG, "Sign-out button clicked");
+        mSignInClicked = false;
+        Games.signOut(mGoogleApiClient);
+        mGoogleApiClient.disconnect();
+        signedin = false;
+    }
+
+    public void signin(){
+        // user wants to sign in
+        // Check to see the developer who's running this sample code read the instructions :-)
+        // NOTE: this check is here only because this is a sample! Don't include this
+        // check in your actual production app.
+        if (!BaseGameUtils.verifySampleSetup(this, samueltaylor.classicwarlordprototype.R.string.app_id)) {
+            Log.w(TAG, "*** Warning: setup problems detected. Sign in may not work!");
         }
+
+        // start the sign-in flow
+        Log.d(TAG, "Sign-in button clicked");
+        mSignInClicked = true;
+        mGoogleApiClient.connect();
+        signedin = true;
     }
 
 
@@ -261,10 +254,9 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
         rtmConfigBuilder.setMessageReceivedListener(this);
         rtmConfigBuilder.setRoomStatusUpdateListener(this);
         rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
-        SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
-        keepScreenOn();
         resetGameVars();
         Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
+        SceneManager.getInstance().loadGameScene(mEngine);
     }
 
     @Override
@@ -349,7 +341,6 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
             rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
         }
         SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
-        keepScreenOn();
         resetGameVars();
         Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
         Log.d(TAG, "Room created, waiting for it to be ready...");
@@ -380,7 +371,6 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
                 .setMessageReceivedListener(this)
                 .setRoomStatusUpdateListener(this);
         SceneManager.getInstance().setScene(SceneManager.SceneType.SCENE_LOADING);
-        keepScreenOn();
         resetGameVars();
         Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
     }
@@ -394,7 +384,6 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
         leaveRoom();
 
         // stop trying to keep the screen on
-        stopKeepingScreenOn();
 
         if (mGoogleApiClient == null || !mGoogleApiClient.isConnected()){
             SceneManager.getInstance().loadMenuScene(mEngine);
@@ -438,7 +427,6 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
     void leaveRoom() {
         Log.d(TAG, "Leaving room.");
         mSecondsLeft = 0;
-        stopKeepingScreenOn();
         if (mRoomId != null) {
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
             mRoomId = null;
@@ -531,8 +519,6 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
             mResolvingConnectionFailure = BaseGameUtils.resolveConnectionFailure(this, mGoogleApiClient,
                     connectionResult, RC_SIGN_IN, getString(samueltaylor.classicwarlordprototype.R.string.signin_other_error));
         }
-
-        SceneManager.getInstance().loadMenuScene(mEngine);
     }
 
     // Called when we are connected to the room. We're not ready to play yet! (maybe not everybody
@@ -853,25 +839,5 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
             }
         }
     }
-
-    /*
-     * MISC SECTION. Miscellaneous methods.
-     */
-
-
-    // Sets the flag to keep this screen on. It's recommended to do that during
-    // the
-    // handshake when setting up a game, because if the screen turns off, the
-    // game will be
-    // cancelled.
-    void keepScreenOn() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
-    // Clears the flag that keeps the screen on.
-    void stopKeepingScreenOn() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
 
 }

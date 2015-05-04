@@ -1,6 +1,7 @@
 package samueltaylor.classicwarlordprototype.scenes;
 
 import android.content.Context;
+import android.content.Intent;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.entity.scene.menu.MenuScene;
@@ -27,6 +28,11 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     private final int MENU_SEEINVITES = 3;
     private final int MENU_SIGNOUT = 4;
     private final int MENU_SIGNIN = 5;
+    private GameActivity ge;
+
+    public MainMenuScene(GameActivity ge){
+        this.ge=ge;
+    }
 
     @Override
     public void createScene() {
@@ -62,6 +68,7 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         });
     }
 
+
     private void createMenuChildScene()
     {
         menuChildScene = new MenuScene(camera);
@@ -71,15 +78,15 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         final IMenuItem optionsMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_OPTIONS, resourcesManager.options_region, vbom), 0.8f, 0.5f);
         final IMenuItem inviteMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_INVITE, resourcesManager.invite_region, vbom), 0.8f, 0.5f);
         final IMenuItem seeinvitesMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SEEINVITES, resourcesManager.seeinvites_region, vbom), 0.8f, 0.5f);
-        final IMenuItem signoutMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNOUT, resourcesManager.signout_region, vbom), 0.8f, 0.5f);
-        final IMenuItem signinMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNIN, resourcesManager.signout_region, vbom), 0.8f, 0.5f);
+        final IMenuItem signoutMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNOUT, resourcesManager.signout_region, vbom), 0.5f, 0.3f);
+        final IMenuItem signinMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNIN, resourcesManager.signin_region, vbom), 0.5f, 0.3f);
 
         playMenuItem.setScale(0.5f);
         optionsMenuItem.setScale(0.5f);
         inviteMenuItem.setScale(0.5f);
         seeinvitesMenuItem.setScale(0.5f);
-        signoutMenuItem.setScale(0.5f);
-        signinMenuItem.setScale(0.5f);
+        signoutMenuItem.setScale(0.3f);
+        signinMenuItem.setScale(0.3f);
 
         menuChildScene.addMenuItem(playMenuItem);
         menuChildScene.addMenuItem(optionsMenuItem);
@@ -91,15 +98,13 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         menuChildScene.buildAnimations();
         menuChildScene.setBackgroundEnabled(false);
 
-        playMenuItem.setPosition(playMenuItem.getX()-100, playMenuItem.getY()+160);
+        playMenuItem.setPosition(playMenuItem.getX()-100, playMenuItem.getY()+260);
         optionsMenuItem.setPosition(optionsMenuItem.getX()-100, playMenuItem.getY()+60);
         inviteMenuItem.setPosition(inviteMenuItem.getX()-100, playMenuItem.getY()+120);
         seeinvitesMenuItem.setPosition(seeinvitesMenuItem.getX()-100, playMenuItem.getY()+180);
-        signoutMenuItem.setPosition(signoutMenuItem.getX()-100, playMenuItem.getY()+240);
-        signinMenuItem.setPosition(signoutMenuItem.getX()-100, playMenuItem.getY()+240);
+        signoutMenuItem.setPosition(signoutMenuItem.getX()+200, playMenuItem.getY()-220);
+        signinMenuItem.setPosition(signoutMenuItem.getX(), playMenuItem.getY()-180);
 
-
-        signoutMenuItem.setVisible(false);
         menuChildScene.setOnMenuItemClickListener(this);
         setChildScene(menuChildScene);
     }
@@ -107,21 +112,26 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     @Override
     public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY)
     {
+        Intent intent;
         switch(pMenuItem.getID())
         {
             case MENU_PLAY:
                 //Load Game Scene!
-                SceneManager.getInstance().loadGameScene(engine);
+                ge.playgame();
                 return true;
             case MENU_OPTIONS:
                 return true;
-            case MENU_INVITE:
+            case MENU_INVITE:;
+                ge.invite();
                 return true;
             case MENU_SEEINVITES:
+                ge.seeinvites();
                 return true;
             case MENU_SIGNOUT:
+                ge.signout();
                 return true;
             case MENU_SIGNIN:
+                ge.signin();
                 return true;
             default:
                 return false;
