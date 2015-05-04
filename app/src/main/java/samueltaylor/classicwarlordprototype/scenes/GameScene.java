@@ -61,7 +61,7 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
         camera.setHUD(gameHUD);
     }
 
-    private void setInfo(String s)
+    public void setInfo(String s)
     {
         info = s;
         infoText.setText(info);

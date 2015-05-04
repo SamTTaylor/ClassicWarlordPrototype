@@ -52,7 +52,7 @@ public class ResourcesManager
     public ITextureRegion invite_region;
     public ITextureRegion seeinvites_region;
     public ITextureRegion signout_region;
-
+    public ITextureRegion signin_region;
 
 
 
@@ -95,7 +95,7 @@ public class ResourcesManager
         invite_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "invite.png");
         seeinvites_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "seeinvites.png");
         signout_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "signout.png");
-
+        signin_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "signin.png");
 
         try
         {

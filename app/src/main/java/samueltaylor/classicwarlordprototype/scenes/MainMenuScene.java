@@ -1,5 +1,7 @@
 package samueltaylor.classicwarlordprototype.scenes;
 
+import android.content.Context;
+
 import org.andengine.engine.camera.Camera;
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
@@ -8,7 +10,10 @@ import org.andengine.entity.scene.menu.item.decorator.ScaleMenuItemDecorator;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.util.GLState;
 
+import samueltaylor.classicwarlordprototype.GameActivity;
 import samueltaylor.classicwarlordprototype.manager.SceneManager;
+
+import static android.app.PendingIntent.getActivity;
 
 /**
  * Created by Sam on 03/05/2015.
@@ -21,6 +26,7 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     private final int MENU_INVITE = 2;
     private final int MENU_SEEINVITES = 3;
     private final int MENU_SIGNOUT = 4;
+    private final int MENU_SIGNIN = 5;
 
     @Override
     public void createScene() {
@@ -66,18 +72,21 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         final IMenuItem inviteMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_INVITE, resourcesManager.invite_region, vbom), 0.8f, 0.5f);
         final IMenuItem seeinvitesMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SEEINVITES, resourcesManager.seeinvites_region, vbom), 0.8f, 0.5f);
         final IMenuItem signoutMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNOUT, resourcesManager.signout_region, vbom), 0.8f, 0.5f);
+        final IMenuItem signinMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNIN, resourcesManager.signout_region, vbom), 0.8f, 0.5f);
 
         playMenuItem.setScale(0.5f);
         optionsMenuItem.setScale(0.5f);
         inviteMenuItem.setScale(0.5f);
         seeinvitesMenuItem.setScale(0.5f);
         signoutMenuItem.setScale(0.5f);
+        signinMenuItem.setScale(0.5f);
 
         menuChildScene.addMenuItem(playMenuItem);
         menuChildScene.addMenuItem(optionsMenuItem);
         menuChildScene.addMenuItem(inviteMenuItem);
         menuChildScene.addMenuItem(seeinvitesMenuItem);
         menuChildScene.addMenuItem(signoutMenuItem);
+        menuChildScene.addMenuItem(signinMenuItem);
 
         menuChildScene.buildAnimations();
         menuChildScene.setBackgroundEnabled(false);
@@ -87,7 +96,10 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         inviteMenuItem.setPosition(inviteMenuItem.getX()-100, playMenuItem.getY()+120);
         seeinvitesMenuItem.setPosition(seeinvitesMenuItem.getX()-100, playMenuItem.getY()+180);
         signoutMenuItem.setPosition(signoutMenuItem.getX()-100, playMenuItem.getY()+240);
+        signinMenuItem.setPosition(signoutMenuItem.getX()-100, playMenuItem.getY()+240);
 
+
+        signoutMenuItem.setVisible(false);
         menuChildScene.setOnMenuItemClickListener(this);
         setChildScene(menuChildScene);
     }
@@ -108,6 +120,8 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
             case MENU_SEEINVITES:
                 return true;
             case MENU_SIGNOUT:
+                return true;
+            case MENU_SIGNIN:
                 return true;
             default:
                 return false;
