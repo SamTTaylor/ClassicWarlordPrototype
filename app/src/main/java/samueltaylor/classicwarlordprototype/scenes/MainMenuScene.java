@@ -18,6 +18,9 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     private MenuScene menuChildScene;
     private final int MENU_PLAY = 0;
     private final int MENU_OPTIONS = 1;
+    private final int MENU_INVITE = 2;
+    private final int MENU_SEEINVITES = 3;
+    private final int MENU_SIGNOUT = 4;
 
     @Override
     public void createScene() {
@@ -58,20 +61,34 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         menuChildScene = new MenuScene(camera);
         menuChildScene.setPosition(0, 0);
 
-        final IMenuItem playMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_PLAY, resourcesManager.play_region, vbom), 1.2f, 1);
-        final IMenuItem optionsMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_OPTIONS, resourcesManager.options_region, vbom), 1.2f, 1);
+        final IMenuItem playMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_PLAY, resourcesManager.play_region, vbom), 0.8f, 0.5f);
+        final IMenuItem optionsMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_OPTIONS, resourcesManager.options_region, vbom), 0.8f, 0.5f);
+        final IMenuItem inviteMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_INVITE, resourcesManager.invite_region, vbom), 0.8f, 0.5f);
+        final IMenuItem seeinvitesMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SEEINVITES, resourcesManager.seeinvites_region, vbom), 0.8f, 0.5f);
+        final IMenuItem signoutMenuItem = new ScaleMenuItemDecorator(new SpriteMenuItem(MENU_SIGNOUT, resourcesManager.signout_region, vbom), 0.8f, 0.5f);
+
+        playMenuItem.setScale(0.5f);
+        optionsMenuItem.setScale(0.5f);
+        inviteMenuItem.setScale(0.5f);
+        seeinvitesMenuItem.setScale(0.5f);
+        signoutMenuItem.setScale(0.5f);
 
         menuChildScene.addMenuItem(playMenuItem);
         menuChildScene.addMenuItem(optionsMenuItem);
+        menuChildScene.addMenuItem(inviteMenuItem);
+        menuChildScene.addMenuItem(seeinvitesMenuItem);
+        menuChildScene.addMenuItem(signoutMenuItem);
 
         menuChildScene.buildAnimations();
         menuChildScene.setBackgroundEnabled(false);
 
-        playMenuItem.setPosition(playMenuItem.getX(), playMenuItem.getY() + 150);
-        optionsMenuItem.setPosition(optionsMenuItem.getX(), optionsMenuItem.getY() - 60);
+        playMenuItem.setPosition(playMenuItem.getX()-100, playMenuItem.getY()+160);
+        optionsMenuItem.setPosition(optionsMenuItem.getX()-100, playMenuItem.getY()+60);
+        inviteMenuItem.setPosition(inviteMenuItem.getX()-100, playMenuItem.getY()+120);
+        seeinvitesMenuItem.setPosition(seeinvitesMenuItem.getX()-100, playMenuItem.getY()+180);
+        signoutMenuItem.setPosition(signoutMenuItem.getX()-100, playMenuItem.getY()+240);
 
         menuChildScene.setOnMenuItemClickListener(this);
-
         setChildScene(menuChildScene);
     }
 
@@ -85,6 +102,12 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
                 SceneManager.getInstance().loadGameScene(engine);
                 return true;
             case MENU_OPTIONS:
+                return true;
+            case MENU_INVITE:
+                return true;
+            case MENU_SEEINVITES:
+                return true;
+            case MENU_SIGNOUT:
                 return true;
             default:
                 return false;
