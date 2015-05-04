@@ -17,10 +17,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    sourceSets { main { assets.srcDirs = ['src/main/assets', 'src/main/assets/'] } }
 }
 
 dependencies {
-
     if (!hasProperty('appcompat_library_version')) {
         ext.appcompat_library_version = '20.0.+'
     }
@@ -31,9 +31,10 @@ dependencies {
         ext.gms_library_version = '6.5+'
     }
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
-    compile "com.android.support:support-v4:${support_library_version}"
+    compile 'com.android.support:support-v4:21.0.0'
     compile "com.google.android.gms:play-services:${gms_library_version}"
     compile project(':libraries:BaseGameUtils')
+    compile project(':andEngine')
 }
 
 buildscript {

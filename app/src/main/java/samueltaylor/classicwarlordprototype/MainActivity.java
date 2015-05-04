@@ -16,6 +16,8 @@
 package samueltaylor.classicwarlordprototype;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,6 +47,7 @@ import com.google.android.gms.plus.Plus;
 
 import com.google.example.games.basegameutils.BaseGameUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +58,9 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
 
+
+import samueltaylor.classicwarlordprototype.manager.ResourcesManager;
+import samueltaylor.classicwarlordprototype.manager.SceneManager;
 
 
 public class MainActivity extends Activity
@@ -109,6 +115,7 @@ public class MainActivity extends Activity
 
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -636,11 +643,10 @@ public class MainActivity extends Activity
         mMultiplayer = multiplayer;
         updateScoreDisplay();
         broadcastScore(false);
+
         switchToScreen(samueltaylor.classicwarlordprototype.R.id.mapLayout);
         findViewById(samueltaylor.classicwarlordprototype.R.id.button_click_me).setVisibility(View.VISIBLE);
-        TouchImageView imgMap = (TouchImageView)findViewById(R.id.imgMap);
-        imgMap.setImageResource(R.drawable.map);
-        imgMap.setMaxZoom(4f);
+
         // run the gameTick() method every second to update the game.
         final Handler h = new Handler();
         h.postDelayed(new Runnable() {
@@ -871,4 +877,6 @@ public class MainActivity extends Activity
     void stopKeepingScreenOn() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
+
 }
