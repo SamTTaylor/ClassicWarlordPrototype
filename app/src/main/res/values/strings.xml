@@ -18,7 +18,7 @@
 <resources>
     <string name="signing_in">Signing in with Google</string>
     <string name="signing_out">Signing out</string>
-    <string name="app_name">Classic Warlord Prototype</string>
+    <string name="app_name">Classic Warlord</string>
     <string name="game_title">Classic Warlord!</string>
     <string name="game_blurb">A turn based strategy game where players attempt to dominate the board by force and cunning. \nTo play this game with friends, you must sign in with Google.</string>
     <string name="single_player">Single Player</string>

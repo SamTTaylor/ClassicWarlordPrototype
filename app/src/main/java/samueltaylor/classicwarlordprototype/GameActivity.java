@@ -247,16 +247,22 @@ public class GameActivity extends BaseGameActivity implements GoogleApiClient.Co
 
     void startQuickGame() {
         // quick-start a game with 1 randomly selected opponent
-        final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;
-        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
-                MAX_OPPONENTS, 0);
-        RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
-        rtmConfigBuilder.setMessageReceivedListener(this);
-        rtmConfigBuilder.setRoomStatusUpdateListener(this);
-        rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
-        resetGameVars();
-        Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
-        SceneManager.getInstance().loadGameScene(mEngine);
+        if(mGoogleApiClient.isConnected()){
+            final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;
+            Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
+                    MAX_OPPONENTS, 0);
+            RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
+            rtmConfigBuilder.setMessageReceivedListener(this);
+            rtmConfigBuilder.setRoomStatusUpdateListener(this);
+            rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
+            resetGameVars();
+            Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
+            SceneManager.getInstance().loadGameScene(mEngine);
+        } else {
+            mSignInClicked = true;
+            mGoogleApiClient.connect();
+            signedin = true;
+        }
     }
 
     @Override

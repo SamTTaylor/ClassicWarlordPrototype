@@ -3,14 +3,17 @@ package samueltaylor.classicwarlordprototype.scenes;
 /**
  * Created by Sam on 04/05/2015.
  */
+import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
 import org.andengine.entity.scene.menu.item.SpriteMenuItem;
 import org.andengine.entity.scene.menu.item.decorator.ScaleMenuItemDecorator;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
+import org.andengine.opengl.util.GLState;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 
@@ -32,9 +35,22 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
     @Override
     public void createScene()
     {
-        setBackground(new Background(Color.BLUE));
+        createBackground();
         createHUD();
         createMenuChildScene();
+    }
+
+    private void createBackground()
+    {
+        attachChild(new Sprite(0, 0, resourcesManager.game_background_region, vbom)
+        {
+            @Override
+            protected void preDraw(GLState pGLState, Camera pCamera)
+            {
+                super.preDraw(pGLState, pCamera);
+                pGLState.enableDither();
+            }
+        });
     }
 
     @Override
@@ -82,8 +98,8 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
         gameChildScene = new MenuScene(camera);
         gameChildScene.setPosition(0, 0);
 
-        final IMenuItem lancsItem = new ScaleMenuItemDecorator(new SpriteMenuItem(LANCS, resourcesManager.lancs_region, vbom), 1.2f, 1);
-        final IMenuItem yorksItem = new ScaleMenuItemDecorator(new SpriteMenuItem(YORKS, resourcesManager.yorks_region, vbom), 1.2f, 1);
+        final IMenuItem lancsItem = new ScaleMenuItemDecorator(new SpriteMenuItem(LANCS, resourcesManager.lancs_region, vbom), 1f, 0.8f);
+        final IMenuItem yorksItem = new ScaleMenuItemDecorator(new SpriteMenuItem(YORKS, resourcesManager.yorks_region, vbom), 1f, 0.8f);
 
         gameChildScene.addMenuItem(lancsItem);
         gameChildScene.addMenuItem(yorksItem);
@@ -91,8 +107,8 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
         gameChildScene.buildAnimations();
         gameChildScene.setBackgroundEnabled(false);
 
-        lancsItem.setPosition(lancsItem.getX()-100, lancsItem.getY() + 200);
-        yorksItem.setPosition(yorksItem.getX()+60, yorksItem.getY()-220);
+        lancsItem.setPosition(lancsItem.getX()-85, lancsItem.getY() + 130);
+        yorksItem.setPosition(yorksItem.getX()+45, yorksItem.getY()-270);
 
         gameChildScene.setOnMenuItemClickListener(this);
 

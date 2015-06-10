@@ -166,7 +166,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:id="@+id/mapLayout"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:background="#000000">
 
 

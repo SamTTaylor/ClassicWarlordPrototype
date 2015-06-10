@@ -63,6 +63,7 @@ public class ResourcesManager
     public BuildableBitmapTextureAtlas gameTextureAtlas;
 
     // Game Texture Regions
+    public ITextureRegion game_background_region;
     public ITextureRegion lancs_region;
     public ITextureRegion yorks_region;
     //---------------------------------------------
@@ -128,6 +129,7 @@ public class ResourcesManager
     {
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/regions/");
         gameTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
+        game_background_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "game_background.png");
         lancs_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "lancs.png");
         yorks_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "yorks.png");
 

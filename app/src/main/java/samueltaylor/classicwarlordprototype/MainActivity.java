@@ -137,67 +137,7 @@ public class MainActivity extends Activity
   }
 
   @Override
-  public void onClick(View v) {
-    Intent intent;
-
-        switch (v.getId()) {
-            case samueltaylor.classicwarlordprototype.R.id.button_single_player:
-            case samueltaylor.classicwarlordprototype.R.id.button_single_player_2:
-                // play a single-player game
-                resetGameVars();
-                startGame(false);
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_sign_in:
-                // user wants to sign in
-                // Check to see the developer who's running this sample code read the instructions :-)
-                // NOTE: this check is here only because this is a sample! Don't include this
-                // check in your actual production app.
-                if (!BaseGameUtils.verifySampleSetup(this, samueltaylor.classicwarlordprototype.R.string.app_id)) {
-                  Log.w(TAG, "*** Warning: setup problems detected. Sign in may not work!");
-                }
-
-                // start the sign-in flow
-                Log.d(TAG, "Sign-in button clicked");
-                mSignInClicked = true;
-                mGoogleApiClient.connect();
-            break;
-            case samueltaylor.classicwarlordprototype.R.id.button_sign_out:
-                // user wants to sign out
-                // sign out.
-                Log.d(TAG, "Sign-out button clicked");
-                mSignInClicked = false;
-                Games.signOut(mGoogleApiClient);
-                mGoogleApiClient.disconnect();
-                switchToScreen(samueltaylor.classicwarlordprototype.R.id.screen_sign_in);
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_invite_players:
-                // show list of invitable players
-                intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
-                switchToScreen(samueltaylor.classicwarlordprototype.R.id.screen_wait);
-                startActivityForResult(intent, RC_SELECT_PLAYERS);
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_see_invitations:
-                // show list of pending invitations
-                intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
-                switchToScreen(samueltaylor.classicwarlordprototype.R.id.screen_wait);
-                startActivityForResult(intent, RC_INVITATION_INBOX);
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_accept_popup_invitation:
-                // user wants to accept the invitation shown on the invitation popup
-                // (the one we got through the OnInvitationReceivedListener).
-                acceptInviteToRoom(mIncomingInvitationId);
-                mIncomingInvitationId = null;
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_quick_game:
-                // user wants to play against a random opponent right now
-                startQuickGame();
-                break;
-            case samueltaylor.classicwarlordprototype.R.id.button_click_me:
-                // (gameplay) user clicked the "click me" button
-                scoreOnePoint();
-                break;
-        }
-    }
+  public void onClick(View v) {}
 
     void startQuickGame() {
         // quick-start a game with 1 randomly selected opponent
