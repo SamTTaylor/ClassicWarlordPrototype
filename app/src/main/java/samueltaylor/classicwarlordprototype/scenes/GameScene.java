@@ -5,6 +5,7 @@ package samueltaylor.classicwarlordprototype.scenes;
  */
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;
+import org.andengine.entity.IEntity;
 import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
@@ -15,7 +16,6 @@ import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.util.GLState;
 import org.andengine.util.HorizontalAlign;
-import org.andengine.util.color.Color;
 
 import samueltaylor.classicwarlordprototype.manager.SceneManager;
 import samueltaylor.classicwarlordprototype.scenes.BaseScene;
@@ -26,7 +26,7 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
 
     private HUD gameHUD;
     private Text infoText;
-    private String info = "";
+    private String info;
 
     private MenuScene gameChildScene;
     private final int LANCS = 0;
@@ -42,11 +42,9 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
 
     private void createBackground()
     {
-        attachChild(new Sprite(0, 0, resourcesManager.game_background_region, vbom)
-        {
+        attachChild(new Sprite(0, 0, resourcesManager.game_background_region, vbom) {
             @Override
-            protected void preDraw(GLState pGLState, Camera pCamera)
-            {
+            protected void preDraw(GLState pGLState, Camera pCamera) {
                 super.preDraw(pGLState, pCamera);
                 pGLState.enableDither();
             }
@@ -69,9 +67,8 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
     {
         gameHUD = new HUD();
 
-        // CREATE SCORE TEXT
-        infoText = new Text(0, 0, resourcesManager.font, "", new TextOptions(HorizontalAlign.LEFT), vbom);
-        infoText.setText(" ");
+        // CREATE INFO TEXT
+        infoText = new Text(20, 20, resourcesManager.font, SceneManager.getInstance().gameInfo, new TextOptions(HorizontalAlign.LEFT), vbom);
         gameHUD.attachChild(infoText);
 
         camera.setHUD(gameHUD);
@@ -83,6 +80,11 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
         infoText.setText(info);
     }
 
+    public void appendInfo(String s)
+    {
+        info = info + "\n" + s;
+        infoText.setText(info);
+    }
     @Override
     public void disposeScene()
     {
@@ -115,12 +117,9 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
         setChildScene(gameChildScene);
     }
 
-
     @Override
-    public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY)
-    {
-        switch(pMenuItem.getID())
-        {
+    public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY) {
+        switch (pMenuItem.getID()) {
             case LANCS:
                 return true;
             case YORKS:
@@ -129,5 +128,6 @@ public class GameScene extends BaseScene implements MenuScene.IOnMenuItemClickLi
                 return false;
         }
     }
+
 
 }

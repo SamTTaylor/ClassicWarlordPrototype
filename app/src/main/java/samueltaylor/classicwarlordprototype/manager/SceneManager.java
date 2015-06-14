@@ -5,7 +5,7 @@ import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.ui.IGameInterface;
 
-import samueltaylor.classicwarlordprototype.GameActivity;
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.scenes.BaseScene;
 import samueltaylor.classicwarlordprototype.scenes.GameScene;
 import samueltaylor.classicwarlordprototype.scenes.LoadingScene;
@@ -21,16 +21,16 @@ public class SceneManager
     // SCENES
     //---------------------------------------------
 
-    public BaseScene splashScene;
-    public BaseScene menuScene;
-    public BaseScene gameScene;
-    public BaseScene loadingScene;
+    public SplashScene splashScene;
+    public MainMenuScene menuScene;
+    public GameScene gameScene;
+    public LoadingScene loadingScene;
 
     //---------------------------------------------
     // VARIABLES
     //---------------------------------------------
 
-    private static GameActivity ge;
+    private static GameController ge;
 
     private static final SceneManager INSTANCE = new SceneManager();
 
@@ -40,6 +40,7 @@ public class SceneManager
 
     private Engine engine = ResourcesManager.getInstance().engine;
 
+    public String gameInfo = "No players Found";
 
     public enum SceneType
     {
@@ -61,7 +62,9 @@ public class SceneManager
     {
         engine.setScene(scene);
         currentScene = scene;
-        currentSceneType = scene.getSceneType();
+        if(getCurrentScene()!=null) {
+            currentSceneType = scene.getSceneType();
+        }
     }
 
     public void setScene(SceneType sceneType)
@@ -125,10 +128,8 @@ public class SceneManager
     {
         setScene(loadingScene);
         ResourcesManager.getInstance().unloadMenuTextures();
-        mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback()
-        {
-            public void onTimePassed(final TimerHandler pTimerHandler)
-            {
+        mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback() {
+            public void onTimePassed(final TimerHandler pTimerHandler) {
                 mEngine.unregisterUpdateHandler(pTimerHandler);
                 ResourcesManager.getInstance().loadGameResources();
                 gameScene = new GameScene();
@@ -139,8 +140,10 @@ public class SceneManager
 
     public void loadMenuScene(final Engine mEngine)
     {
+        if(getCurrentScene()!=null){
+            getCurrentScene().disposeScene();
+        }
         setScene(loadingScene);
-        gameScene.disposeScene();
         ResourcesManager.getInstance().unloadGameTextures();
         mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback()
         {
@@ -159,5 +162,10 @@ public class SceneManager
         ResourcesManager.getInstance().unloadSplashScreen();
         splashScene.disposeScene();
         splashScene = null;
+    }
+
+
+    public void updateGameInfo(String s){
+        gameInfo = s;
     }
 }

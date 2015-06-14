@@ -1,8 +1,5 @@
 package samueltaylor.classicwarlordprototype.scenes;
 
-import android.content.Context;
-import android.content.Intent;
-
 import org.andengine.engine.camera.Camera;
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
@@ -11,7 +8,7 @@ import org.andengine.entity.scene.menu.item.decorator.ScaleMenuItemDecorator;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.util.GLState;
 
-import samueltaylor.classicwarlordprototype.GameActivity;
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.manager.SceneManager;
 
 import static android.app.PendingIntent.getActivity;
@@ -28,9 +25,9 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     private final int MENU_SEEINVITES = 3;
     private final int MENU_SIGNOUT = 4;
     private final int MENU_SIGNIN = 5;
-    private GameActivity ge;
+    private GameController ge;
 
-    public MainMenuScene(GameActivity ge){
+    public MainMenuScene(GameController ge){
         this.ge=ge;
     }
 
@@ -112,7 +109,6 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     @Override
     public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY)
     {
-        Intent intent;
         switch(pMenuItem.getID())
         {
             case MENU_PLAY:

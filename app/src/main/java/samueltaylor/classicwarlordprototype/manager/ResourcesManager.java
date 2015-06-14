@@ -21,8 +21,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.debug.Debug;
 
-import samueltaylor.classicwarlordprototype.GameActivity;
-import samueltaylor.classicwarlordprototype.MainActivity;
+import samueltaylor.classicwarlordprototype.GameController;
 
 /**
  * @author Mateusz Mysliwiec
@@ -38,7 +37,7 @@ public class ResourcesManager
     private static final ResourcesManager INSTANCE = new ResourcesManager();
 
     public Engine engine;
-    public GameActivity activity;
+    public GameController activity;
     public Camera camera;
     public VertexBufferObjectManager vbom;
     public ITextureRegion splash_region;
@@ -146,7 +145,11 @@ public class ResourcesManager
 
     private void loadGameFonts()
     {
+        FontFactory.setAssetBasePath("font/");
+        final ITexture mainFontTexture = new BitmapTextureAtlas(activity.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 
+        font = FontFactory.createStrokeFromAsset(activity.getFontManager(), mainFontTexture, activity.getAssets(), "font.ttf", 25, true, Color.WHITE, 1, Color.BLACK);
+        font.load();
     }
 
     private void loadGameAudio()
@@ -180,7 +183,7 @@ public class ResourcesManager
      * @param vbom
 * <br><br>
      */
-    public static void prepareManager(Engine engine, GameActivity activity, Camera camera, VertexBufferObjectManager vbom)
+    public static void prepareManager(Engine engine, GameController activity, Camera camera, VertexBufferObjectManager vbom)
     {
         getInstance().engine = engine;
         getInstance().activity = activity;

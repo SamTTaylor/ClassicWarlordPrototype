@@ -4,16 +4,10 @@ package samueltaylor.classicwarlordprototype.scenes;
  * Created by Sam on 03/05/2015.
  */
 
-import android.content.Context;
-import android.graphics.Point;
-import android.view.Display;
-import android.view.WindowManager;
-
 import org.andengine.engine.camera.Camera;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.util.GLState;
 
-import samueltaylor.classicwarlordprototype.GameActivity;
 import samueltaylor.classicwarlordprototype.manager.SceneManager.SceneType;
 
 /**

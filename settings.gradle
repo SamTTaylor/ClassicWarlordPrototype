@@ -1,1 +1,1 @@
-include ':libraries:BaseGameUtils', 'app', ':andEngine'
+include ':libraries:BaseGameUtils', 'app', ':andEngine', ':andEnginePhysicsBox2DExtension', ':'
