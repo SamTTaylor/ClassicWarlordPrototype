@@ -12,13 +12,11 @@ so manually move them:
 * LICENSE.md
 * README.md
 * build.xml
-* checkstyle.xml
 * ext\
 * ext\img\
 * ext\img\android.svg
 * ext\img\badge.png
 * ext\img\badge.svg
-* ext\img\badge_xlarge.png
 * ext\img\clapboard.png
 * ext\img\clapboard.svg
 * ext\img\favicon.png
@@ -31,12 +29,9 @@ so manually move them:
 * ext\img\source.svg
 * ext\img\splash.png
 * ext\img\splash.svg
-* ext\libs\
-* ext\libs\ant-contrib-1.0b3.jar
 * ext\scripts\
 * ext\scripts\build_texturepacks.sh
-* git-rank-contributors.rb
-* proguard-project.txt
+* proguard.cfg
 
 Moved Files:
 ------------
@@ -47,7 +42,6 @@ Eclipse projects. Here's how the projects were restructured:
 * jni\ => andEngine\src\main\jni\
 * libs\armeabi-v7a\libandengine.so => andEngine\src\main\jniLibs\armeabi-v7a\libandengine.so
 * libs\armeabi\libandengine.so => andEngine\src\main\jniLibs\armeabi\libandengine.so
-* libs\mips\libandengine.so => andEngine\src\main\jniLibs\mips\libandengine.so
 * libs\x86\libandengine.so => andEngine\src\main\jniLibs\x86\libandengine.so
 * res\ => andEngine\src\main\res\
 * src\ => andEngine\src\main\java\

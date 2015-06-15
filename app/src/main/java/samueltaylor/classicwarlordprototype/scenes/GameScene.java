@@ -5,8 +5,7 @@ package samueltaylor.classicwarlordprototype.scenes;
  */
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;
-import org.andengine.entity.IEntity;
-import org.andengine.entity.scene.background.Background;
+
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
 import org.andengine.entity.scene.menu.item.SpriteMenuItem;

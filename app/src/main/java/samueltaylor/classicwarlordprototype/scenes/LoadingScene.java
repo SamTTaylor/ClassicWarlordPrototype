@@ -7,7 +7,6 @@ package samueltaylor.classicwarlordprototype.scenes;
         import org.andengine.entity.text.Text;
         import org.andengine.util.color.Color;
 
-        import samueltaylor.classicwarlordprototype.scenes.BaseScene;
         import samueltaylor.classicwarlordprototype.manager.SceneManager.SceneType;
 
 public class LoadingScene extends BaseScene
