@@ -46,4 +46,7 @@
     <string name="attack">Select an amount of armies to attack with (Must be between 1 and the amount of armies you have).</string>
     <string name="defend">You are under attack! Choose how many armies you think you opponent used.</string>
     <string name="exitgamebutton">Exit</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
