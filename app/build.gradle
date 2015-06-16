@@ -10,7 +10,6 @@ android {
         targetSdkVersion android_compile_version
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -37,13 +36,6 @@ dependencies {
     compile project(':libraries:BaseGameUtils')
     compile project(':andEngine')
 
-    androidTestCompile 'com.android.support.test:runner:0.3'
-    // Set this dependency to use JUnit 4 rules
-    androidTestCompile 'com.android.support.test:rules:0.3'
-    // Set this dependency to build and run Espresso tests
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2'
-    // Set this dependency to build and run UI Automator tests
-    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
 }
 
 buildscript {
