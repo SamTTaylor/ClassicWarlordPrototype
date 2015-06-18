@@ -10,36 +10,56 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="left|top"
-        android:background="@drawable/menu_background">
+        android:background="@drawable/game_background"
+        android:theme="@style/Theme.Base.Light">
 
-        <Button
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button"
+            android:id="@+id/imageView"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="150dp"
-            android:background="@drawable/PlayButton"
-            android:backgroundTint="@drawable/PlayButtonPressed"
-            android:clickable="true" />
+            android:background="@drawable/title" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button2"
+            android:id="@+id/btnPlay"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50dp"
+            android:text="PLAY"
+            android:width="200dp"
+            android:textStyle="bold"
+            android:height="40dp"
+            android:elegantTextHeight="false"
+            android:elevation="5dp"
+            android:background="@drawable/gradient"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSettings"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:background="@drawable/SettingsButton"
-            android:backgroundTint="@drawable/SettingsButtonPressed" />
+            android:text="SETTINGS"
+            android:width="200dp"
+            android:textStyle="bold"
+            android:height="40dp"
+            android:elevation="5dp"
+            android:background="@drawable/gradient"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button3"
+            android:id="@+id/btnRules"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:background="@drawable/RulesButton"
-            android:backgroundTint="@drawable/RulesPressed"
-            android:clickable="true" />
+            android:text="RULES"
+            android:width="200dp"
+            android:textStyle="bold"
+            android:height="40dp"
+            android:elevation="5dp"
+            android:background="@drawable/gradient"/>
 
     </LinearLayout>
 </FrameLayout>
