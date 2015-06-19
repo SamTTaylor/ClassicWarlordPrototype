@@ -13,7 +13,7 @@ buildscript {
     ext {
         android_compile_version = 21
         android_version = '21'
-        android_min_sdk_version = 15
+        android_min_sdk_version = 21
 
         android_appcompat_library =  'com.android.support:appcompat-v7:20.0.+'
         android_support_library =  'com.android.support:support-v4:21.0.0'

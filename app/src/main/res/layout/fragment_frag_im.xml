@@ -6,12 +6,15 @@
     <!-- TODO: Update blank fragment layout -->
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:layout_gravity="left|bottom"
         android:background="@color/PanelColor"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:minWidth="220dp"
+        android:maxLines="1"
+        android:inputType="textMultiLine" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -31,5 +34,14 @@
             android:background="#55ffffff"
             android:textStyle="bold" />
     </ScrollView>
+
+    <Button
+        android:layout_width="77dp"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:id="@+id/button14"
+        android:layout_gravity="right|bottom"
+        android:background="#55ffffff"
+        android:height="25dp" />
 
 </FrameLayout>

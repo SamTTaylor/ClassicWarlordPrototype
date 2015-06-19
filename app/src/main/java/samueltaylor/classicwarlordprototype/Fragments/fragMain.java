@@ -1,13 +1,17 @@
 package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.transition.Fade;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.R;
 
 /**
@@ -18,7 +22,7 @@ import samueltaylor.classicwarlordprototype.R;
  * Use the {@link fragMain#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class fragMain extends Fragment {
+public class fragMain extends Fragment implements View.OnClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -38,7 +42,6 @@ public class fragMain extends Fragment {
      * @param param2 Parameter 2.
      * @return A new instance of fragment fragMain.
      */
-    // TODO: Rename and change types and number of parameters
     public static fragMain newInstance(String param1, String param2) {
         fragMain fragment = new fragMain();
         Bundle args = new Bundle();
@@ -50,6 +53,8 @@ public class fragMain extends Fragment {
 
     public fragMain() {
         // Required empty public constructor
+        Fade fade = new Fade();
+        this.setEnterTransition(fade);
     }
 
     @Override
@@ -67,6 +72,8 @@ public class fragMain extends Fragment {
         //UI calls after fragment has finished loading elements
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -74,11 +81,9 @@ public class fragMain extends Fragment {
         return inflater.inflate(R.layout.fragment_main, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onClick(View v) {
+        ((GameController)getActivity()).playgame();
     }
 
     @Override
@@ -91,6 +96,8 @@ public class fragMain extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
+
+
 
     @Override
     public void onDetach() {
@@ -109,7 +116,6 @@ public class fragMain extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
 
