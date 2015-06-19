@@ -68,10 +68,9 @@ public class fragGameHUDPlayers extends Fragment {
         return inflater.inflate(R.layout.fragment_game_hud_players, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onHUDFragmentInteraction(uri);
         }
     }
 
@@ -104,7 +103,7 @@ public class fragGameHUDPlayers extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        public void onHUDFragmentInteraction(Uri uri);
     }
 
 }

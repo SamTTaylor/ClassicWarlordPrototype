@@ -36,6 +36,11 @@ public class fragMain extends Fragment {
 
     //Objects
     Button btnMatch;
+    Button btnInvite;
+    Button btnSettings;
+    Button btnRules;
+    Button btnGoogleAPI;
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -70,15 +75,28 @@ public class fragMain extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //UI calls after fragment has finished loading elements
+
+        //Add buttons and listeners
         btnMatch = (Button) getActivity().findViewById(R.id.btnMatch);
-        btnMatch.setOnClickListener(new View.OnClickListener()
-        {
+        btnMatch.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).playgame();}});
+        btnInvite = (Button) getActivity().findViewById(R.id.btnInvite);
+        btnInvite.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).invite();}});
+        btnSettings = (Button) getActivity().findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){/*TODO: Add settings*/}});
+        btnRules = (Button) getActivity().findViewById(R.id.btnRules);
+        btnRules.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){/*TODO: Add Rules*/}});
+
+        btnGoogleAPI = (Button) getActivity().findViewById(R.id.btnGoogle);
+        btnGoogleAPI.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v)
-            {
-                ((GameController)getActivity()).playgame();
-            }
-        });
+            public void onClick(View v){
+                if (((GameController)getActivity()).signedin == false){
+                    ((GameController)getActivity()).signin();
+                } else {
+                    ((GameController)getActivity()).signout();
+                }
+
+            }});
     }
 
     @Override
@@ -120,7 +138,7 @@ public class fragMain extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(Uri uri);
+        public void onMainFragmentInteraction(Uri uri);
     }
 
 }

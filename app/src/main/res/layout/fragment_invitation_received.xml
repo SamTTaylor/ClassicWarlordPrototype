@@ -6,12 +6,31 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-    <Button
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Invite Received! Click to View!"
-        android:id="@+id/btnInvite"
-        android:layout_gravity="top"
-        android:background="@color/GameButtonColour"
-        android:height="20dp" />
+        android:layout_height="match_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Invite Received! Click to View!"
+            android:id="@+id/btnInvite"
+            android:layout_gravity="top"
+            android:background="@color/GameButtonColour"
+            android:height="40dp"
+            android:layout_weight="1" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Dismiss"
+            android:id="@+id/btnDismiss"
+            android:height="40dp"
+            android:layout_gravity="top|right"
+            android:background="#cc3333"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp" />
+    </LinearLayout>
 </FrameLayout>
