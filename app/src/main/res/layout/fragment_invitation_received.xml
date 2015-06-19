@@ -1,10 +1,16 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context="samueltaylor.classicwarlordprototype.Fragments.invitationReceived">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView android:layout_width="match_parent" android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Invite Received! Click to View!"
+        android:id="@+id/btnInvite"
+        android:layout_gravity="top"
+        android:background="@color/GameButtonColour"
+        android:height="20dp" />
 </FrameLayout>

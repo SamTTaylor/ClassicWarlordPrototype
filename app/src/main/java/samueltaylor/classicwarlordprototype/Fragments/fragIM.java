@@ -13,12 +13,12 @@ import samueltaylor.classicwarlordprototype.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link gameMap.OnFragmentInteractionListener} interface
+ * {@link fragIM.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link gameMap#newInstance} factory method to
+ * Use the {@link fragIM#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class gameMap extends Fragment {
+public class fragIM extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -36,11 +36,11 @@ public class gameMap extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment gameMap.
+     * @return A new instance of fragment fragIM.
      */
     // TODO: Rename and change types and number of parameters
-    public static gameMap newInstance(String param1, String param2) {
-        gameMap fragment = new gameMap();
+    public static fragIM newInstance(String param1, String param2) {
+        fragIM fragment = new fragIM();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -48,7 +48,7 @@ public class gameMap extends Fragment {
         return fragment;
     }
 
-    public gameMap() {
+    public fragIM() {
         // Required empty public constructor
     }
 
@@ -65,7 +65,7 @@ public class gameMap extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_game_map, container, false);
+        return inflater.inflate(R.layout.fragment_frag_im, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

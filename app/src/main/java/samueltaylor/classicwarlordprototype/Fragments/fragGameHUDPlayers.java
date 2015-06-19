@@ -13,12 +13,12 @@ import samueltaylor.classicwarlordprototype.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link fragMain.OnFragmentInteractionListener} interface
+ * {@link fragGameHUDPlayers.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link fragMain#newInstance} factory method to
+ * Use the {@link fragGameHUDPlayers#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class fragMain extends Fragment {
+public class fragGameHUDPlayers extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -36,11 +36,11 @@ public class fragMain extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment fragMain.
+     * @return A new instance of fragment fragGameHUDPlayers.
      */
     // TODO: Rename and change types and number of parameters
-    public static fragMain newInstance(String param1, String param2) {
-        fragMain fragment = new fragMain();
+    public static fragGameHUDPlayers newInstance(String param1, String param2) {
+        fragGameHUDPlayers fragment = new fragGameHUDPlayers();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -48,7 +48,7 @@ public class fragMain extends Fragment {
         return fragment;
     }
 
-    public fragMain() {
+    public fragGameHUDPlayers() {
         // Required empty public constructor
     }
 
@@ -62,16 +62,10 @@ public class fragMain extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        //UI calls after fragment has finished loading elements
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        return inflater.inflate(R.layout.fragment_game_hud_players, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

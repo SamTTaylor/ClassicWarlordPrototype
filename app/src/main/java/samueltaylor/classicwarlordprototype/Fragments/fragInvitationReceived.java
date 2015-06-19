@@ -13,12 +13,12 @@ import samueltaylor.classicwarlordprototype.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link invitationReceived.OnFragmentInteractionListener} interface
+ * {@link fragInvitationReceived.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link invitationReceived#newInstance} factory method to
+ * Use the {@link fragInvitationReceived#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class invitationReceived extends Fragment {
+public class fragInvitationReceived extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -36,11 +36,11 @@ public class invitationReceived extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment invitationReceived.
+     * @return A new instance of fragment fragInvitationReceived.
      */
     // TODO: Rename and change types and number of parameters
-    public static invitationReceived newInstance(String param1, String param2) {
-        invitationReceived fragment = new invitationReceived();
+    public static fragInvitationReceived newInstance(String param1, String param2) {
+        fragInvitationReceived fragment = new fragInvitationReceived();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -48,7 +48,7 @@ public class invitationReceived extends Fragment {
         return fragment;
     }
 
-    public invitationReceived() {
+    public fragInvitationReceived() {
         // Required empty public constructor
     }
 

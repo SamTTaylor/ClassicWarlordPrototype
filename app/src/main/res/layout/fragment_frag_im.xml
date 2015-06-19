@@ -1,0 +1,35 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_gravity="left|bottom"
+        android:background="@color/PanelColor"
+        android:layout_marginTop="10dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView"
+        android:layout_gravity="left"
+        android:layout_marginBottom="20dp">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtChat"
+            android:maxLines="5"
+            android:minWidth="300dp"
+            android:minLines="8"
+            android:textSize="10dp"
+            android:background="#55ffffff"
+            android:textStyle="bold" />
+    </ScrollView>
+
+</FrameLayout>

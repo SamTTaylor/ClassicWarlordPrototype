@@ -23,17 +23,31 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnPlay"
+            android:id="@+id/btnMatch"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="50dp"
-            android:text="PLAY"
+            android:layout_marginTop="20dp"
+            android:text="QUICKMATCH"
             android:width="200dp"
             android:textStyle="bold"
             android:height="40dp"
             android:elegantTextHeight="false"
             android:elevation="5dp"
-            android:background="@drawable/gradient"
-            />
+            android:background="@drawable/rectmenubutton"
+            android:layout_weight="1" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnInvite"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:text="INVITE"
+            android:width="200dp"
+            android:textStyle="bold"
+            android:height="40dp"
+            android:elevation="5dp"
+            android:background="@drawable/rectmenubutton"
+            android:layout_weight="1" />
 
         <Button
             android:layout_width="wrap_content"
@@ -46,7 +60,8 @@
             android:textStyle="bold"
             android:height="40dp"
             android:elevation="5dp"
-            android:background="@drawable/gradient"/>
+            android:background="@drawable/rectmenubutton"
+            android:layout_weight="1" />
 
         <Button
             android:layout_width="wrap_content"
@@ -59,7 +74,9 @@
             android:textStyle="bold"
             android:height="40dp"
             android:elevation="5dp"
-            android:background="@drawable/gradient"/>
+            android:background="@drawable/rectmenubutton"
+            android:layout_weight="1"
+            android:layout_marginBottom="20dp" />
 
     </LinearLayout>
 </FrameLayout>
