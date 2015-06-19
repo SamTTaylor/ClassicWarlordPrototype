@@ -3,7 +3,6 @@
     android:layout_height="match_parent"
     tools:context="samueltaylor.classicwarlordprototype.Fragments.fragMain">
 
-    <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
         android:orientation="vertical"
@@ -11,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="left|top"
         android:background="@drawable/game_background"
-        android:theme="@style/Theme.Base.Light">
+        android:touchscreenBlocksFocus="false">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -30,11 +29,9 @@
             android:width="200dp"
             android:textStyle="bold"
             android:height="40dp"
-            android:elegantTextHeight="false"
             android:elevation="5dp"
             android:background="@drawable/rectmenubutton"
-            android:layout_weight="1"
-            android:nestedScrollingEnabled="false" />
+            android:layout_weight="1" />
 
         <Button
             android:layout_width="wrap_content"

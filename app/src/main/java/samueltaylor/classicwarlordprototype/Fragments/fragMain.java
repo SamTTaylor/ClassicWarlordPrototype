@@ -1,11 +1,10 @@
 package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.transition.Fade;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,7 @@ import samueltaylor.classicwarlordprototype.R;
  * Use the {@link fragMain#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class fragMain extends Fragment implements View.OnClickListener {
+public class fragMain extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -34,6 +33,9 @@ public class fragMain extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
+
+    //Objects
+    Button btnMatch;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -53,8 +55,6 @@ public class fragMain extends Fragment implements View.OnClickListener {
 
     public fragMain() {
         // Required empty public constructor
-        Fade fade = new Fade();
-        this.setEnterTransition(fade);
     }
 
     @Override
@@ -70,21 +70,25 @@ public class fragMain extends Fragment implements View.OnClickListener {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //UI calls after fragment has finished loading elements
+        btnMatch = (Button) getActivity().findViewById(R.id.btnMatch);
+        btnMatch.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                ((GameController)getActivity()).playgame();
+            }
+        });
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        View fragMainView = inflater.inflate(R.layout.fragment_main, container, false);
+        return fragMainView;
     }
 
-    @Override
-    public void onClick(View v) {
-        ((GameController)getActivity()).playgame();
-    }
 
     @Override
     public void onAttach(Activity activity) {
