@@ -37,6 +37,7 @@ public class fragMain extends Fragment {
     //Objects
     Button btnMatch;
     Button btnInvite;
+    Button btnInvites;
     Button btnSettings;
     Button btnRules;
     Button btnGoogleAPI;
@@ -86,6 +87,8 @@ public class fragMain extends Fragment {
         btnRules = (Button) getActivity().findViewById(R.id.btnRules);
         btnRules.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){/*TODO: Add Rules*/}});
 
+        btnInvites = (Button) getActivity().findViewById(R.id.btnInvites);
+        btnInvites.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).seeinvites();}});
         btnGoogleAPI = (Button) getActivity().findViewById(R.id.btnGoogle);
         btnGoogleAPI.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -118,8 +121,6 @@ public class fragMain extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
-
-
 
     @Override
     public void onDetach() {

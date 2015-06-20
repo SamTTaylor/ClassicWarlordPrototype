@@ -84,4 +84,15 @@
         android:id="@+id/btnGoogle"
         android:layout_gravity="right|top"
         android:background="@drawable/common_signin_btn_text_dark" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnInvites"
+        android:background="@drawable/rectmenubutton"
+        android:text="Invitations"
+        android:textStyle="bold"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp" />
 </FrameLayout>
