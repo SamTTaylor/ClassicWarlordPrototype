@@ -1,47 +1,59 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_gravity="left|bottom"
     tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM">
 
     <!-- TODO: Update blank fragment layout -->
 
-    <EditText
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_gravity="left|bottom"
-        android:background="@color/PanelColor"
-        android:layout_marginTop="10dp"
-        android:minWidth="220dp"
-        android:maxLines="1"
-        android:inputType="textMultiLine" />
+        android:layout_height="match_parent">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView"
-        android:layout_gravity="left"
-        android:layout_marginBottom="20dp">
-
-        <EditText
-            android:layout_width="wrap_content"
+        <ScrollView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/txtChat"
-            android:maxLines="5"
-            android:minWidth="300dp"
-            android:minLines="8"
-            android:textSize="10dp"
-            android:background="#55ffffff"
-            android:textStyle="bold" />
-    </ScrollView>
+            android:id="@+id/scrollView"
+            android:layout_gravity="left">
 
-    <Button
-        android:layout_width="77dp"
-        android:layout_height="wrap_content"
-        android:text="Send"
-        android:id="@+id/button14"
-        android:layout_gravity="right|bottom"
-        android:background="#55ffffff"
-        android:height="25dp" />
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txtChat"
+                android:maxLines="5"
+                android:minWidth="300dp"
+                android:minLines="8"
+                android:textSize="10dp"
+                android:background="#55ffffff"
+                android:textStyle="bold" />
+        </ScrollView>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/editText"
+                android:background="@color/PanelColor"
+                android:minWidth="220dp"
+                android:maxLines="1"
+                android:inputType="textMultiLine"
+                android:layout_weight="4" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                android:id="@+id/btnSend"
+                android:background="#55ffffff"
+                android:height="25dp"
+                android:layout_weight="5" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </FrameLayout>

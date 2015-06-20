@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="samueltaylor.classicwarlordprototype.Fragments.gameMap"
-    android:background="#440044">
+    android:background="#ffbbff">
 
     <!-- TODO: Update blank fragment layout -->
 

@@ -79,7 +79,7 @@ public class fragMain extends Fragment {
 
         //Add buttons and listeners
         btnMatch = (Button) getActivity().findViewById(R.id.btnMatch);
-        btnMatch.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).playgame();}});
+        btnMatch.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).startQuickGame();}});
         btnInvite = (Button) getActivity().findViewById(R.id.btnInvite);
         btnInvite.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).invite();}});
         btnSettings = (Button) getActivity().findViewById(R.id.btnSettings);

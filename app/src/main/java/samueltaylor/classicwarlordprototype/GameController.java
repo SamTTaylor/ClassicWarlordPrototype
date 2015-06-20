@@ -141,11 +141,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 
-    public void playgame() {
-        // user wants to play against a random opponent right now
-        startQuickGame();
-    }
-
     public void seeinvites(){
         Intent intent;
         // show list of pending invitations
@@ -183,7 +178,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
-    void startQuickGame() {
+    public void startQuickGame() {
         // quick-start a game with randomly selected opponents
         if(mGoogleApiClient.isConnected()){
             final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 7;
@@ -678,7 +673,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         hudfragment = new fragGameHUDPlayers();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
-        transaction.add(R.id.activity_main_layout, mapfragment, "game");
+        transaction.replace(R.id.activity_main_layout, mapfragment, "game");
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
         transaction.add(R.id.activity_main_layout, imfragment, "im");
         transaction.commit();
@@ -804,17 +799,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    // updates the label that shows my score
-    void updateInfoDisplay() {
-        //update Players Table;
-    }
-
-    // updates the screen with the scores from our peers
+    // updates the players table
     void updatePeerDisplay() {
         if (mRoomId != null) {
             for (Participant p : mParticipants) {
-                mInfo = p.getDisplayName() + "\n" + mInfo ;
-                updateInfoDisplay();
+                hudfragment.addPlayerName(p.getDisplayName());
             }
         }
     }
