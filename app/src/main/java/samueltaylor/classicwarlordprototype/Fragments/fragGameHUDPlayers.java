@@ -127,6 +127,8 @@ public class fragGameHUDPlayers extends Fragment {
 
         txtName.setText(name);
     }
+
+
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onHUDFragmentInteraction(uri);

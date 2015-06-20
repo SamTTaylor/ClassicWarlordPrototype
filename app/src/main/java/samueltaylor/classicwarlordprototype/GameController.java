@@ -661,6 +661,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     void loadMainMenu(){
         mainfragment = new fragMain();
+        mapfragment = null;
+        imfragment = null;
+        hudfragment = null;
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         transaction.replace(R.id.activity_main_layout, mainfragment, "mainmenu");
@@ -674,6 +677,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         transaction.replace(R.id.activity_main_layout, mapfragment, "game");
+        transaction.commit();
+        transaction=manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
         transaction.add(R.id.activity_main_layout, imfragment, "im");
         transaction.commit();
