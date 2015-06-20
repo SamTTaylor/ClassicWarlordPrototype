@@ -135,7 +135,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         Intent intent;
         // show list of invitable players
-        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
+        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 7);
         //show loading fragment
         showLoadingFragment();
         startActivityForResult(intent, RC_SELECT_PLAYERS);
@@ -348,23 +348,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Handle back key to make sure we cleanly leave a game if we are in the middle of one
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && inGame()==true) {
-            leaveRoom();
-            loadMainMenu();
-        } else {
-            fragMain myFragment = (fragMain)getFragmentManager().findFragmentByTag("mainmenu");
-            if (myFragment != null && myFragment.isVisible()) {
+        if (keyCode == KeyEvent.KEYCODE_BACK ) {
+            if(inRoom()==true){
+                leaveRoom();
+            } else {
+                this.finish();
                 System.exit(0);
             }
+
         }
         return true;
     }
 
     // Leave the room.
     void leaveRoom() {
-        Log.d(TAG, "Leaving room.");
-        mSecondsLeft = 0;
         if (mRoomId != null) {
+            Log.d(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
         }
     }
@@ -388,6 +387,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // We got an invitation to play a game! So, store it in
         // mIncomingInvitationId
         // and show the popup on the screen.
+        Log.d(TAG, "Invite Received.");
         mIncomingInvitationId = invitation.getInvitationId();
        //show invitation fragment
         showinvitefragment();
@@ -477,6 +477,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // we have left the room; return to main screen.
         Log.d(TAG, "onLeftRoom, code " + statusCode);
         loadMainMenu();
+        mRoomId = null;
     }
 
     // Called when we get disconnected from the room. We return to the main screen.
@@ -501,7 +502,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             showGameError();
             return;
         }
-
+        mRoomId = room.getRoomId();
         // show the waiting room UI
         showWaitingRoom(room);
     }
@@ -546,12 +547,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onP2PDisconnected(String participant) {
-    }
+    public void onP2PDisconnected(String participant) {}
 
     @Override
-    public void onP2PConnected(String participant) {
-    }
+    public void onP2PConnected(String participant) {}
 
     @Override
     public void onPeerJoined(Room room, List<String> arg1) {
@@ -601,9 +600,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //Check if we are currently in game
-    boolean inGame(){
-        fragGameMap myFragment = (fragGameMap)getFragmentManager().findFragmentByTag("game");
-        if (myFragment != null && myFragment.isVisible()) {
+    boolean inRoom(){
+        if (mRoomId!=null) {
             return true;
         } else {
             return false;
@@ -667,55 +665,41 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     void loadMainMenu(){
+        mainfragment = new fragMain();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
-        if(mainfragment.isAdded()) {
-            transaction.replace(R.id.activity_main_layout, mainfragment, "mainmenu");
-        } else {
-            transaction.add(R.id.activity_main_layout, mainfragment, "mainmenu");
-        }
+        transaction.replace(R.id.activity_main_layout, mainfragment, "mainmenu");
         transaction.commit();
     }
 
     void loadGame(){
         mapfragment = new fragGameMap();
+        imfragment = new fragIM();
+        hudfragment = new fragGameHUDPlayers();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
-        if(mainfragment.isVisible()){
-            transaction.remove(mainfragment);
-        }
-        if(mapfragment.isAdded()){
-            transaction.remove(hudfragment);
-            transaction.remove(imfragment);
-            transaction.remove(mapfragment);
-        }
+        transaction.add(R.id.activity_main_layout, mapfragment, "game");
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
         transaction.add(R.id.activity_main_layout, imfragment, "im");
-        transaction.add(R.id.activity_main_layout, mapfragment, "game");
         transaction.commit();
     }
 
     void showLoadingFragment(){
+        loadingfragment = new fragLoading();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
-        if(loadingfragment.isAdded()){
-            transaction.remove(loadingfragment);
-        }
-        transaction.add(R.id.activity_main_layout, loadingfragment, "loading");
+        transaction.replace(R.id.activity_main_layout, loadingfragment, "loading");
         transaction.commit();
     }
 
 
     void showinvitefragment(){
-        if (mainfragment != null && mainfragment.isVisible()) {
-            FragmentManager manager = getFragmentManager();
-            FragmentTransaction transaction = manager.beginTransaction();
-            if(invitefragment.isAdded()) {
-                transaction.remove(invitefragment);
-            }
-            transaction.add(R.id.activity_main_layout, invitefragment, "invite");
-            transaction.commit();
-        }
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(invitefragment);
+        invitefragment = new fragInvitationReceived();
+        transaction.add(R.id.activity_main_layout, invitefragment, "invite");
+        transaction.commit();
     }
 
     public void hideinvitefragment(){
@@ -789,6 +773,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }
     }
+
 
     // Broadcast my message to everybody else.
     void broadcastScore(boolean finalScore) {
