@@ -4,9 +4,12 @@ package samueltaylor.classicwarlordprototype;
  * Created by Sam on 03/05/2015.
  */
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ConfigurationInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -131,6 +134,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
 
     }
+
 
     public void invite() {
 

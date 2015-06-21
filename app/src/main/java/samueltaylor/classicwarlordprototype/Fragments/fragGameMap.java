@@ -1,14 +1,26 @@
 package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.net.Uri;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import samueltaylor.classicwarlordprototype.R;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import samueltaylor.classicwarlordprototype.Shapes.Square;
+import samueltaylor.classicwarlordprototype.Shapes.Triangle;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -18,7 +30,7 @@ import samueltaylor.classicwarlordprototype.R;
  * Use the {@link fragGameMap#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class fragGameMap extends Fragment {
+public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -62,11 +74,21 @@ public class fragGameMap extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        //UI calls after fragment has finished loading elements
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_game_map, container, false);
+        initialize();
+        return mGLView;
     }
+
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -92,6 +114,20 @@ public class fragGameMap extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mGLView!=null)
+            mGLView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mGLView!=null)
+            mGLView.onPause();
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -105,6 +141,112 @@ public class fragGameMap extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onMapFragmentInteraction(Uri uri);
+    }
+
+
+
+
+
+    //OPENGLES & DRAWING THE MAP
+
+    GLSurfaceView mGLView;
+    boolean mSurfaceCreated;
+
+    //Check if device supports OpenGLES2
+    private boolean hasGLES20() {
+        ActivityManager am = (ActivityManager)
+                getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        ConfigurationInfo info = am.getDeviceConfigurationInfo();
+        return info.reqGlEsVersion >= 0x20000;
+    }
+
+    //Initialise OpenGL
+    private void initialize() {
+        if (hasGLES20()) {
+            mGLView = new GLSurfaceView(getActivity());
+            mGLView.setEGLContextClientVersion(2);
+            mGLView.setPreserveEGLContextOnPause(true);
+            mGLView.setRenderer(this);
+        } else {
+            // Time to get a new phone, OpenGL ES 2.0 not supported.
+        }
+    }
+
+
+
+    //Drawing
+
+    private Triangle mTriangle;
+    private Square mSquare;
+
+
+    //Initial drawing
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        GLES20.glClearColor(1f, 1f, 1f, 1f);
+        mSurfaceCreated = true;
+
+        // initialize a triangle
+        mTriangle = new Triangle(this);
+        // initialize a square
+        mSquare = new Square();
+    }
+
+
+    //Manipulation of drawing
+    private final float[] mMVPMatrix = new float[16];
+    private final float[] mProjectionMatrix = new float[16];
+    private final float[] mViewMatrix = new float[16];
+    private float[] mRotationMatrix = new float[16];
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        GLES20.glViewport(0, 0, width, height);
+
+        float ratio = (float) width / height;
+
+        // this projection matrix is applied to object coordinates
+        // in the onDrawFrame() method
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+    }
+
+
+    //Redrawing
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        float[] scratch = new float[16];
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        // Set the camera position (View matrix)
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+        // Calculate the projection and view transformation
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+
+        // Create a rotation transformation for the triangle
+        long time = SystemClock.uptimeMillis() % 4000L;
+        float angle = 0.090f * ((int) time);
+        Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
+
+        // Combine the rotation matrix with the projection and camera view
+        // Note that the mMVPMatrix factor *must be first* in order
+        // for the matrix multiplication product to be correct.
+        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+
+        // Draw triangle
+        mTriangle.draw(scratch);
+    }
+
+
+    public static int loadShader(int type, String shaderCode){
+
+        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
+        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
+        int shader = GLES20.glCreateShader(type);
+
+        // add the source code to the shader and compile it
+        GLES20.glShaderSource(shader, shaderCode);
+        GLES20.glCompileShader(shader);
+
+        return shader;
     }
 
 }

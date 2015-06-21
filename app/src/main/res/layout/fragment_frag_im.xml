@@ -21,15 +21,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/txtChat"
-                android:minWidth="300dp"
-                android:textSize="10dp"
+                android:minWidth="250dp"
+                android:textSize="14dp"
                 android:background="#55ffffff"
                 android:textStyle="bold"
                 android:editable="false"
                 android:gravity="bottom"
-                android:maxWidth="300dp"
-                android:minLines="8"
-                android:maxLines="8" />
+                android:maxWidth="250dp"
+                android:minLines="6"
+                android:maxLines="6" />
         </ScrollView>
 
         <LinearLayout
