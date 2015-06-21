@@ -615,8 +615,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Start the gameplay phase of the game.
     void startGame(boolean multiplayer) {
         mMultiplayer = multiplayer;
-        broadcastScore(false);
-
         //Show game related fragments
         loadGame();
         // run the gameTick() method every second to update the game.
@@ -740,76 +738,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     Set<String> mFinishedParticipants = new HashSet<String>();
 
     // Called when we receive a real-time message from the network.
-    // Messages in our game are made up of 2 bytes: the first one is 'F' or 'U'
-    // indicating
-    // whether it's a final or interim score. The second byte is the score.
-    // There is also the
-    // 'S' message, which indicates that the game should start.
+    // Messages should start with a byte indicating how they should be interpreted
+    // e.g. IM starts with M so that the message is sent as an IM
     @Override
     public void onRealTimeMessageReceived(RealTimeMessage rtm) {
         byte[] buf = rtm.getMessageData();
-        String sender = rtm.getSenderParticipantId();
-        Log.d(TAG, "Message received: " + (char) buf[0] + "/" + (int) buf[1]);
-
-        if (buf[0] == 'F' || buf[0] == 'U') {
-            // score update.
-            int existingScore = mParticipantChoice.containsKey(sender) ?
-                    mParticipantChoice.get(sender) : 0;
-            int thisScore = (int) buf[1];
-            if (thisScore > existingScore) {
-                // this check is necessary because packets may arrive out of
-                // order, so we
-                // should only ever consider the highest score we received, as
-                // we know in our
-                // game there is no way to lose points. If there was a way to
-                // lose points,
-                // we'd have to add a "serial number" to the packet.
-                mParticipantChoice.put(sender, thisScore);
-            }
-
-            // if it's a final score, mark this participant as having finished
-            // the game
-            if ((char) buf[0] == 'F') {
-                mFinishedParticipants.add(rtm.getSenderParticipantId());
-            }
-        } else {
-            try {
-                String text = new String(buf, "UTF-8");
-                imfragment.appendChat(rtm.getSenderParticipantId().toString() + ": " + text);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+        switch(buf[0]){
+            case 'M'://IM Message Received
+                buf[0] = ' ';//Clear unwanted character
+                String text = new String(buf);
+                //Format
+                text = getName(rtm.getSenderParticipantId()) + ": " + text + "\n";
+                imfragment.appendChat(text);
         }
-    }
 
-
-    // Broadcast my message to everybody else.
-    void broadcastScore(boolean finalScore) {
-        if (!mMultiplayer)
-            return; // playing single-player mode
-
-        // First byte in message indicates whether it's a final score or not
-        mMsgBuf[0] = (byte) (finalScore ? 'F' : 'U');
-
-        // Second byte is the score.
-        mMsgBuf[1] = (byte) 0;
-
-        // Send to every other participant.
-        for (Participant p : mParticipants) {
-            if (p.getParticipantId().equals(mMyId))
-                continue;
-            if (p.getStatus() != Participant.STATUS_JOINED)
-                continue;
-            if (finalScore) {
-                // final score notification must be sent via reliable message
-                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, mMsgBuf,
-                        mRoomId, p.getParticipantId());
-            } else {
-                // it's an interim score notification, so we can use unreliable
-                Games.RealTimeMultiplayer.sendUnreliableMessage(mGoogleApiClient, mMsgBuf, mRoomId,
-                        p.getParticipantId());
-            }
-        }
     }
 
     // updates the players table
@@ -822,11 +764,30 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     //Broadcast an IM from a player
-    public void updateChat(String message) throws UnsupportedEncodingException {
+    public void updateChat(String message){
+        //Structure message as IM and add it to our own fragment
+        int i = message.getBytes().length+1;
         // Buffer message as bytes and broadcast
-        byte[] bytes = message.getBytes("UTF-8");
-        Games.RealTimeMultiplayer.sendUnreliableMessage(mGoogleApiClient, bytes, mRoomId,
-                mMyId);
+        byte[] bytes = new byte[i];
+        //Label message as IM
+        bytes[0] = 'M';
+        for(int x=1; x<i; x++){
+            bytes[x] = message.getBytes()[x-1];
+        }
+        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        message = getName(mMyId) + ": " + message + "\n";
+        imfragment.appendChat(message);
     }
 
+    public String getName(String id){
+        String name = "No player Found";
+        if (mRoomId != null) {
+            for (Participant p : mParticipants) {
+                if(p.getParticipantId().equals(id)){
+                    name = p.getDisplayName();
+                }
+            }
+        }
+        return name;
+    }
 }

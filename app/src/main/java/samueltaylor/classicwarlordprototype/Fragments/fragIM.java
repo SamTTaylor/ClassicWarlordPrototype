@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,10 +91,11 @@ public class fragIM extends Fragment {
         IM = (TextView) getActivity().findViewById(R.id.txtMessage);
         btnSendIM = (Button) getActivity().findViewById(R.id.btnSend);
         btnSendIM.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            try {
-                ((GameController)getActivity()).updateChat(IM.getText().toString());
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            //Don't send blank messages
+            if (IM.getText().length()>0) {
+                //Ask controller to update everyone's chat and clear the text field
+                ((GameController) getActivity()).updateChat(IM.getText().toString());
+                IM.setText("");
             }
         }});
     }
