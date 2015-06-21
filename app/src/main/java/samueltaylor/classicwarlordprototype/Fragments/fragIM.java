@@ -7,7 +7,14 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.io.UnsupportedEncodingException;
+
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.R;
 
 /**
@@ -29,6 +36,11 @@ public class fragIM extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    //Objects
+    Button btnSendIM;
+    TextView IM;
+    TextView Chat;
 
     /**
      * Use this factory method to create a new instance of
@@ -68,7 +80,28 @@ public class fragIM extends Fragment {
         return inflater.inflate(R.layout.fragment_frag_im, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        //UI calls after fragment has finished loading elements
+
+        //Add buttons and listeners
+        Chat = (TextView) getActivity().findViewById(R.id.txtChat);
+        IM = (TextView) getActivity().findViewById(R.id.txtMessage);
+        btnSendIM = (Button) getActivity().findViewById(R.id.btnSend);
+        btnSendIM.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+            try {
+                ((GameController)getActivity()).updateChat(IM.getText().toString());
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }});
+    }
+
+    public void appendChat(String message){
+        Chat.append(message);
+    }
+
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onIMFragmentInteraction(uri);

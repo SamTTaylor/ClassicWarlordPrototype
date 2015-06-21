@@ -26,7 +26,8 @@
                 android:minLines="8"
                 android:textSize="10dp"
                 android:background="#55ffffff"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:editable="false" />
         </ScrollView>
 
         <LinearLayout
@@ -37,7 +38,7 @@
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText"
+                android:id="@+id/txtMessage"
                 android:background="@color/PanelColor"
                 android:minWidth="220dp"
                 android:maxLines="1"

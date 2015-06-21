@@ -32,6 +32,7 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -771,6 +772,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if ((char) buf[0] == 'F') {
                 mFinishedParticipants.add(rtm.getSenderParticipantId());
             }
+        } else {
+            try {
+                String text = new String(buf, "UTF-8");
+                imfragment.appendChat(rtm.getSenderParticipantId().toString() + ": " + text);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -813,5 +821,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    //Broadcast an IM from a player
+    public void updateChat(String message) throws UnsupportedEncodingException {
+        // Buffer message as bytes and broadcast
+        byte[] bytes = message.getBytes("UTF-8");
+        Games.RealTimeMultiplayer.sendUnreliableMessage(mGoogleApiClient, bytes, mRoomId,
+                mMyId);
+    }
 
 }
