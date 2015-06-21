@@ -10,8 +10,8 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.os.SystemClock;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import samueltaylor.classicwarlordprototype.Shapes.Square;
 import samueltaylor.classicwarlordprototype.Shapes.Triangle;
 
 /**
@@ -167,6 +166,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             mGLView.setEGLContextClientVersion(2);
             mGLView.setPreserveEGLContextOnPause(true);
             mGLView.setRenderer(this);
+            mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not supported.
         }
@@ -175,21 +175,22 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     //Drawing
-
     private Triangle mTriangle;
-    private Square mSquare;
-
+    static float triangle1Coords[] = {
+            // in counterclockwise order:
+            0.0f,  0.622008459f, 0.0f,   // top
+            -0.5f, -0.311004243f, 0.0f,   // bottom left
+            0.5f, -0.311004243f, 0.0f    // bottom right
+    };
 
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(1f, 1f, 1f, 1f);
+        GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
         mSurfaceCreated = true;
 
         // initialize a triangle
-        mTriangle = new Triangle(this);
-        // initialize a square
-        mSquare = new Square();
+        mTriangle = new Triangle(this, triangle1Coords);
     }
 
 
@@ -206,14 +207,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 7);
     }
 
 
     //Redrawing
     @Override
     public void onDrawFrame(GL10 gl) {
-        float[] scratch = new float[16];
+
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
@@ -221,18 +222,9 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        // Create a rotation transformation for the triangle
-        long time = SystemClock.uptimeMillis() % 4000L;
-        float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, angle, 0, 0, -1.0f);
 
-        // Combine the rotation matrix with the projection and camera view
-        // Note that the mMVPMatrix factor *must be first* in order
-        // for the matrix multiplication product to be correct.
-        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
-
-        // Draw triangle
-        mTriangle.draw(scratch);
+        // Draw shape
+        mTriangle.draw(mMVPMatrix);
     }
 
 
@@ -248,5 +240,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         return shader;
     }
+
+
 
 }
