@@ -45,8 +45,9 @@
                     android:layout_height="wrap_content"
                     android:text="Players"
                     android:id="@+id/btnShowPlayers"
-                    android:background="@drawable/rectgamebutton"
-                    android:layout_marginLeft="5dp" />
+                    android:background="@drawable/rectmenubutton"
+                    android:layout_marginLeft="5dp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

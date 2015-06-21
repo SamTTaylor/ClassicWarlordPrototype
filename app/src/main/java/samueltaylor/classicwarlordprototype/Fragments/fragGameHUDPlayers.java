@@ -36,11 +36,11 @@ public class fragGameHUDPlayers extends Fragment {
     //Attributes
     boolean playersshown = false;
     List<String> playernames;
-
+    public String myName;
 
     //Objects
     Button btnShowPlayers;
-
+    Button btnMyColour;
 
     /**
      * Use this factory method to create a new instance of
@@ -119,12 +119,21 @@ public class fragGameHUDPlayers extends Fragment {
     TableLayout tblPlayers;
     public void addPlayer(String name, int index){
         TableRow row;
-        Button btnColour;
+        Button btnPlayerColours;
         TextView txtName;
+
+        btnMyColour =  (Button)getActivity().findViewById(R.id.btnPlayerColour);
         row = (TableRow)tblPlayers.getChildAt(index);
-        btnColour = (Button)row.getChildAt(0);
+        btnPlayerColours = (Button)row.getChildAt(0);
         txtName = (TextView)row.getChildAt(1);
 
+        //Colours not properly assigned, should be assigned in the controller and then represented here
+        if(name == myName){
+            btnMyColour.setBackgroundColor(Color.BLUE);
+            btnPlayerColours.setBackgroundColor(Color.BLUE);
+        } else {
+            btnPlayerColours.setBackgroundColor(Color.RED);
+        }
         txtName.setText(name);
     }
 

@@ -629,7 +629,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }, 1000);
         // update the names on screen
-        updatePeerDisplay();
+        updatePlayers();
     }
 
     // Game tick -- update countdown, check if game ended.
@@ -755,8 +755,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     // updates the players table
-    void updatePeerDisplay() {
+    void updatePlayers() {
         if (mRoomId != null) {
+            hudfragment.myName = getName(mMyId);
             for (Participant p : mParticipants) {
                 hudfragment.addPlayerName(p.getDisplayName());
             }
