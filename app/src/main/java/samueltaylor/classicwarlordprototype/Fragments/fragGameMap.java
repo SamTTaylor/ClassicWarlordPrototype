@@ -148,7 +148,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     //OPENGLES & DRAWING THE MAP
 
-    GLSurfaceView mGLView;
+    MyGLSurfaceView mGLView;
     boolean mSurfaceCreated;
 
     //Check if device supports OpenGLES2
@@ -162,10 +162,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initialise OpenGL
     private void initialize() {
         if (hasGLES20()) {
-            mGLView = new GLSurfaceView(getActivity());
+            mGLView = new MyGLSurfaceView(getActivity());
             mGLView.setEGLContextClientVersion(2);
             mGLView.setPreserveEGLContextOnPause(true);
-            mGLView.setRenderer(this);
+            mGLView.customSetRenderer(this);
             mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not supported.
@@ -191,6 +191,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // initialize a triangle
         mTriangle = new Triangle(this, triangle1Coords);
+        // Draw shape
+        mTriangle.draw(mMVPMatrix);
     }
 
 
@@ -222,9 +224,20 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
+        float[] scratch = new float[16];
 
-        // Draw shape
-        mTriangle.draw(mMVPMatrix);
+        // Create a rotation for the triangle
+        // long time = SystemClock.uptimeMillis() % 4000L;
+        // float angle = 0.090f * ((int) time);
+        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+
+        // Combine the rotation matrix with the projection and camera view
+        // Note that the mMVPMatrix factor *must be first* in order
+        // for the matrix multiplication product to be correct.
+        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+
+        // Draw triangle
+        mTriangle.draw(scratch);
     }
 
 
@@ -241,6 +254,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         return shader;
     }
 
+    public volatile float mAngle;
 
+    public float getAngle() {
+        return mAngle;
+    }
+
+    public void setAngle(float angle) {
+        mAngle = angle;
+    }
 
 }
