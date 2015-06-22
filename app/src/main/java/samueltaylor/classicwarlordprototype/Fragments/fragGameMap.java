@@ -11,7 +11,6 @@ import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -148,7 +147,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     //OPENGLES & DRAWING THE MAP
 
-    MyGLSurfaceView mGLView;
+    GameGLSurfaceView mGLView;
     boolean mSurfaceCreated;
 
     //Check if device supports OpenGLES2
@@ -162,7 +161,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initialise OpenGL
     private void initialize() {
         if (hasGLES20()) {
-            mGLView = new MyGLSurfaceView(getActivity());
+            mGLView = new GameGLSurfaceView(getActivity());
             mGLView.setEGLContextClientVersion(2);
             mGLView.setPreserveEGLContextOnPause(true);
             mGLView.customSetRenderer(this);
