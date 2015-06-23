@@ -26,7 +26,7 @@
     <color name="BlurbColor">#000000</color>
     <color name="SignOutButtonBackground">#e0e0e0</color>
     <color name="SignOutButtonTextColor">#404040</color>
-    <color name="WarlordYellow">#fcdf6a</color>
+    <color name="WarlordYellow">#d2a92b</color>
 
     <dimen name="TitleSize">30sp</dimen>
 

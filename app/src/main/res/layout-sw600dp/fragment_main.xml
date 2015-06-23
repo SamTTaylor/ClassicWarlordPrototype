@@ -1,0 +1,101 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragMain"
+    android:background="@color/WarlordYellow">
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imgTitle"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/titlelarge"
+            android:layout_marginRight="10dp" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:touchscreenBlocksFocus="false"
+            android:gravity="center_vertical"
+            android:paddingLeft="10dp">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnMatch"
+                android:layout_marginTop="20dp"
+                android:text="QUICKMATCH"
+                android:width="200dp"
+                android:textStyle="bold"
+                android:height="50dp"
+                android:elevation="5dp"
+                android:background="@drawable/rectmenubutton" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnInvite"
+                android:layout_marginTop="10dp"
+                android:text="INVITE"
+                android:width="200dp"
+                android:textStyle="bold"
+                android:height="50dp"
+                android:elevation="5dp"
+                android:background="@drawable/rectmenubutton" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnSettings"
+                android:layout_marginTop="10dp"
+                android:text="SETTINGS"
+                android:width="200dp"
+                android:textStyle="bold"
+                android:height="50dp"
+                android:elevation="5dp"
+                android:background="@drawable/rectmenubutton" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnRules"
+                android:layout_marginTop="10dp"
+                android:text="RULES"
+                android:width="200dp"
+                android:textStyle="bold"
+                android:height="50dp"
+                android:elevation="5dp"
+                android:background="@drawable/rectmenubutton"
+                android:layout_marginBottom="20dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="70dp"
+        android:layout_height="35dp"
+        android:id="@+id/btnGoogle"
+        android:layout_gravity="right|top"
+        android:background="@drawable/common_signin_btn_text_dark" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnInvites"
+        android:background="@drawable/rectmenubutton"
+        android:text="Invitations"
+        android:textStyle="bold"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp" />
+
+</FrameLayout>

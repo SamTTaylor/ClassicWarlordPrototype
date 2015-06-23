@@ -195,7 +195,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
             resetGameVars();
             Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
-
+            //show loading fragment
+            showLoadingFragment();
         } else {
             mSignInClicked = true;
             mGoogleApiClient.connect();
