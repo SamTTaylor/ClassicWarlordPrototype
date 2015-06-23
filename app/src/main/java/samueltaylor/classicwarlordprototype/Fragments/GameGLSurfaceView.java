@@ -2,6 +2,8 @@ package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.os.CountDownTimer;
+import android.text.method.Touch;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -25,33 +27,42 @@ public class GameGLSurfaceView extends GLSurfaceView {
 
         // Create an OpenGL ES 2.0 context.
         setEGLContextClientVersion(2);
+
     }
 
+    CountDownTimer mTimer;
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float mPreviousX;
     private float mPreviousY;
-
+    private float mX;
+    private float mY;
+    boolean mMoving = false;
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
-        float x = e.getX();
-        float y = e.getY();
-
+        mX = e.getX();
+        mY = e.getY();
+        startTimer();
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
 
-                float dx = x - mPreviousX;
-                float dy = y - mPreviousY;
+
+                float dx = mX - mPreviousX;
+                float dy = mY - mPreviousY;
+
+                if(dx > 0 || dy > 0){
+                    mMoving=true;
+                }
 
                 // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
+                if (mY > getHeight() / 2) {
                     dx = dx * -1 ;
                 }
 
                 // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
+                if (mX < getWidth() / 2) {
                     dy = dy * -1 ;
                 }
 
@@ -59,11 +70,26 @@ public class GameGLSurfaceView extends GLSurfaceView {
                         mRenderer.getAngle() +
                                 ((dx + dy) * TOUCH_SCALE_FACTOR));  // = 180.0f / 320
                 requestRender();
-        }
+            case MotionEvent.ACTION_UP:
+               mTimer.cancel();
 
-        mPreviousX = x;
-        mPreviousY = y;
+        }
+        mPreviousX = mX;
+        mPreviousY = mY;
         return true;
+    }
+
+    void startTimer(){
+        mTimer =  new CountDownTimer(20, 10) {
+            public void onTick(long millisUntilFinished) {
+                mMoving = false;
+            }
+            public void onFinish() {
+                if(mMoving == false){
+                    mRenderer.clickView(mX, mY);
+                }
+            }
+        }.start();
     }
 
 }

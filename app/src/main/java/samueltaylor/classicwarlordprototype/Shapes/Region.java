@@ -19,14 +19,19 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import android.content.DialogInterface;
 import android.opengl.GLES20;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 
 /**
  * A two-dimensional triangle for use as a drawn object in OpenGL ES 2.0.
  */
-public class Triangle {
+public class Region {
 
     private final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
@@ -58,13 +63,14 @@ public class Triangle {
 
     private int vertexCount;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-
+    static float triangleCoords[] = {};
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Triangle(fragGameMap renderer, float[] triangleCoords) {
+    public Region(fragGameMap renderer, float[] coords) {
+        triangleCoords = coords;
         vertexCount = triangleCoords.length / COORDS_PER_VERTEX;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
@@ -133,6 +139,5 @@ public class Triangle {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
-
 }
 

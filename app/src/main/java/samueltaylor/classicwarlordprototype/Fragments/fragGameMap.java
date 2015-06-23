@@ -10,6 +10,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,7 @@ import android.view.ViewGroup;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import samueltaylor.classicwarlordprototype.Shapes.Triangle;
+import samueltaylor.classicwarlordprototype.Shapes.Region;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -174,12 +175,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     //Drawing
-    private Triangle mTriangle;
-    static float triangle1Coords[] = {
+    private Region mRegion;
+    static float regionCoords[] = {
             // in counterclockwise order:
-            0.0f,  0.622008459f, 0.0f,   // top
-            -0.5f, -0.311004243f, 0.0f,   // bottom left
-            0.5f, -0.311004243f, 0.0f    // bottom right
+            -0.5f,  0.5f, 0.0f,   // top left
+            -0.5f, -0.5f, 0.0f,   // bottom left
+            0.5f, -0.5f, 0.0f,   // bottom right
+
+            //x      y     z
     };
 
     //Initial drawing
@@ -189,9 +192,9 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         mSurfaceCreated = true;
 
         // initialize a triangle
-        mTriangle = new Triangle(this, triangle1Coords);
+        mRegion = new Region(this, regionCoords);
         // Draw shape
-        mTriangle.draw(mMVPMatrix);
+        mRegion.draw(mMVPMatrix);
     }
 
 
@@ -217,6 +220,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public void onDrawFrame(GL10 gl) {
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
@@ -236,7 +240,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
         // Draw triangle
-        mTriangle.draw(scratch);
+        mRegion.draw(scratch);
     }
 
 
@@ -263,4 +267,16 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         mAngle = angle;
     }
 
+    //Click has been triggered at the supplied points
+    public void clickView(float x, float y){
+        String sx = String.valueOf(x);
+        String sy = String.valueOf(y);
+        Log.d("Tag", sx + " : " + sy);
+        mGLView.getWidth();
+        mGLView.getHeight();
+    }
+
+    void checkCollision(Region t, float x, float y){
+
+    }
 }
