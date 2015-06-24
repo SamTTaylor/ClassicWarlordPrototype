@@ -210,7 +210,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 7);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 10);
     }
 
     //Redrawing
@@ -220,7 +220,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, mZoom, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
                                                   //x   y   z
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
@@ -251,11 +251,24 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         mMoveY = mMoveY + y;
     }
 
+    float mZoom = -3;
+    float mSensitivity = 0.2f;
+    public void incrementZoom(boolean direction){
+        if (mZoom <=-3 && direction == false){
+            //in
+            mZoom+=mSensitivity;
+        }
+        if (mZoom >= -9.5 && direction == true){
+            //out
+            mZoom-=mSensitivity;
+        }
+    }
+
     //Click has been triggered at the supplied points
     public void clickView(float x, float y){
         String sx = String.valueOf(x);
         String sy = String.valueOf(y);
-        Log.d("Tag", sx + " : " + sy);
+
         mGLView.getWidth();
         mGLView.getHeight();
 
