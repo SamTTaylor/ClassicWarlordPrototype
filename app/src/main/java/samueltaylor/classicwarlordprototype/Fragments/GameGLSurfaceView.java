@@ -31,7 +31,6 @@ public class GameGLSurfaceView extends GLSurfaceView {
     }
 
     CountDownTimer mTimer;
-    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
     private float mPreviousX;
     private float mPreviousY;
     private float mX;
@@ -48,7 +47,6 @@ public class GameGLSurfaceView extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
 
-
                 float dx = mX - mPreviousX;
                 float dy = mY - mPreviousY;
 
@@ -56,19 +54,8 @@ public class GameGLSurfaceView extends GLSurfaceView {
                     mMoving=true;
                 }
 
-                // reverse direction of rotation above the mid-line
-                if (mY > getHeight() / 2) {
-                    dx = dx * -1 ;
-                }
-
-                // reverse direction of rotation to left of the mid-line
-                if (mX < getWidth() / 2) {
-                    dy = dy * -1 ;
-                }
-
-                mRenderer.setAngle(
-                        mRenderer.getAngle() +
-                                ((dx + dy) * TOUCH_SCALE_FACTOR));  // = 180.0f / 320
+                mRenderer.setMovement(
+                        dx/100, dy/100);
                 requestRender();
             case MotionEvent.ACTION_UP:
                mTimer.cancel();

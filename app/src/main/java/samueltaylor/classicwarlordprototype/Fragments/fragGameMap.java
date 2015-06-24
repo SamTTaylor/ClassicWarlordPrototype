@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.net.Uri;
+import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -202,18 +203,15 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
-    private float[] mRotationMatrix = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-
         float ratio = (float) width / height;
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
         Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 7);
     }
-
 
     //Redrawing
     @Override
@@ -222,25 +220,13 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
+                                                  //x   y   z
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        float[] scratch = new float[16];
-
-        // Create a rotation for the triangle
-        // long time = SystemClock.uptimeMillis() % 4000L;
-        // float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
-
-        // Combine the rotation matrix with the projection and camera view
-        // Note that the mMVPMatrix factor *must be first* in order
-        // for the matrix multiplication product to be correct.
-        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
-
-        // Draw triangle
-        mRegion.draw(scratch);
+        // Draw shape
+        mRegion.draw(mMVPMatrix);
     }
 
 
@@ -257,14 +243,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         return shader;
     }
 
-    public volatile float mAngle;
+    public float mMoveX;
+    public float mMoveY;
 
-    public float getAngle() {
-        return mAngle;
-    }
-
-    public void setAngle(float angle) {
-        mAngle = angle;
+    public void setMovement(float x, float y) {
+        mMoveX = mMoveX + x;
+        mMoveY = mMoveY + y;
     }
 
     //Click has been triggered at the supplied points
@@ -274,6 +258,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Log.d("Tag", sx + " : " + sy);
         mGLView.getWidth();
         mGLView.getHeight();
+
     }
 
     void checkCollision(Region t, float x, float y){

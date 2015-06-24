@@ -18,6 +18,7 @@ package samueltaylor.classicwarlordprototype.Shapes;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import android.content.DialogInterface;
 import android.opengl.GLES20;
@@ -52,39 +53,44 @@ public class Region {
                     "  gl_FragColor = vColor;" +
                     "}";
 
-    private final FloatBuffer vertexBuffer;
+    private FloatBuffer vertexBuffer;
+    private ShortBuffer drawListBuffer;
     private final int mProgram;
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
-
+    private short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
 
-    private int vertexCount;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-    static float triangleCoords[] = {};
+    static float regionCoords[] = {};
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
-
+    int vertexCount;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Region(fragGameMap renderer, float[] coords) {
-        triangleCoords = coords;
-        vertexCount = triangleCoords.length / COORDS_PER_VERTEX;
+        regionCoords = coords;
+        vertexCount = regionCoords.length / COORDS_PER_VERTEX;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
-                // (number of coordinate values * 4 bytes per float)
-                triangleCoords.length * 4);
-        // use the device hardware's native byte order
+                // (# of coordinate values * 4 bytes per float)
+                regionCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
-
-        // create a floating point buffer from the ByteBuffer
         vertexBuffer = bb.asFloatBuffer();
-        // add the coordinates to the FloatBuffer
-        vertexBuffer.put(triangleCoords);
-        // set the buffer to read the first coordinate
+        vertexBuffer.put(regionCoords);
         vertexBuffer.position(0);
+
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 2 bytes per short)
+                drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
+
 
         // prepare shaders and OpenGL program
         int vertexShader = renderer.loadShader(
@@ -92,11 +98,11 @@ public class Region {
         int fragmentShader = renderer.loadShader(
                 GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
+
         mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
-
     }
 
     /**
