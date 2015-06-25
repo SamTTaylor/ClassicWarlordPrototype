@@ -10,16 +10,27 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import samueltaylor.classicwarlordprototype.OpenGL.GameGLSurfaceView;
+import samueltaylor.classicwarlordprototype.R;
 import samueltaylor.classicwarlordprototype.Shapes.Region;
+import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
 public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
@@ -132,6 +143,9 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             mGLView.setPreserveEGLContextOnPause(true);
             mGLView.customSetRenderer(this);
             mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
+            //Get world from XML
+
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not supported.
         }
@@ -140,25 +154,49 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     //Drawing
-    private Region mRegion;
-    static float regionCoords[] = {
-            -0.5f,  0.5f, 0.0f,   // top left
-            -0.5f, -0.5f, 0.0f,   // bottom left
-            0.5f, -0.5f, 0.0f,    // bottom right
-            0.5f,  0.5f, 0.0f     // top right
-            //x      y     z
-    };
+    Region[] regions;
 
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
         mSurfaceCreated = true;
-        // initialize a region
-        mRegion = new Region(this, regionCoords);
-        // Draw shape
-        mRegion.draw(mMVPMatrix);
+        // initialiseWorld();
+        initialiseWorld();
+        //Draw world
+        for (Region r : regions) {
+            r.draw(mMVPMatrix);
+        }
     }
+    static float regionCoords[];
+
+    SVGtoRegionParser mParser;
+    public void initialiseWorld(){
+        List<SVGtoRegionParser.Region> world;
+        mParser = new SVGtoRegionParser();
+        InputStream inputStream;
+        try{
+            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
+            world = mParser.parse(inputStream);
+            int i = 0;
+            regions = new Region[world.size()];
+            for(SVGtoRegionParser.Region r : world){
+                regionCoords = r.path;
+                for(float f : regionCoords){
+                    Log.d("Tag",String.valueOf(f));
+                }
+                regions[i] = new Region(this, regionCoords);
+                i++;
+            }
+        } catch (FileNotFoundException e){
+            Log.e("FileNotFoundException", e.toString());
+        } catch (XmlPullParserException e) {
+            Log.e("XmlPullParserException", e.toString());
+        } catch (IOException e) {
+            Log.e("IOException", e.toString());
+        }
+    }
+
 
 
     //Manipulation of drawing
@@ -183,8 +221,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, mZoom, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
-        // Draw shape
-        mRegion.draw(mMVPMatrix);
+
+        for(Region r : regions){
+            r.draw(mMVPMatrix);
+        }
     }
 
 

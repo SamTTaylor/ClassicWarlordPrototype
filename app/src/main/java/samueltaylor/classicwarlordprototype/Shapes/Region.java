@@ -55,7 +55,7 @@ public class Region {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
-    private short drawOrder[] = { 0, 1, 2, 2, 3, 0}; // order to draw vertices
+    private short drawOrder[];
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
 
@@ -69,7 +69,12 @@ public class Region {
     public Region(fragGameMap renderer, float[] coords) {
         regionCoords = coords;
         vertexCount = regionCoords.length / COORDS_PER_VERTEX;
-
+        drawOrder = new short[vertexCount];
+        int i=0;
+        for(short s : drawOrder){
+            drawOrder[i] = (short) i;
+            i++;
+        }
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
