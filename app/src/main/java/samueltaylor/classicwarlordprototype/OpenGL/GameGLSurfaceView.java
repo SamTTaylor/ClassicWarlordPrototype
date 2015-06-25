@@ -1,14 +1,12 @@
-package samueltaylor.classicwarlordprototype.Fragments;
+package samueltaylor.classicwarlordprototype.OpenGL;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.os.CountDownTimer;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
-import android.text.method.Touch;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
+
+import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 
 /**
  * A view container where OpenGL ES graphics can be drawn on screen.

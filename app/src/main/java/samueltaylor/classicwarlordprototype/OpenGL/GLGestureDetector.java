@@ -1,4 +1,4 @@
-package samueltaylor.classicwarlordprototype.Fragments;
+package samueltaylor.classicwarlordprototype.OpenGL;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;

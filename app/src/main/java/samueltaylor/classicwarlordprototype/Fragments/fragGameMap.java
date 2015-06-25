@@ -5,13 +5,11 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.net.Uri;
-import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +18,7 @@ import android.view.ViewGroup;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import samueltaylor.classicwarlordprototype.OpenGL.GameGLSurfaceView;
 import samueltaylor.classicwarlordprototype.Shapes.Region;
 
 /**
