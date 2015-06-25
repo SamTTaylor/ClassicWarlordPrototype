@@ -144,8 +144,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             mGLView.customSetRenderer(this);
             mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-            //Get world from XML
-
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not supported.
         }
@@ -160,6 +158,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
+        GLES20.glLineWidth(5.0f);
         mSurfaceCreated = true;
         // initialiseWorld();
         initialiseWorld();
@@ -183,9 +182,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             regions = new Region[world.size()];
             for(SVGtoRegionParser.Region r : world){
                 regionCoords = r.path;
-                for(float f : regionCoords){
-                    Log.d("Tag",String.valueOf(f));
-                }
                 regions[i] = new Region(this, regionCoords);
                 i++;
             }
@@ -211,7 +207,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 19);
+        Matrix.frustumM(mProjectionMatrix, 0, ratio, -ratio, 1, -1, 2, 19);
     }
 
     //Redrawing
@@ -222,6 +218,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, mZoom, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+
 
         for(Region r : regions){
             r.draw(mMVPMatrix);
@@ -246,8 +243,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveY;
 
     public void setMovement(float x, float y) {
-        mMoveX = mMoveX + x*2;
-        mMoveY = mMoveY + y*2;
+        mMoveX = mMoveX - x*2;
+        mMoveY = mMoveY - y*2;
     }
 
     float mZoom = -18.5f;

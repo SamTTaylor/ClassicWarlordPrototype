@@ -62,6 +62,7 @@ public class Region {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
+    float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     int vertexCount;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -103,6 +104,7 @@ public class Region {
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
+
     }
 
     /**
@@ -141,7 +143,9 @@ public class Region {
 
         // Draw the region
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
-
+        //Draw outline
+        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
+        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
