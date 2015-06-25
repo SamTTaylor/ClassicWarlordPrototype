@@ -19,13 +19,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-
-import android.content.DialogInterface;
 import android.opengl.GLES20;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.Button;
+
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 
