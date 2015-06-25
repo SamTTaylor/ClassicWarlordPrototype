@@ -168,6 +168,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             r.draw(mMVPMatrix);
         }
     }
+
     static float regionCoords[];
 
     SVGtoRegionParser mParser;
@@ -210,7 +211,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 10);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 2, 19);
     }
 
     //Redrawing
@@ -245,18 +246,18 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveY;
 
     public void setMovement(float x, float y) {
-        mMoveX = mMoveX + x;
-        mMoveY = mMoveY + y;
+        mMoveX = mMoveX + x*2;
+        mMoveY = mMoveY + y*2;
     }
 
-    float mZoom = -3;
-    float mSensitivity = 0.2f;
+    float mZoom = -18.5f;
+    float mSensitivity = 0.5f;
     public void incrementZoom(boolean direction){
-        if (mZoom <=-3 && direction == false){
+        if (mZoom <=-4 && direction == false){
             //in
             mZoom+=mSensitivity;
         }
-        if (mZoom >= -9.5 && direction == true){
+        if (mZoom >= -15.5 && direction == true){
             //out
             mZoom-=mSensitivity;
         }

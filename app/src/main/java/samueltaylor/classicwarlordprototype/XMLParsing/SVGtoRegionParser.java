@@ -1,6 +1,5 @@
 package samueltaylor.classicwarlordprototype.XMLParsing;
 
-import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -49,12 +48,10 @@ public class SVGtoRegionParser {
     }
 
     public static class Region {
-        public final float[] position;
         public final float[] path;
         public final String name;
 
-        private Region(float[] position, float[] path, String name) {
-            this.position = position;
+        private Region(float[] path, String name) {
             this.path = path;
             this.name = name;
         }
@@ -64,7 +61,6 @@ public class SVGtoRegionParser {
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     private Region readRegion(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "region");
-        float[] position = null;
         float[] path = null;
         String regionname = null;
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -72,9 +68,7 @@ public class SVGtoRegionParser {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("position")) {
-                position = readPosition(parser);
-            } else if (name.equals("path")) {
+            if (name.equals("path")) {
                 path = readPath(parser);
             } else if (name.equals("name")) {
                 regionname = readName(parser);
@@ -82,25 +76,9 @@ public class SVGtoRegionParser {
                 skip(parser);
             }
         }
-        return new Region(position, path, regionname);
+        return new Region(path, regionname);
     }
 
-    // Processes position tags in the feed.
-    private float[] readPosition(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "position");
-        String innertext = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "position");
-        String[] positionsstring = innertext.split("[,]");
-        float[] position = new float[positionsstring.length];
-        int i = 0;
-        for(String s : positionsstring){
-            float res = Float.parseFloat(s);
-            position[i] = res;
-            i++;
-        }
-
-        return position;
-    }
     // Processes coordinate tags in the feed.
     private float[] readPath(XmlPullParser parser) throws IOException, XmlPullParserException {
         //Paths are taken directly from Inkscape SVGs
@@ -110,31 +88,32 @@ public class SVGtoRegionParser {
         String innertext = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "path");
         //Split the file into points "x,y"
-        String[] pathsstring = innertext.split("[ ]");
-
+        String[] pathsstring = innertext.split("C|L");
         List<String> stringcoordinates = new ArrayList<>();
+        float res = 0.0f;
         int i = 0;
-        int coordcounter = 0;
-        float res;
         for(String s : pathsstring){
-            if(coordcounter == 2) {//Only add coordinates for points for the moment
-                String[] coordstring = s.split(",");
-                for(String cs : coordstring){
-                    stringcoordinates.add(cs);
-                    i++;
-                }
-                //Add Z (default 0.0f)
-                res = 0.0f;
-                stringcoordinates.add(String.valueOf(res));
+            if(i==0){//skip first value
                 i++;
-                coordcounter = -1;
+            } else{
+                String[] coordstring = s.split(",");
+                if(coordstring.length==6){//Only take last 2 coords of curves for now
+                    stringcoordinates.add(coordstring[4]);
+                    stringcoordinates.add(coordstring[5]);
+                } else {
+                    stringcoordinates.add(coordstring[0]);
+                    stringcoordinates.add(coordstring[1]);
+                }
+
+                //Add Z (default 0.0f)
+                stringcoordinates.add(String.valueOf(res));
             }
-            coordcounter++;
         }
         float[] coordinates = new float[stringcoordinates.size()];
         i=0;
         for(String s : stringcoordinates){
-                coordinates[i] = Float.parseFloat(stringcoordinates.get(i))/100;
+            coordinates[i] = Float.parseFloat(stringcoordinates.get(i));
+            coordinates[i]/=300;
             i++;
         }
         return coordinates;
