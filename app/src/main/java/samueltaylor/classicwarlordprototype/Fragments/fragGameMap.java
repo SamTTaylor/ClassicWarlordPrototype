@@ -142,11 +142,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Drawing
     private Region mRegion;
     static float regionCoords[] = {
-            // in counterclockwise order:
             -0.5f,  0.5f, 0.0f,   // top left
             -0.5f, -0.5f, 0.0f,   // bottom left
-            0.5f, -0.5f, 0.0f,   // bottom right
-
+            0.5f, -0.5f, 0.0f,    // bottom right
+            0.5f,  0.5f, 0.0f     // top right
             //x      y     z
     };
 
@@ -155,7 +154,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
         mSurfaceCreated = true;
-        // initialize a triangle
+        // initialize a region
         mRegion = new Region(this, regionCoords);
         // Draw shape
         mRegion.draw(mMVPMatrix);
@@ -179,15 +178,11 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Redrawing
     @Override
     public void onDrawFrame(GL10 gl) {
-
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, mZoom, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
-                                                  //x   y   z
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
-
         // Draw shape
         mRegion.draw(mMVPMatrix);
     }

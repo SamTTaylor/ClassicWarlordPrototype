@@ -20,6 +20,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import android.opengl.GLES20;
+import android.util.Log;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
@@ -54,7 +55,7 @@ public class Region {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
-    private short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+    private short drawOrder[] = { 0, 1, 2, 2, 3, 0}; // order to draw vertices
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
 
@@ -68,6 +69,7 @@ public class Region {
     public Region(fragGameMap renderer, float[] coords) {
         regionCoords = coords;
         vertexCount = regionCoords.length / COORDS_PER_VERTEX;
+
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -86,13 +88,11 @@ public class Region {
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
 
-
         // prepare shaders and OpenGL program
         int vertexShader = renderer.loadShader(
                 GLES20.GL_VERTEX_SHADER, vertexShaderCode);
         int fragmentShader = renderer.loadShader(
                 GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
-
 
         mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
@@ -113,10 +113,10 @@ public class Region {
         // get handle to vertex shader's vPosition member
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 
-        // Enable a handle to the triangle vertices
+        // Enable a handle to the region vertices
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-        // Prepare the triangle coordinate data
+        // Prepare the region coordinate data
         GLES20.glVertexAttribPointer(
                 mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
@@ -125,7 +125,7 @@ public class Region {
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
-        // Set color for drawing the triangle
+        // Set color for drawing the region
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
         // get handle to shape's transformation matrix
@@ -134,8 +134,8 @@ public class Region {
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
-        // Draw the triangle
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
+        // Draw the region
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
