@@ -113,7 +113,7 @@ public class SVGtoRegionParser {
         i=0;
         for(String s : stringcoordinates){
             coordinates[i] = Float.parseFloat(stringcoordinates.get(i));
-            coordinates[i]/=300;
+            coordinates[i]/=1000;
             i++;
         }
         return coordinates;

@@ -207,15 +207,17 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.frustumM(mProjectionMatrix, 0, ratio, -ratio, 1, -1, 2, 19);
+        Matrix.orthoM(mProjectionMatrix, 0, ratio, -ratio, 1, -1, -1, 30);
     }
 
     //Redrawing
     @Override
     public void onDrawFrame(GL10 gl) {
+        float ratio = (float) mGLView.getWidth() / mGLView.getHeight();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, mZoom, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 29, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
+        Matrix.orthoM(mProjectionMatrix, 0, ratio * mZoom, -ratio * mZoom, -1 * mZoom, 1 * mZoom, -1, 30);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
@@ -247,14 +249,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         mMoveY = mMoveY - y*2;
     }
 
-    float mZoom = -18.5f;
-    float mSensitivity = 0.5f;
+    float mZoom = -4.5f;
+    float mSensitivity = 0.3f;
     public void incrementZoom(boolean direction){
-        if (mZoom <=-4 && direction == false){
+        if (mZoom <=-1.1 && direction == false){
             //in
             mZoom+=mSensitivity;
         }
-        if (mZoom >= -15.5 && direction == true){
+        if (mZoom >= -4.5 && direction == true){
             //out
             mZoom-=mSensitivity;
         }
