@@ -50,10 +50,11 @@ public class SVGtoRegionParser {
     public static class Region {
         public final float[] path;
         public final String name;
-
-        private Region(float[] path, String name) {
+        public final String type;
+        private Region(float[] path, String name, String type) {
             this.path = path;
             this.name = name;
+            this.type = type;
         }
     }
 
@@ -63,6 +64,7 @@ public class SVGtoRegionParser {
         parser.require(XmlPullParser.START_TAG, ns, "region");
         float[] path = null;
         String regionname = null;
+        String regiontype = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -72,11 +74,13 @@ public class SVGtoRegionParser {
                 path = readPath(parser);
             } else if (name.equals("name")) {
                 regionname = readName(parser);
-            } else {
+            } else if (name.equals("type")) {
+                regiontype = readType(parser); }
+            else {
                 skip(parser);
             }
         }
-        return new Region(path, regionname);
+        return new Region(path, regionname, regiontype);
     }
 
     // Processes coordinate tags in the feed.
@@ -113,7 +117,7 @@ public class SVGtoRegionParser {
         i=0;
         for(String s : stringcoordinates){
             coordinates[i] = Float.parseFloat(stringcoordinates.get(i));
-            coordinates[i]/=1000;
+            coordinates[i]/=200;
             i++;
         }
         return coordinates;
@@ -124,6 +128,14 @@ public class SVGtoRegionParser {
         parser.require(XmlPullParser.START_TAG, ns, "name");
         String innertext = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "name");
+        return innertext;
+    }
+
+    // Processes position tags in the feed.
+    private String readType(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, "type");
+        String innertext = readText(parser);
+        parser.require(XmlPullParser.END_TAG, ns, "type");
         return innertext;
     }
 

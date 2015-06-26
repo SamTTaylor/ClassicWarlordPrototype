@@ -61,15 +61,16 @@ public class Region {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
-    float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
+    float mColor[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     int vertexCount;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Region(fragGameMap renderer, float[] coords) {
+    public Region(fragGameMap renderer, float[] coords, float[] color) {
         regionCoords = coords;
         vertexCount = regionCoords.length / COORDS_PER_VERTEX;
+        mColor = color;
         drawOrder = new short[vertexCount];
         int i=0;
         for(short s : drawOrder){
@@ -133,7 +134,7 @@ public class Region {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the region
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");

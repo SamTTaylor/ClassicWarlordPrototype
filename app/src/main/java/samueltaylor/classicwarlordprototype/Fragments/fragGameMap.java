@@ -158,7 +158,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
-        GLES20.glLineWidth(5.0f);
         mSurfaceCreated = true;
         // initialiseWorld();
         initialiseWorld();
@@ -180,9 +179,17 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             world = mParser.parse(inputStream);
             int i = 0;
             regions = new Region[world.size()];
+            float[] color = null;
             for(SVGtoRegionParser.Region r : world){
                 regionCoords = r.path;
-                regions[i] = new Region(this, regionCoords);
+                switch (r.type){
+                    case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 0.0f }; break;
+                    case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 0.0f }; break;
+                    case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
+                    case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
+                    case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 0.0f }; break;
+                }
+                regions[i] = new Region(this, regionCoords, color);
                 i++;
             }
         } catch (FileNotFoundException e){
@@ -198,16 +205,17 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     //Manipulation of drawing
     private final float[] mMVPMatrix = new float[16];
-    private final float[] mProjectionMatrix = new float[16];
+    private final float[] mOrthographicMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
-        float ratio = (float) width / height;
+        GLES20.glViewport(10, 0, width, height);
+        float ratio = (float)width / height;
 
         // this projection matrix is applied to object coordinates
         // in the onDrawFrame() method
-        Matrix.orthoM(mProjectionMatrix, 0, ratio, -ratio, 1, -1, -1, 30);
+        Matrix.orthoM(mOrthographicMatrix, 0, ratio, -ratio, 1, -1, 3, 30);
+
     }
 
     //Redrawing
@@ -216,13 +224,16 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         float ratio = (float) mGLView.getWidth() / mGLView.getHeight();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 29, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
-        Matrix.orthoM(mProjectionMatrix, 0, ratio * mZoom, -ratio * mZoom, -1 * mZoom, 1 * mZoom, -1, 30);
+
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 25, mMoveX, mMoveY, 0f, 0f, 1.0f, 0.0f);
+        Matrix.orthoM(mOrthographicMatrix, 0, ratio * mZoom, -ratio * mZoom, -1 * mZoom, 1 * mZoom, 3, 30);
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
+        Matrix.translateM(mMVPMatrix, 0, -6.0f, -4.5f, 0.0f);
 
-
+        //Draw all the regions loaded from the world
         for(Region r : regions){
+            GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
     }
@@ -250,26 +261,25 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     float mZoom = -4.5f;
+    float mOutline = 3.0f;
     float mSensitivity = 0.3f;
     public void incrementZoom(boolean direction){
         if (mZoom <=-1.1 && direction == false){
             //in
             mZoom+=mSensitivity;
+            mOutline+=mSensitivity;
         }
-        if (mZoom >= -4.5 && direction == true){
+        if (mZoom >= -4.4 && direction == true){
             //out
             mZoom-=mSensitivity;
+            mOutline-=mSensitivity;
         }
     }
 
     //Click has been triggered at the supplied points
     public void clickView(float x, float y){
-        String sx = String.valueOf(x);
-        String sy = String.valueOf(y);
-
         mGLView.getWidth();
         mGLView.getHeight();
-
     }
 
     void checkCollision(Region t, float x, float y){
