@@ -9,7 +9,9 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="5dp">
 
         <EditText
             android:layout_width="wrap_content"
@@ -17,7 +19,7 @@
             android:id="@+id/txtChat"
             android:minWidth="500dp"
             android:textSize="18dp"
-            android:background="#55ffffff"
+            android:background="#ccffffff"
             android:textStyle="bold"
             android:gravity="bottom"
             android:minLines="8"
@@ -48,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="Send"
                 android:id="@+id/btnSend"
-                android:background="#55ffffff"
+                android:background="#ccffffff"
                 android:height="35dp"
                 android:layout_weight="4" />
         </LinearLayout>

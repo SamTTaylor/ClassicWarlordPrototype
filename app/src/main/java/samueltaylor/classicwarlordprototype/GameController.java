@@ -35,6 +35,12 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +55,7 @@ import samueltaylor.classicwarlordprototype.Fragments.fragIM;
 import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
 import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
 import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
 /**
@@ -673,9 +680,24 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.replace(R.id.activity_main_layout, mainfragment, "mainmenu");
         transaction.commit();
     }
-
+    SVGtoRegionParser mParser;
     void loadGame(){
+        //Load game world from xml and pass it to the game map
+        List<SVGtoRegionParser.Region> world = null;
+        mParser = new SVGtoRegionParser();
+        InputStream inputStream;
+        try{
+            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
+            world = mParser.parse(inputStream);
+        } catch (FileNotFoundException e){
+            Log.e("FileNotFoundException", e.toString());
+        } catch (XmlPullParserException e) {
+            Log.e("XmlPullParserException", e.toString());
+        } catch (IOException e) {
+            Log.e("IOException", e.toString());
+        }
         mapfragment = new fragGameMap();
+        mapfragment.mWorld = world;
         imfragment = new fragIM();
         hudfragment = new fragGameHUDPlayers();
         FragmentManager manager = getFragmentManager();

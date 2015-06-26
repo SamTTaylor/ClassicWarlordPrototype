@@ -10,25 +10,16 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import samueltaylor.classicwarlordprototype.OpenGL.GameGLSurfaceView;
-import samueltaylor.classicwarlordprototype.R;
 import samueltaylor.classicwarlordprototype.Shapes.Region;
 import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
@@ -36,9 +27,7 @@ import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     private OnFragmentInteractionListener mListener;
 
-    public fragGameMap() {
-        // Required empty public constructor
-    }
+    public fragGameMap() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -168,36 +157,22 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     static float regionCoords[];
-
-    SVGtoRegionParser mParser;
+    public List<SVGtoRegionParser.Region> mWorld;
     public void initialiseWorld(){
-        List<SVGtoRegionParser.Region> world;
-        mParser = new SVGtoRegionParser();
-        InputStream inputStream;
-        try{
-            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
-            world = mParser.parse(inputStream);
-            int i = 0;
-            regions = new Region[world.size()];
-            float[] color = null;
-            for(SVGtoRegionParser.Region r : world){
-                regionCoords = r.path;
-                switch (r.type){
-                    case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 0.0f }; break;
-                    case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 0.0f }; break;
-                    case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
-                    case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
-                    case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 0.0f }; break;
-                }
-                regions[i] = new Region(this, regionCoords, color);
-                i++;
+        int i = 0;
+        regions = new Region[mWorld.size()];
+        float[] color = null;
+        for(SVGtoRegionParser.Region r : mWorld){
+            regionCoords = r.path;
+            switch (r.type){
+                case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 0.0f }; break;
+                case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 0.0f }; break;
+                case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
+                case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
+                case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 0.0f }; break;
             }
-        } catch (FileNotFoundException e){
-            Log.e("FileNotFoundException", e.toString());
-        } catch (XmlPullParserException e) {
-            Log.e("XmlPullParserException", e.toString());
-        } catch (IOException e) {
-            Log.e("IOException", e.toString());
+            regions[i] = new Region(this, regionCoords, color);
+            i++;
         }
     }
 
