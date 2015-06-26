@@ -184,7 +184,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     private final float[] mViewMatrix = new float[16];
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        GLES20.glViewport(10, 0, width, height);
+        GLES20.glViewport(0, 0, width, height);
         float ratio = (float)width / height;
 
         // this projection matrix is applied to object coordinates

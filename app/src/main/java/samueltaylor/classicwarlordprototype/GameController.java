@@ -230,7 +230,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 if (responseCode == Activity.RESULT_OK) {
                     // ready to start playing
                     Log.d(TAG, "Starting game (waiting room returned OK).");
-                    startGame(true);
+                    try {
+                        startGame(true);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 } else if (responseCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
                     // player indicated that they want to leave the room
                     leaveRoom();
@@ -625,7 +629,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     // Start the gameplay phase of the game.
-    void startGame(boolean multiplayer) {
+    void startGame(boolean multiplayer) throws InterruptedException {
         mMultiplayer = multiplayer;
         //Show game related fragments
         loadGame();
@@ -681,7 +685,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
     SVGtoRegionParser mParser;
-    void loadGame(){
+    void loadGame() throws InterruptedException {
+        mapfragment = new fragGameMap();
+        loadWorld();
+        imfragment = new fragIM();
+        hudfragment = new fragGameHUDPlayers();
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction=manager.beginTransaction();
+        transaction.replace(R.id.activity_main_layout, mapfragment, "game");
+        transaction.commit();
+        transaction=manager.beginTransaction();
+        transaction.add(R.id.activity_main_layout, hudfragment, "hud");
+        transaction.add(R.id.activity_main_layout, imfragment, "im");
+        transaction.commit();
+    }
+
+    void loadWorld(){
         //Load game world from xml and pass it to the game map
         List<SVGtoRegionParser.Region> world = null;
         mParser = new SVGtoRegionParser();
@@ -696,20 +715,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } catch (IOException e) {
             Log.e("IOException", e.toString());
         }
-        mapfragment = new fragGameMap();
         mapfragment.mWorld = world;
-        imfragment = new fragIM();
-        hudfragment = new fragGameHUDPlayers();
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction=manager.beginTransaction();
-        transaction.replace(R.id.activity_main_layout, mapfragment, "game");
-        transaction.commit();
-        transaction=manager.beginTransaction();
-        transaction.add(R.id.activity_main_layout, hudfragment, "hud");
-        transaction.add(R.id.activity_main_layout, imfragment, "im");
-        transaction.commit();
     }
-
     void showLoadingFragment(){
         loadingfragment = new fragLoading();
         FragmentManager manager = getFragmentManager();

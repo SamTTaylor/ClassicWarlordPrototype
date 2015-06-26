@@ -1,5 +1,6 @@
 package samueltaylor.classicwarlordprototype.XMLParsing;
 
+import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -29,8 +30,7 @@ public class SVGtoRegionParser {
     }
 
     private List readWorld(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List regions = new ArrayList();
-
+        List<Region> regions = new ArrayList();
         parser.require(XmlPullParser.START_TAG, ns, "world");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -43,6 +43,7 @@ public class SVGtoRegionParser {
             } else {
                 skip(parser);
             }
+
         }
         return regions;
     }
@@ -82,7 +83,7 @@ public class SVGtoRegionParser {
         }
         return new Region(path, regionname, regiontype);
     }
-
+    float[] coordinates;
     // Processes coordinate tags in the feed.
     private float[] readPath(XmlPullParser parser) throws IOException, XmlPullParserException {
         //Paths are taken directly from Inkscape SVGs
