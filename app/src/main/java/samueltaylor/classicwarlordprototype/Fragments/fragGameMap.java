@@ -146,7 +146,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1f);
         GLES20.glLineWidth(mOutline);
         mSurfaceCreated = true;
         // initialiseWorld();

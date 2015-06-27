@@ -33,7 +33,7 @@ public class SVGtoRegionParser {
 
     private List readWorld(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<Region> regions = new ArrayList();
-        parser.require(XmlPullParser.START_TAG, ns, "world");
+        parser.require(XmlPullParser.START_TAG, ns, "worldsimpli");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -45,7 +45,6 @@ public class SVGtoRegionParser {
             } else {
                 skip(parser);
             }
-
         }
         return regions;
     }
@@ -73,9 +72,9 @@ public class SVGtoRegionParser {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("path")) {
+            if (name.equals("path")){
                 path = readPath(parser);
-            } else if (name.equals("name")) {
+            } else if(name.equals("name")){
                 regionname = readName(parser);
             } else if (name.equals("type")) {
                 regiontype = readType(parser); }
@@ -87,7 +86,6 @@ public class SVGtoRegionParser {
     }
     String[] mPathsstring;
     String[] coordstring;
-    Path path;
     // Processes coordinate tags in the feed.
     private float[] readPath(XmlPullParser parser) throws IOException, XmlPullParserException {
         //Paths are taken directly from Inkscape SVGs
@@ -99,8 +97,6 @@ public class SVGtoRegionParser {
         //Split the file into points "x,y"
         mPathsstring = innertext.split("C|L");
         List<String> stringcoordinates = new ArrayList<>();
-        float res = 0.0f;
-        float[] nextpoint;
         int i = 0;
         for(String s : mPathsstring){
             if(i==0){//skip first value
@@ -108,13 +104,6 @@ public class SVGtoRegionParser {
             } else{
                 coordstring = s.split(",");
                 if(coordstring.length==6){//Curve
-                    //Translate cubic bezier curve into path so specific points can be defined
-                    nextpoint = getNextPoint(i);
-                    path = new Path();
-                    path.moveTo(Float.parseFloat(coordstring[4]), Float.parseFloat(coordstring[5]));
-                    path.cubicTo(Float.parseFloat(coordstring[0]), Float.parseFloat(coordstring[1]), Float.parseFloat(coordstring[2]), Float.parseFloat(coordstring[3]), nextpoint[0], nextpoint[1]);
-                    addPathCurve(stringcoordinates, path);
-
                     stringcoordinates.add(coordstring[4]);
                     stringcoordinates.add(coordstring[5]);
                 } else { //Line
@@ -123,7 +112,7 @@ public class SVGtoRegionParser {
                 }
 
                 //Add Z (default 0.0f)
-                stringcoordinates.add(String.valueOf(res));
+                stringcoordinates.add("0.0f");
                 i++;
             }
         }
@@ -135,49 +124,6 @@ public class SVGtoRegionParser {
             i++;
         }
         return coordinates;
-    }
-
-    private float[] getNextPoint(int currentindex){
-        float[] nextpointcoords = new float[2];
-        if(currentindex+1>=mPathsstring.length){//If this is the final point, curve back to point 0
-            currentindex=0;
-        }
-        String[] coordstring = mPathsstring[currentindex+1].split(",");
-        if(coordstring.length==6){//Curve
-            nextpointcoords[0]=Float.parseFloat(coordstring[4]);
-            nextpointcoords[1]=Float.parseFloat(coordstring[5]);
-        } else { //Line
-            nextpointcoords[0]=Float.parseFloat(coordstring[0]);
-            nextpointcoords[1]=Float.parseFloat(coordstring[1]);
-        }
-        return nextpointcoords;
-    }
-
-    //Extract curve points from path and add them to array
-    private void addPathCurve(List<String> array, Path path){
-        int resolution = 20;
-        Point[] pointArray = new Point[resolution];
-        PathMeasure pm = new PathMeasure(path, false);
-        float length = pm.getLength();
-        float distance = 0f;
-        float speed = length / resolution;
-        int counter = 0;
-        float[] aCoordinates = new float[2];
-
-        while ((distance < length) && (counter < resolution)) {
-            // get point from the path
-            pm.getPosTan(distance, aCoordinates, null);
-            pointArray[counter] = new Point(aCoordinates[0],
-                    aCoordinates[1]);
-            counter++;
-            distance = distance + speed;
-        }
-        for (Point p : pointArray){
-            array.add(String.valueOf(p.getX()));
-            array.add(String.valueOf(p.getY()));
-            array.add("0.0f");//Z
-        }
-
     }
 
     // Processes position tags in the feed.
@@ -225,22 +171,6 @@ public class SVGtoRegionParser {
             }
         }
     }
-}
 
 
-class Point {
-    float x, y;
-
-    public Point(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
 }
