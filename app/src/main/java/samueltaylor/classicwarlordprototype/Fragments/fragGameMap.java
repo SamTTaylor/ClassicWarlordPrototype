@@ -147,6 +147,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.8f, 0.8f, 0.8f, 1f);
+        GLES20.glLineWidth(mOutline);
         mSurfaceCreated = true;
         // initialiseWorld();
         initialiseWorld();
@@ -169,6 +170,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
                 case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 0.0f }; break;
                 case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
                 case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
+                case "light":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
                 case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 0.0f }; break;
             }
             regions[i] = new Region(this, regionCoords, color);
@@ -208,7 +210,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         //Draw all the regions loaded from the world
         for(Region r : regions){
-            GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
     }
@@ -236,18 +237,16 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     float mZoom = -4.5f;
-    float mOutline = 3.0f;
+    float mOutline = 1.0f;
     float mSensitivity = 0.3f;
     public void incrementZoom(boolean direction){
         if (mZoom <=-1.1 && direction == false){
             //in
             mZoom+=mSensitivity;
-            mOutline+=mSensitivity;
         }
         if (mZoom >= -4.4 && direction == true){
             //out
             mZoom-=mSensitivity;
-            mOutline-=mSensitivity;
         }
     }
 
