@@ -146,8 +146,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1f);
-        GLES20.glLineWidth(mOutline);
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1f);
+
         mSurfaceCreated = true;
         // initialiseWorld();
         initialiseWorld();
@@ -210,6 +210,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         //Draw all the regions loaded from the world
         for(Region r : regions){
+            GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
     }
@@ -243,10 +244,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         if (mZoom <=-1.1 && direction == false){
             //in
             mZoom+=mSensitivity;
+            mOutline+=mSensitivity;
         }
         if (mZoom >= -4.4 && direction == true){
             //out
             mZoom-=mSensitivity;
+            mOutline-=mSensitivity;
         }
     }
 

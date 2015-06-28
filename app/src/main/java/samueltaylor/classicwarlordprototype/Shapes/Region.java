@@ -146,8 +146,8 @@ public class Region {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
 
 //        //Draw outline
-//        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
-//        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
+        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
+        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }

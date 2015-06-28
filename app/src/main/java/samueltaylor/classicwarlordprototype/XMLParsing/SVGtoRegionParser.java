@@ -33,7 +33,7 @@ public class SVGtoRegionParser {
 
     private List readWorld(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<Region> regions = new ArrayList();
-        parser.require(XmlPullParser.START_TAG, ns, "worldsimpli");
+        parser.require(XmlPullParser.START_TAG, ns, "world");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -95,7 +95,7 @@ public class SVGtoRegionParser {
         String innertext = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "path");
         //Split the file into points "x,y"
-        mPathsstring = innertext.split("C|L");
+        mPathsstring = innertext.split("M|C|L");
         List<String> stringcoordinates = new ArrayList<>();
         int i = 0;
         for(String s : mPathsstring){
@@ -103,7 +103,7 @@ public class SVGtoRegionParser {
                 i++;
             } else{
                 coordstring = s.split(",");
-                if(coordstring.length==6){//Curve
+                if(coordstring.length==6){//Curve, interpreted as straight line
                     stringcoordinates.add(coordstring[4]);
                     stringcoordinates.add(coordstring[5]);
                 } else { //Line

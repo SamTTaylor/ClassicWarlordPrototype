@@ -702,11 +702,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     void loadWorld(){
         //Load game world from xml and pass it to the game map
-        List<SVGtoRegionParser.Region> world = null;
+        List<SVGtoRegionParser.Region> world = new ArrayList<>();
         mParser = new SVGtoRegionParser();
         InputStream inputStream;
         try{
-            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
+            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.worldstraight));
             world = mParser.parse(inputStream);
         } catch (FileNotFoundException e){
             Log.e("FileNotFoundException", e.toString());
