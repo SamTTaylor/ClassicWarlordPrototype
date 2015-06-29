@@ -19,11 +19,20 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.util.Log;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
+import samueltaylor.classicwarlordprototype.poly2tri.Poly2Tri;
+import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.Polygon;
+import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.PolygonPoint;
+import samueltaylor.classicwarlordprototype.poly2tri.geometry.primitives.Point;
+import samueltaylor.classicwarlordprototype.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
 /**
  * A two-dimensional triangle for use as a drawn object in OpenGL ES 2.0.
@@ -70,13 +79,40 @@ public class Region {
     public Region(fragGameMap renderer, float[] coords, float[] color) {
         regionCoords = coords;
         vertexCount = regionCoords.length / COORDS_PER_VERTEX;
-        mColor = color;
-        drawOrder = new short[vertexCount];
-        int i=0;
-        for(short s : drawOrder){
-            drawOrder[i] = (short) i;
-            i++;
+        List<PolygonPoint> PointList = new ArrayList<>();
+        for (int i=0;i<regionCoords.length;i+=3){
+            PolygonPoint pp = new PolygonPoint(regionCoords[i], regionCoords[i+1],0.0f);
+            PointList.add(pp);
         }
+        Polygon poly = new Polygon(PointList);
+
+        Poly2Tri.triangulate(poly);
+        List<Float> newCoords = new ArrayList<>();
+        for(DelaunayTriangle p : poly.getTriangles()){
+            newCoords.add(p.points[0].getXf());
+            newCoords.add(p.points[0].getYf());
+            newCoords.add(0.0f);
+            newCoords.add(p.points[1].getXf());
+            newCoords.add(p.points[1].getYf());
+            newCoords.add(0.0f);
+            newCoords.add(p.points[2].getXf());
+            newCoords.add(p.points[2].getYf());
+            newCoords.add(0.0f);
+        }
+        regionCoords = new float[newCoords.size()];
+        for(int i=0;i<newCoords.size();i++){
+            regionCoords[i] = newCoords.get(i);
+        }
+        vertexCount = regionCoords.length / COORDS_PER_VERTEX;
+        drawOrder = new short[vertexCount];
+        int j=0;
+        for(short s : drawOrder){
+            drawOrder[j] = (short) j;
+            j++;
+        }
+
+
+        mColor = color;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -105,7 +141,6 @@ public class Region {
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
-
     }
 
     /**
@@ -143,11 +178,11 @@ public class Region {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
         // Draw the region
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
 
-//        //Draw outline
-        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
-        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
+////        //Draw outline
+//        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
+//        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
