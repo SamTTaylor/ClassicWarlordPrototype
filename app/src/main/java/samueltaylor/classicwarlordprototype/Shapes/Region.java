@@ -22,16 +22,13 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.opengl.GLES10;
 import android.opengl.GLES20;
-import android.util.Log;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 import samueltaylor.classicwarlordprototype.poly2tri.Poly2Tri;
 import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.Polygon;
 import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.PolygonPoint;
-import samueltaylor.classicwarlordprototype.poly2tri.geometry.primitives.Point;
 import samueltaylor.classicwarlordprototype.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
 /**
@@ -72,13 +69,14 @@ public class Region {
     static float regionCoords[] = {};
     float mColor[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    int vertexCount;
+    int fillVertexCount;
+    int outlineVertexCount;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Region(fragGameMap renderer, float[] coords, float[] color) {
         regionCoords = coords;
-        vertexCount = regionCoords.length / COORDS_PER_VERTEX;
+        fillVertexCount = regionCoords.length / COORDS_PER_VERTEX;
         List<PolygonPoint> PointList = new ArrayList<>();
         for (int i=0;i<regionCoords.length;i+=3){
             PolygonPoint pp = new PolygonPoint(regionCoords[i], regionCoords[i+1],0.0f);
@@ -99,17 +97,28 @@ public class Region {
             newCoords.add(p.points[2].getYf());
             newCoords.add(0.0f);
         }
+
+        fillVertexCount = newCoords.size() / COORDS_PER_VERTEX;
+
+        //Add outline
+        for(float f : coords){
+            newCoords.add(f);
+        }
+        outlineVertexCount = coords.length / COORDS_PER_VERTEX;
+
+
         regionCoords = new float[newCoords.size()];
         for(int i=0;i<newCoords.size();i++){
             regionCoords[i] = newCoords.get(i);
         }
-        vertexCount = regionCoords.length / COORDS_PER_VERTEX;
-        drawOrder = new short[vertexCount];
+
+        drawOrder = new short[fillVertexCount];
         int j=0;
         for(short s : drawOrder){
             drawOrder[j] = (short) j;
             j++;
         }
+
 
 
         mColor = color;
@@ -168,8 +177,8 @@ public class Region {
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
-        // Set color for drawing the region
-        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);
+
+
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
@@ -177,12 +186,15 @@ public class Region {
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
-        // Draw the region
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
 
-////        //Draw outline
-//        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
-//        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, vertexCount);
+
+        // Draw the region
+        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);//Set region colour
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
+
+        //Draw outline
+        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
+        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
