@@ -19,6 +19,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.OpenGL.GameGLSurfaceView;
 import samueltaylor.classicwarlordprototype.Shapes.Region;
 import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
@@ -32,9 +33,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
 
-        }
     }
 
     @Override
@@ -146,16 +145,17 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1f);
-
-        mSurfaceCreated = true;
         // initialiseWorld();
         initialiseWorld();
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1f);
+        mSurfaceCreated = true;
         //Draw world
         for (Region r : regions) {
             r.draw(mMVPMatrix);
         }
+        ((GameController)getActivity()).fadeOutLoadingFragment();
     }
+
 
     static float regionCoords[];
     public List<SVGtoRegionParser.Region> mWorld;

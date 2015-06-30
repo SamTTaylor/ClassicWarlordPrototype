@@ -187,4 +187,3 @@ public class Region {
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 }
-

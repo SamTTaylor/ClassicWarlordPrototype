@@ -149,7 +149,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // show list of invitable players
         intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 7);
         //show loading fragment
-        showLoadingFragment();
+        showLoadingFragment("Loading Room...");
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 
@@ -159,7 +159,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
         startActivityForResult(intent, RC_INVITATION_INBOX);
         //show loading fragment
-        showLoadingFragment();
+        showLoadingFragment("Loading Invites");
     }
 
     public boolean signedin;
@@ -203,7 +203,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             resetGameVars();
             Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
             //show loading fragment
-            showLoadingFragment();
+            showLoadingFragment(null);
         } else {
             mSignInClicked = true;
             mGoogleApiClient.connect();
@@ -295,7 +295,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
         }
         //show loading fragment
-        showLoadingFragment();
+        showLoadingFragment(null);
         resetGameVars();
         Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
         Log.d(TAG, "Room created, waiting for it to be ready...");
@@ -326,7 +326,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 .setMessageReceivedListener(this)
                 .setRoomStatusUpdateListener(this);
         //show loading fragment
-        showLoadingFragment();
+        showLoadingFragment(null);
         resetGameVars();
         Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
     }
@@ -688,15 +688,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     void loadGame() throws InterruptedException {
         mapfragment = new fragGameMap();
         loadWorld();
-        imfragment = new fragIM();
-        hudfragment = new fragGameHUDPlayers();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         transaction.replace(R.id.activity_main_layout, mapfragment, "game");
         transaction.commit();
+        loadingfragment = new fragLoading();
+        imfragment = new fragIM();
+        hudfragment = new fragGameHUDPlayers();
+        loadingfragment.setText("Loading World...");
         transaction=manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
         transaction.add(R.id.activity_main_layout, imfragment, "im");
+        transaction.add(R.id.activity_main_layout, loadingfragment, "loading");
         transaction.commit();
     }
 
@@ -717,14 +720,25 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         mapfragment.mWorld = world;
     }
-    void showLoadingFragment(){
+
+    void showLoadingFragment(String loadingText){
         loadingfragment = new fragLoading();
+        if(loadingText!=null){
+            loadingfragment.setText(loadingText);
+        }
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         transaction.replace(R.id.activity_main_layout, loadingfragment, "loading");
         transaction.commit();
     }
 
+    public void fadeOutLoadingFragment(){
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction=manager.beginTransaction();
+        transaction.setCustomAnimations(R.anim.fadein, R.anim.fadeout);
+        transaction.hide(loadingfragment);
+        transaction.commit();
+    }
 
     void showinvitefragment(){
         FragmentManager manager = getFragmentManager();
