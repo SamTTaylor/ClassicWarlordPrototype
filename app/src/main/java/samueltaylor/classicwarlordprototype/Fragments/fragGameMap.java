@@ -206,8 +206,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.orthoM(mOrthographicMatrix, 0, ratio * mZoom, -ratio * mZoom, -1 * mZoom, 1 * mZoom, 3, 30);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
-        Matrix.translateM(mMVPMatrix, 0, -6.0f, -4.5f, 0.0f);
-
+        Matrix.translateM(mMVPMatrix, 0, -6.0f, -4.45f, 0.0f);
         //Draw all the regions loaded from the world
         for(Region r : regions){
             GLES20.glLineWidth(mOutline);
