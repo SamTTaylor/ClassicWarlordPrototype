@@ -141,6 +141,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     //Drawing
     Region[] regions;
+    static float regionCoords[];
+    public List<SVGtoRegionParser.Region> mWorld;
+    float mWorldWidth = 12.0f;
+    float mWorldHeight = 8.9f;
+    public float mMoveX;
+    public float mMoveY;
 
     //Initial drawing
     @Override
@@ -157,8 +163,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
 
-    static float regionCoords[];
-    public List<SVGtoRegionParser.Region> mWorld;
+
     public void initialiseWorld(){
         int i = 0;
         regions = new Region[mWorld.size()];
@@ -206,7 +211,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.orthoM(mOrthographicMatrix, 0, ratio * mZoom, -ratio * mZoom, -1 * mZoom, 1 * mZoom, 3, 30);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
-        Matrix.translateM(mMVPMatrix, 0, -6.0f, -4.45f, 0.0f);
+        Matrix.translateM(mMVPMatrix, 0, -mWorldWidth/2, -mWorldHeight/2, 0.0f);
         //Draw all the regions loaded from the world
         for(Region r : regions){
             GLES20.glLineWidth(mOutline);
@@ -228,17 +233,20 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         return shader;
     }
 
-    public float mMoveX;
-    public float mMoveY;
 
     public void setMovement(float x, float y) {
-        mMoveX = mMoveX - x*2;
-        mMoveY = mMoveY - y*2;
+        if(mMoveX-x>-mWorldWidth/2 && mMoveX-x<mWorldWidth/2){
+            mMoveX = mMoveX - x;
+        }
+        if(mMoveY-y>-mWorldHeight/2 && mMoveY-y<mWorldHeight/2){
+            mMoveY = mMoveY - y;
+        }
+
     }
 
     float mZoom = -4.5f;
     float mOutline = 1.0f;
-    float mSensitivity = 0.3f;
+    float mSensitivity = 0.2f;
     public void incrementZoom(boolean direction){
         if (mZoom <=-1.1 && direction == false){
             //in
