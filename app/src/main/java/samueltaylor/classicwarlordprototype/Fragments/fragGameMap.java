@@ -10,13 +10,20 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
+import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.opengles.GL10;
 
 import samueltaylor.classicwarlordprototype.GameController;
@@ -115,6 +122,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     GameGLSurfaceView mGLView;
     boolean mSurfaceCreated;
 
+
     //Check if device supports OpenGLES2
     private boolean hasGLES20() {
         ActivityManager am = (ActivityManager)
@@ -147,13 +155,15 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     float mWorldHeight = 8.9f;
     public float mMoveX;
     public float mMoveY;
-
+    public boolean mClicked = false;//Has the surface been clicked
+    public float[] mClickedPos = new float[2];
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         // initialiseWorld();
         initialiseWorld();
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1f);
+
         mSurfaceCreated = true;
         //Draw world
         for (Region r : regions) {
@@ -165,30 +175,37 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     public void initialiseWorld(){
+
         int i = 0;
         regions = new Region[mWorld.size()];
         float[] color = null;
         for(SVGtoRegionParser.Region r : mWorld){
             regionCoords = r.path;
+
             switch (r.type){
-                case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 0.0f }; break;
-                case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 0.0f }; break;
+                case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 1.0f }; break;
+                case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 1.0f }; break;
                 case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
-                case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 0.0f }; break;
-                case "light":  color= new float[]{ 1.0f, 1.0f, 1.0f, 0.0f }; break;
-                case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 0.0f }; break;
+                case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 1.0f }; break;
+                case "light":  color= new float[]{ 1.0f, 1.0f, 1.0f, 1.0f }; break;
+                case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 1.0f }; break;
             }
             regions[i] = new Region(this, regionCoords, color);
+            if(r.name!=null){
+                regions[i].mName=r.name;
+            }
+            assignID(i);
+
             i++;
         }
     }
-
 
 
     //Manipulation of drawing
     private final float[] mMVPMatrix = new float[16];
     private final float[] mOrthographicMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
+
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
@@ -203,6 +220,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Redrawing
     @Override
     public void onDrawFrame(GL10 gl) {
+        checkClickedRegion(gl);
+
         float ratio = (float) mGLView.getWidth() / mGLView.getHeight();
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // Set the camera position (View matrix)
@@ -217,6 +236,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
+
     }
 
 
@@ -233,7 +253,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         return shader;
     }
 
-
+    
     public void setMovement(float x, float y) {
         if(mMoveX-x>-mWorldWidth/2 && mMoveX-x<mWorldWidth/2){
             mMoveX = mMoveX - x;
@@ -260,13 +280,84 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         }
     }
 
-    //Click has been triggered at the supplied points
-    public void clickView(float x, float y){
-        mGLView.getWidth();
-        mGLView.getHeight();
-    }
-
     void checkCollision(Region t, float x, float y){
 
+    }
+
+    void assignID(int regionnumber){
+        int combination  = 0;
+        int R=0;
+        int G=0;
+        int B=0;
+        for(int j=0; j<regionnumber;j++){
+            if (combination == 0){
+                if(R<100){
+                    R+=1;
+                } else if (G<100){
+                    G+=1;
+                } else if (B<100){
+                    B+=1;
+                } else {
+                    combination = 1;
+                }
+            }
+            if (combination == 1) {
+                if (R > 0) {
+                    R -= 1;
+                } else if (G > 0) {
+                    G -= 1;
+                } else if (B > 1) {
+                    B -= 1;
+                } else {
+                    combination = 2;
+                }
+            }
+            if (combination == 2){
+                if(G<100){
+                    G+=1;
+                } else if (B<100){
+                    B+=1;
+                } else if (R<99){
+                    R+=1;
+                } else {
+                    Log.e("Load world error", "filled all color IDs");
+                }
+            }
+        }
+        regions[regionnumber].mColorID[0] = ((float)R)/100;
+        regions[regionnumber].mColorID[1] = ((float)G)/100;
+        regions[regionnumber].mColorID[2] = ((float)B)/100;
+    }
+
+    void checkClickedRegion(GL10 gl){
+        //First, check for click
+        if(mClicked == true){
+            mClicked=false;
+            //Draw all the regions in their assigned ID colour
+            for(Region r : regions){
+                r.drawIDColour = true;
+                r.draw(mMVPMatrix);
+            }
+            ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
+            PixelBuffer.order(ByteOrder.nativeOrder());
+            PixelBuffer.position(0);
+            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight()- (int)mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+            byte b[] = new byte[4];
+            PixelBuffer.get(b);
+            float resultR = ((float)(((int)b[0]) & 0xFF))/255;
+            float resultG = ((float)(((int)b[1]) & 0xFF))/255;
+            float resultB = ((float)(((int)b[2]) & 0xFF))/255;
+            NumberFormat df = DecimalFormat.getInstance();
+            df.setMaximumFractionDigits(2);
+            float R = Float.parseFloat( df.format(resultR));
+            float G = Float.parseFloat( df.format(resultG));
+            float B = Float.parseFloat( df.format(resultB));
+            for (Region r : regions){
+                if(r.mColorID[0]==R && r.mColorID[1]==G && r.mColorID[2] == B){
+                    Log.e("Name:", r.mName);
+                }
+            }
+            Log.e("COLOR", "R:" + R + " G:" + G + " B:" +  B);
+        }
     }
 }

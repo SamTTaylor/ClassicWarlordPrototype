@@ -67,10 +67,15 @@ public class Region {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
-    float mColor[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
+    float mColor[];
+    public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     int fillVertexCount;
     int outlineVertexCount;
+
+    public String mName= "UnNamed";
+
+    public boolean drawIDColour = false;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -106,20 +111,16 @@ public class Region {
         }
         outlineVertexCount = coords.length / COORDS_PER_VERTEX;
 
-
-        regionCoords = new float[newCoords.size()];
-        for(int i=0;i<newCoords.size();i++){
-            regionCoords[i] = newCoords.get(i);
-        }
-
         drawOrder = new short[fillVertexCount];
         int j=0;
         for(short s : drawOrder){
             drawOrder[j] = (short) j;
             j++;
         }
-
-
+        regionCoords = new float[newCoords.size()];
+        for(int i=0;i<newCoords.size();i++){
+            regionCoords[i] = newCoords.get(i);
+        }
 
         mColor = color;
         // initialize vertex byte buffer for shape coordinates
@@ -187,14 +188,25 @@ public class Region {
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
 
+        if (drawIDColour == true){
+            drawIDColour = false;
+            // Draw the region
+            GLES20.glUniform4fv(mColorHandle, 1, mColorID, 0);//Set region colour
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
 
-        // Draw the region
-        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);//Set region colour
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
+            //Draw outline
+            GLES20.glUniform4fv(mColorHandle, 1, mColorID, 0);//Set black colour
+            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
+        } else {
+            // Draw the region
+            GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);//Set region colour
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
 
-        //Draw outline
-        GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
-        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
+            //Draw outline
+            GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
+            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
+        }
+
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
