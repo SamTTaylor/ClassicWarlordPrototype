@@ -37,14 +37,9 @@ import samueltaylor.classicwarlordprototype.poly2tri.triangulation.delaunay.Dela
 public class Region {
 
     private final String vertexShaderCode =
-            // This matrix member variable provides a hook to manipulate
-            // the coordinates of the objects that use this vertex shader
             "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
-                    // the matrix must be included as a modifier of gl_Position
-                    // Note that the uMVPMatrix factor *must be first* in order
-                    // for the matrix multiplication product to be correct.
                     "  gl_Position = uMVPMatrix * vPosition;" +
                     "}";
 
@@ -70,12 +65,15 @@ public class Region {
     float mColor[];
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     int fillVertexCount;
     int outlineVertexCount;
-
+    float mFillColor[];//Used to determine shape fill colour on Draw
+    float mOutlineColor[];//Used to determine shape outline colour on Draw
     public String mName= "UnNamed";
-
-    public boolean drawIDColour = false;
+    Polygon poly;
+    int polypoints;
+    public int mDrawMode = 0;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -87,7 +85,7 @@ public class Region {
             PolygonPoint pp = new PolygonPoint(regionCoords[i], regionCoords[i+1],0.0f);
             PointList.add(pp);
         }
-        Polygon poly = new Polygon(PointList);
+        poly = new Polygon(PointList);
 
         Poly2Tri.triangulate(poly);
         List<Float> newCoords = new ArrayList<>();
@@ -121,7 +119,6 @@ public class Region {
         for(int i=0;i<newCoords.size();i++){
             regionCoords[i] = newCoords.get(i);
         }
-
         mColor = color;
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
@@ -179,35 +176,47 @@ public class Region {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
 
-
-
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
+        switch (mDrawMode){
+            case 0://Initial
+                mFillColor = mColor;
+                mOutlineColor = cBlack;
+                break;
+            case 1://Colour Identification for pixel grab
+                mFillColor = mColorID;
+                mOutlineColor = mColorID;
+                //mDrawMode=0;
+                break;
+            case 2://Selected
+                mFillColor = new float[] {1.0f, 1.0f, 0.0f, 1.0f};//Yellow
+                mOutlineColor = cBlack;
+                break;
+            default://default
+                mFillColor = mColor;
+                mOutlineColor = cBlack;
+                break;
+       }
 
-        if (drawIDColour == true){
-            drawIDColour = false;
-            // Draw the region
-            GLES20.glUniform4fv(mColorHandle, 1, mColorID, 0);//Set region colour
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
+        // Draw the region
+        GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
 
-            //Draw outline
-            GLES20.glUniform4fv(mColorHandle, 1, mColorID, 0);//Set black colour
-            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
-        } else {
-            // Draw the region
-            GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);//Set region colour
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
 
-            //Draw outline
-            GLES20.glUniform4fv(mColorHandle, 1, cBlack, 0);//Set black colour
-            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
-        }
+        //Draw outline
+        GLES20.glUniform4fv(mColorHandle, 1, mOutlineColor, 0);//Set black colour
+        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+    }
+
+
+    public void toggleDrawMode(int i) {
+        mDrawMode=i;
     }
 }

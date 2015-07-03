@@ -21,9 +21,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 
-import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.opengles.GL10;
 
 import samueltaylor.classicwarlordprototype.GameController;
@@ -161,9 +159,9 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GLES20.glDisable(GLES20.GL_DITHER);
         // initialiseWorld();
         initialiseWorld();
-
         mSurfaceCreated = true;
         //Draw world
         for (Region r : regions) {
@@ -249,7 +247,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         // add the source code to the shader and compile it
         GLES20.glShaderSource(shader, shaderCode);
         GLES20.glCompileShader(shader);
-
         return shader;
     }
 
@@ -280,45 +277,42 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         }
     }
 
-    void checkCollision(Region t, float x, float y){
-
-    }
-
     void assignID(int regionnumber){
         int combination  = 0;
         int R=0;
         int G=0;
         int B=0;
+        int inc=1;
         for(int j=0; j<regionnumber;j++){
             if (combination == 0){
                 if(R<100){
-                    R+=1;
+                    R+=inc;
                 } else if (G<100){
-                    G+=1;
+                    G+=inc;
                 } else if (B<100){
-                    B+=1;
+                    B+=inc;
                 } else {
                     combination = 1;
                 }
             }
             if (combination == 1) {
                 if (R > 0) {
-                    R -= 1;
+                    R -= inc;
                 } else if (G > 0) {
-                    G -= 1;
+                    G -= inc;
                 } else if (B > 1) {
-                    B -= 1;
+                    B -= inc;
                 } else {
                     combination = 2;
                 }
             }
             if (combination == 2){
                 if(G<100){
-                    G+=1;
+                    G+=inc;
                 } else if (B<100){
-                    B+=1;
+                    B+=inc;
                 } else if (R<99){
-                    R+=1;
+                    R+=inc;
                 } else {
                     Log.e("Load world error", "filled all color IDs");
                 }
@@ -327,6 +321,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         regions[regionnumber].mColorID[0] = ((float)R)/100;
         regions[regionnumber].mColorID[1] = ((float)G)/100;
         regions[regionnumber].mColorID[2] = ((float)B)/100;
+        //Log.e("COLOR", "Name:" +regions[regionnumber].mName+ " R:" + R + " G:" + G + " B:" +  regions[regionnumber].mColorID[2]);
     }
 
     void checkClickedRegion(GL10 gl){
@@ -334,27 +329,28 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         if(mClicked == true){
             mClicked=false;
             //Draw all the regions in their assigned ID colour
+
             for(Region r : regions){
-                r.drawIDColour = true;
+                r.toggleDrawMode(1);//Colour ID mode
                 r.draw(mMVPMatrix);
             }
             ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
-            PixelBuffer.order(ByteOrder.nativeOrder());
-            PixelBuffer.position(0);
-            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight()- (int)mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight() - (int) mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
             PixelBuffer.get(b);
-            float resultR = ((float)(((int)b[0]) & 0xFF))/255;
-            float resultG = ((float)(((int)b[1]) & 0xFF))/255;
-            float resultB = ((float)(((int)b[2]) & 0xFF))/255;
+            float resultR = ((float)(b[0] & 0xFF))/255;
+            float resultG = ((float)(b[1] & 0xFF))/255;
+            float resultB = ((float)(b[2] & 0xFF))/255;
             NumberFormat df = DecimalFormat.getInstance();
             df.setMaximumFractionDigits(2);
+            df.setMinimumFractionDigits(2);
             float R = Float.parseFloat( df.format(resultR));
             float G = Float.parseFloat( df.format(resultG));
             float B = Float.parseFloat( df.format(resultB));
             for (Region r : regions){
                 if(r.mColorID[0]==R && r.mColorID[1]==G && r.mColorID[2] == B){
                     Log.e("Name:", r.mName);
+                    r.toggleDrawMode(2);//Selected
                 }
             }
             Log.e("COLOR", "R:" + R + " G:" + G + " B:" +  B);
