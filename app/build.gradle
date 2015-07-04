@@ -34,6 +34,7 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.0'
     compile "com.google.android.gms:play-services:${gms_library_version}"
     compile project(':libraries:BaseGameUtils')
+    androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.2.1'
 }
 
 buildscript {
