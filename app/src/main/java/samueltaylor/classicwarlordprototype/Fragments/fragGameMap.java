@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DecimalFormat;
@@ -155,6 +156,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveY;
     public boolean mClicked = false;//Has the surface been clicked
     public float[] mClickedPos = new float[2];
+
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -282,46 +284,89 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         int R=0;
         int G=0;
         int B=0;
-        int inc=1;
+        int inc=1;//1/(2^5-1) multiplied by 5 for more distinction between values
+        int incgreen=1;//1/(2^6-1) multiplied by 5 for more distinction between values
+        int UBR=33;
+        int UG=63;
         for(int j=0; j<regionnumber;j++){
-            if (combination == 0){
-                if(R<100){
+            if (combination == 0){//ID Combination 1: Fill up red values
+                if(R<UBR-inc){
                     R+=inc;
-                } else if (G<100){
-                    G+=inc;
-                } else if (B<100){
+                } else if (G<UG-incgreen){//Then green
+                    G+=incgreen;
+                } else if (B<UBR-inc){//Then blue
                     B+=inc;
                 } else {
                     combination = 1;
                 }
             }
-            if (combination == 1) {
-                if (R > 0) {
+            if (combination == 1) {//Combination 2: Deplete values in reverse order
+                if (R > inc) {
                     R -= inc;
-                } else if (G > 0) {
-                    G -= inc;
-                } else if (B > 1) {
+                } else if (G > incgreen) {
+                    G -= incgreen;
+                } else if (B > inc) {
                     B -= inc;
                 } else {
                     combination = 2;
                 }
             }
-            if (combination == 2){
-                if(G<100){
-                    G+=inc;
-                } else if (B<100){
+            if (combination == 2){//Combination 3: Fill up green values
+                if(G<UG-incgreen){
+                    G+=incgreen;
+                } else if (B<UBR-inc*2){//Then blue
                     B+=inc;
-                } else if (R<99){
+                } else if (R<UBR-inc*2){//Then red
+                   R+=inc;
+                } else {
+                    combination=3;
+                }
+            }
+            if (combination == 3) {//Combination 4: Deplete in reverse order
+                if (G > incgreen) {
+                    G -= incgreen;
+                } else if (R > inc*2) {
+                    R -= inc;
+                } else if (B > inc*2) {
+                    B -= inc;
+                } else {
+                    combination=4;
+                }
+            }
+            if (combination == 4){//Combination 5: Fill up blue values
+                if(R<UBR-inc){
                     R+=inc;
+                } else if (B<UBR-inc){//Then red
+                    B+=inc;
+                } else if (G<UG-incgreen){//Then green
+                    G+=incgreen;
+                } else {
+                    combination=5;
+                }
+            }
+            if (combination == 5) {//Combination 6: Then deplete in reverse order
+                if (B > inc) {
+                    B -= inc;
+                } else if (R > inc) {
+                    R -= inc;
+                } else if (G > incgreen) {
+                    G -= incgreen;
                 } else {
                     Log.e("Load world error", "filled all color IDs");
                 }
             }
         }
-        regions[regionnumber].mColorID[0] = ((float)R)/100;
-        regions[regionnumber].mColorID[1] = ((float)G)/100;
-        regions[regionnumber].mColorID[2] = ((float)B)/100;
-        //Log.e("COLOR", "Name:" +regions[regionnumber].mName+ " R:" + R + " G:" + G + " B:" +  regions[regionnumber].mColorID[2]);
+        //Total regions required to be filled: 605
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+        float fR = Float.parseFloat( df.format(((double)R)/UBR));
+        float fG = Float.parseFloat( df.format(((double)G)/UG));
+        float fB = Float.parseFloat( df.format(((double)B)/UBR));
+        regions[regionnumber].mColorID[0] = fR;
+        regions[regionnumber].mColorID[1] = fG;
+        regions[regionnumber].mColorID[2] = fB;
+
+        Log.e("COLOR", regionnumber+ " Name:" +regions[regionnumber].mName+ " R:" + regions[regionnumber].mColorID[0] + " G:" + regions[regionnumber].mColorID[1] + " B:" + regions[regionnumber].mColorID[2]);
     }
 
     void checkClickedRegion(GL10 gl){
@@ -338,22 +383,26 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight() - (int) mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
             PixelBuffer.get(b);
-            float resultR = ((float)(b[0] & 0xFF))/255;
-            float resultG = ((float)(b[1] & 0xFF))/255;
-            float resultB = ((float)(b[2] & 0xFF))/255;
-            NumberFormat df = DecimalFormat.getInstance();
-            df.setMaximumFractionDigits(2);
-            df.setMinimumFractionDigits(2);
-            float R = Float.parseFloat( df.format(resultR));
-            float G = Float.parseFloat( df.format(resultG));
-            float B = Float.parseFloat( df.format(resultB));
+
+            double R = ((double)(b[0] & 0xFF))/255;
+            double G = ((double)(b[1] & 0xFF))/255;
+            double B = ((double)(b[2] & 0xFF))/255;
+            DecimalFormat df = new DecimalFormat("#.##");
+            df.setRoundingMode(RoundingMode.HALF_UP);
+            float fR = Float.parseFloat( df.format(R));
+            float fG = Float.parseFloat( df.format(G));
+            float fB = Float.parseFloat( df.format(B));
+            float rR; float rG; float rB;
             for (Region r : regions){
-                if(r.mColorID[0]==R && r.mColorID[1]==G && r.mColorID[2] == B){
+                rR=Float.parseFloat( df.format(r.mColorID[0]));
+                rG=Float.parseFloat( df.format(r.mColorID[1]));
+                rB=Float.parseFloat( df.format(r.mColorID[2]));
+                if(rR==fR && rG==fG && rB == fB){
                     Log.e("Name:", r.mName);
                     r.toggleDrawMode(2);//Selected
                 }
             }
-            Log.e("COLOR", "R:" + R + " G:" + G + " B:" +  B);
-        }
+            Log.e("COLOR", "R:" + fR + " G:" + fG + " B:" +  fB);
+                   }
     }
 }

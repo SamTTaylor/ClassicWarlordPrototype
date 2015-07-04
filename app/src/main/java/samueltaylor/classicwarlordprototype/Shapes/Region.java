@@ -72,7 +72,7 @@ public class Region {
     float mOutlineColor[];//Used to determine shape outline colour on Draw
     public String mName= "UnNamed";
     Polygon poly;
-    int polypoints;
+
     public int mDrawMode = 0;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -190,7 +190,7 @@ public class Region {
             case 1://Colour Identification for pixel grab
                 mFillColor = mColorID;
                 mOutlineColor = mColorID;
-                //mDrawMode=0;
+                mDrawMode=0;
                 break;
             case 2://Selected
                 mFillColor = new float[] {1.0f, 1.0f, 0.0f, 1.0f};//Yellow
@@ -214,7 +214,6 @@ public class Region {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
-
 
     public void toggleDrawMode(int i) {
         mDrawMode=i;
