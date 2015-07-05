@@ -62,7 +62,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
                 float dx = mX - mPreviousX;
                 float dy = mY - mPreviousY;
 
-                mRenderer.setMovement(
+                mRenderer.moveScreenPosition(
                         dx / 100, dy / 100);
                 requestRender();
         }

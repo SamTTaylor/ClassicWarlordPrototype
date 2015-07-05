@@ -160,7 +160,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDisable(GLES20.GL_DITHER);
         // initialiseWorld();
         initialiseWorld();
@@ -241,9 +241,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     public static int loadShader(int type, String shaderCode){
-
-        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);
 
         // add the source code to the shader and compile it
@@ -253,7 +250,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     
-    public void setMovement(float x, float y) {
+    public void moveScreenPosition(float x, float y) {
         if(mMoveX-x>-mWorldWidth/2 && mMoveX-x<mWorldWidth/2){
             mMoveX = mMoveX - x;
         }
@@ -293,12 +290,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         G = G * 4 + 2;
         B = B * 4 + 2;
 
-        // combine into an RGB565 value if you need it:
+        // combine into an RGB565 value if needed in future:
         int RGB565 = (R << 11) | (G << 5) | B;
 
         // assign the colors
         regions[regionnumber].mColorID[0] = ((float)R)/UBR;
-        regions[regionnumber].mColorID[1] = ((float)G)/UG; // careful, there was a bug here
+        regions[regionnumber].mColorID[1] = ((float)G)/UG;
         regions[regionnumber].mColorID[2] = ((float)B)/UBR;
     }
 
@@ -317,12 +314,22 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             byte b[] = new byte[4];
             PixelBuffer.get(b);
 
-            int R = (b[0] & 0xFF) >> 5;
+            int R = (b[0] & 0xFF) >> 5;//Read RGB565 code
             int G = (b[1] & 0xFF) >> 4;
             int B = (b[2] & 0xFF) >> 5;
 
+            //Manipulate it back to ID
             int regionnumber = (R << 7) | (G << 3) | B;
-            regions[regionnumber].toggleDrawMode(2);
+            ((GameController)getActivity()).regionClicked(regionnumber);
+
         }
     }
+
+    public void selectRegion(int id){
+        regions[id].toggleDrawMode(2);
+    }
+    public void deselectRegion(int id){
+        regions[id].toggleDrawMode(0);
+    }
+
 }

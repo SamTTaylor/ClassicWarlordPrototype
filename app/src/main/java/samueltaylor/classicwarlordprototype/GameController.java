@@ -602,7 +602,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     /*
-     * GAME LOGIC SECTION. Methods that implement the game's rules.
+     * GAME CONSTRUCTION - Fragments, OpenGL Initialisation etc..
      */
 
     // Current state of the game:
@@ -838,5 +838,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }
         return name;
+    }
+
+
+
+
+
+     /*
+     * GAME LOGIC SECTION. Methods that implement the game's rules.
+     */
+
+    public void regionClicked(int id){
+        mapfragment.selectRegion(id);
     }
 }
