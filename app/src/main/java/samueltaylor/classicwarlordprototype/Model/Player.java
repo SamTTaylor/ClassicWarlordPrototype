@@ -7,18 +7,20 @@ import java.util.List;
  * Created by Sam on 05/07/2015.
  */
 
-//PLAYER COLOURS: BLUE, RED, TAN, GREEN, ORANGE, PURPLE, PINK
+
 public class Player extends Object{
 
+    private String participantid;
     private List<Army> armies;
     private List<Empire> empires;
     private int unallocatedforces;
     private int unallocatedbombs;
     private float[] colour;
 
-    public Player(float[] c){
+    public Player(float[] c, String pid){
         armies = new ArrayList<>();
         empires = new ArrayList<>();
+        participantid = pid;
         unallocatedforces=0;
         unallocatedbombs=0;
         colour = c;
@@ -64,4 +66,11 @@ public class Player extends Object{
 
     }
 
+    public String getParticipantid(){
+        return participantid;
+    }
+
+    public float[] getColour(){
+        return colour;
+    }
 }

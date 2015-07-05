@@ -36,20 +36,13 @@ public class fragGameHUDPlayers extends Fragment {
     //Attributes
     boolean playersshown = false;
     List<String> playernames;
+    List<float[]> playerColours;
     public String myName;
 
     //Objects
     Button btnShowPlayers;
     Button btnMyColour;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment fragGameHUDPlayers.
-     */
     // TODO: Rename and change types and number of parameters
     public static fragGameHUDPlayers newInstance(String param1, String param2) {
         fragGameHUDPlayers fragment = new fragGameHUDPlayers();
@@ -101,7 +94,7 @@ public class fragGameHUDPlayers extends Fragment {
         tblPlayers = (TableLayout)getActivity().findViewById(R.id.tblPlayers);
         for(int i=0; i<8;i++){
             if(i<playernames.size()){
-                addPlayer(playernames.get(i), i);
+                addPlayer(playernames.get(i), i, playerColours.get(i));
             } else {
                 tblPlayers.getChildAt(i).setVisibility(View.GONE);
             }
@@ -114,10 +107,16 @@ public class fragGameHUDPlayers extends Fragment {
         }
         playernames.add(name);
     }
+    public void addPlayerColour (float[] colour){
+        if(playerColours==null){
+            playerColours = new ArrayList<float[]>();
+        }
+        playerColours.add(colour);
+    }
 
 
     TableLayout tblPlayers;
-    public void addPlayer(String name, int index){
+    public void addPlayer(String name, int index, float[] colour){
         TableRow row;
         Button btnPlayerColours;
         TextView txtName;
@@ -126,13 +125,12 @@ public class fragGameHUDPlayers extends Fragment {
         row = (TableRow)tblPlayers.getChildAt(index);
         btnPlayerColours = (Button)row.getChildAt(0);
         txtName = (TextView)row.getChildAt(1);
-
-        //Colours not properly assigned, should be assigned in the controller and then represented here
+        int[] intcolour = new int[]{(int)(colour[0]*255),(int)(colour[1]*255),(int)(colour[2]*255)};
         if(name == myName){
-            btnMyColour.setBackgroundColor(Color.BLUE);
-            btnPlayerColours.setBackgroundColor(Color.BLUE);
+            btnMyColour.setBackgroundColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
+            btnPlayerColours.setBackgroundColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
         } else {
-            btnPlayerColours.setBackgroundColor(Color.RED);
+            btnPlayerColours.setBackgroundColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
         }
         txtName.setText(name);
     }

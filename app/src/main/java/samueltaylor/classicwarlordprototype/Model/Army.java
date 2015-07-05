@@ -12,6 +12,11 @@ public class Army extends Object {
     private Player player;
 
 
+    public Army (Player p, int s){
+        player = p;
+        size = s;
+    }
+
     public void destroy(){
         try {
             this.finalize();
@@ -20,7 +25,7 @@ public class Army extends Object {
         }
     }
 
-    void splitArmy(Region r){
+    void splitArmy(Region r, int x){
 
     }
 }

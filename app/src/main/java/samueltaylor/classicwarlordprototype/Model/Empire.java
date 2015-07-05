@@ -40,4 +40,20 @@ public class Empire extends Object{
             Log.e("EMPIRE", "Region not in Empire");
         }
     }
+
+    public List<Region> getRegions() {
+        return regions;
+    }
+
+    public void joinEmpire(Empire e){
+        for(Region r : e.getRegions()){
+            addRegion(r);
+            e.removeRegion(r);
+        }
+        try {
+            e.finalize();
+        } catch (Throwable throwable) {
+            Log.e("EMPIRE", "Failed to finalize empire: "+throwable.toString());
+        }
+    }
 }

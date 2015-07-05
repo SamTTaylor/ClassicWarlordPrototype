@@ -19,7 +19,7 @@
 
     <color name="BorderColour">#000000</color>
     <color name="PopupColor">@color/BorderColour</color>
-    <color name="PanelColor">#22000000</color>
+    <color name="PanelColor">#ccffffff</color>
     <color name="PopupTextColor">#ffffff</color>
     <color name="GameButtonColour">#bbbbbb</color>
     <color name="White">#ffffff</color>

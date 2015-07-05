@@ -55,6 +55,7 @@ import samueltaylor.classicwarlordprototype.Fragments.fragIM;
 import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
 import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
 import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+import samueltaylor.classicwarlordprototype.Model.GameModel;
 import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
@@ -147,7 +148,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         Intent intent;
         // show list of invitable players
-        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 7);
+        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 6);
         //show loading fragment
         showLoadingFragment("Loading Room...");
         startActivityForResult(intent, RC_SELECT_PLAYERS);
@@ -193,7 +194,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void startQuickGame() {
         // quick-start a game with randomly selected opponents
         if(mGoogleApiClient.isConnected()){
-            final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 7;
+            final int MIN_OPPONENTS = 3, MAX_OPPONENTS = 6;
             Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
                     MAX_OPPONENTS, 0);
             RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
@@ -719,6 +720,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Log.e("IOException", e.toString());
         }
         mapfragment.mWorld = world;
+        initialiseModel(world, mParticipants);
     }
 
     void showLoadingFragment(String loadingText){
@@ -808,6 +810,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             hudfragment.myName = getName(mMyId);
             for (Participant p : mParticipants) {
                 hudfragment.addPlayerName(p.getDisplayName());
+                hudfragment.addPlayerColour(mModel.getPlayerColour(p.getParticipantId()));
             }
         }
     }
@@ -847,7 +850,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
      /*
      * GAME LOGIC SECTION. Methods that implement the game's rules.
      */
-
+    GameModel mModel;
+    private void initialiseModel(List<SVGtoRegionParser.Region> r, List<Participant> plist){
+        List<String> pids = new ArrayList<>();
+        int i=0;
+        for(Participant p : plist){
+            pids.add(p.getParticipantId());
+        }
+        mModel = new GameModel(r, pids);
+    }
     public void regionClicked(int id){
         mapfragment.selectRegion(id);
     }
