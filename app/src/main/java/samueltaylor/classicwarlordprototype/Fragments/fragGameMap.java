@@ -280,93 +280,26 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     void assignID(int regionnumber){
-        int combination  = 0;
-        int R=0;
-        int G=0;
-        int B=0;
-        int inc=1;//1/(2^5-1) multiplied by 5 for more distinction between values
-        int incgreen=1;//1/(2^6-1) multiplied by 5 for more distinction between values
-        int UBR=33;
-        int UG=63;
-        for(int j=0; j<regionnumber;j++){
-            if (combination == 0){//ID Combination 1: Fill up red values
-                if(R<UBR-inc){
-                    R+=inc;
-                } else if (G<UG-incgreen){//Then green
-                    G+=incgreen;
-                } else if (B<UBR-inc){//Then blue
-                    B+=inc;
-                } else {
-                    combination = 1;
-                }
-            }
-            if (combination == 1) {//Combination 2: Deplete values in reverse order
-                if (R > inc) {
-                    R -= inc;
-                } else if (G > incgreen) {
-                    G -= incgreen;
-                } else if (B > inc) {
-                    B -= inc;
-                } else {
-                    combination = 2;
-                }
-            }
-            if (combination == 2){//Combination 3: Fill up green values
-                if(G<UG-incgreen){
-                    G+=incgreen;
-                } else if (B<UBR-inc*2){//Then blue
-                    B+=inc;
-                } else if (R<UBR-inc*2){//Then red
-                   R+=inc;
-                } else {
-                    combination=3;
-                }
-            }
-            if (combination == 3) {//Combination 4: Deplete in reverse order
-                if (G > incgreen) {
-                    G -= incgreen;
-                } else if (R > inc*2) {
-                    R -= inc;
-                } else if (B > inc*2) {
-                    B -= inc;
-                } else {
-                    combination=4;
-                }
-            }
-            if (combination == 4){//Combination 5: Fill up blue values
-                if(R<UBR-inc){
-                    R+=inc;
-                } else if (B<UBR-inc){//Then red
-                    B+=inc;
-                } else if (G<UG-incgreen){//Then green
-                    G+=incgreen;
-                } else {
-                    combination=5;
-                }
-            }
-            if (combination == 5) {//Combination 6: Then deplete in reverse order
-                if (B > inc) {
-                    B -= inc;
-                } else if (R > inc) {
-                    R -= inc;
-                } else if (G > incgreen) {
-                    G -= incgreen;
-                } else {
-                    Log.e("Load world error", "filled all color IDs");
-                }
-            }
-        }
-        //Total regions required to be filled: 605
-        DecimalFormat df = new DecimalFormat("#.####");
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        float fR = Float.parseFloat( df.format(((double)R)/UBR));
-        float fG = Float.parseFloat( df.format(((double)G)/UG));
-        float fB = Float.parseFloat( df.format(((double)B)/UBR));
-        regions[regionnumber].mColorID[0] = fR;
-        regions[regionnumber].mColorID[1] = fG;
-        regions[regionnumber].mColorID[2] = fB;
+        int UBR=31; //Upper boundary for blue and red
+        int UG=63; //Upper boundary for green
 
-        Log.e("COLOR", regionnumber+ " Name:" +regions[regionnumber].mName+ " R:" + regions[regionnumber].mColorID[0] + " G:" + regions[regionnumber].mColorID[1] + " B:" + regions[regionnumber].mColorID[2]);
+        // split regionnumber into 3/4/3 bits:
+        int R = (regionnumber >> 7) & 7;
+        int G = (regionnumber >> 3) & 15;
+        int B = regionnumber & 7;
+
+        // space out the values by multiplying by 4 and adding 2:
+        R = R * 4 + 2;
+        G = G * 4 + 2;
+        B = B * 4 + 2;
+
+        // combine into an RGB565 value if you need it:
+        int RGB565 = (R << 11) | (G << 5) | B;
+
+        // assign the colors
+        regions[regionnumber].mColorID[0] = ((float)R)/UBR;
+        regions[regionnumber].mColorID[1] = ((float)G)/UG; // careful, there was a bug here
+        regions[regionnumber].mColorID[2] = ((float)B)/UBR;
     }
 
     void checkClickedRegion(GL10 gl){
@@ -384,25 +317,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             byte b[] = new byte[4];
             PixelBuffer.get(b);
 
-            double R = ((double)(b[0] & 0xFF))/255;
-            double G = ((double)(b[1] & 0xFF))/255;
-            double B = ((double)(b[2] & 0xFF))/255;
-            DecimalFormat df = new DecimalFormat("#.##");
-            df.setRoundingMode(RoundingMode.HALF_UP);
-            float fR = Float.parseFloat( df.format(R));
-            float fG = Float.parseFloat( df.format(G));
-            float fB = Float.parseFloat( df.format(B));
-            float rR; float rG; float rB;
-            for (Region r : regions){
-                rR=Float.parseFloat( df.format(r.mColorID[0]));
-                rG=Float.parseFloat( df.format(r.mColorID[1]));
-                rB=Float.parseFloat( df.format(r.mColorID[2]));
-                if(rR==fR && rG==fG && rB == fB){
-                    Log.e("Name:", r.mName);
-                    r.toggleDrawMode(2);//Selected
-                }
-            }
-            Log.e("COLOR", "R:" + fR + " G:" + fG + " B:" +  fB);
-                   }
+            int R = (b[0] & 0xFF) >> 5;
+            int G = (b[1] & 0xFF) >> 4;
+            int B = (b[2] & 0xFF) >> 5;
+
+            int regionnumber = (R << 7) | (G << 3) | B;
+            regions[regionnumber].toggleDrawMode(2);
+        }
     }
 }
