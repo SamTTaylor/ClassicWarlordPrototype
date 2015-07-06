@@ -79,14 +79,15 @@ public class Player extends Object{
 
     public void setSelectedregionid(int i)
     {
-        if(prevselectedregionid==selectedregionid) {
-            prevselectedregionid = -1;
+        prevselectedregionid=selectedregionid;
+        if(selectedregionid==i){
+            selectedregionid=-1;
         }else{
-            prevselectedregionid=selectedregionid;
+            selectedregionid = i;
         }
-        selectedregionid = i;
     }
 
     public int getPrevselectedregionid(){return prevselectedregionid;}
+    public void setPrevselectedregionid(int i){prevselectedregionid=i;}
     public void resetPrevselectedregionid(){prevselectedregionid=-1;}
 }

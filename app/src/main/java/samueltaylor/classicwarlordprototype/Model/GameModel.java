@@ -16,7 +16,7 @@ public class GameModel {
     private List<Player> players;
     private List<Region> world;
     private int hostPlayer;
-    private int currentPlayer;
+    private Player currentPlayer;
     private List<float[]> colours;
 
     //PLAYER COLOURS: BLUE, RED, TAN, GREEN, ORANGE, PURPLE, PINK
@@ -37,14 +37,13 @@ public class GameModel {
         //of pseudo random colours across all the devices, without the need for communication
         java.util.Collections.sort(pids);
         for(String s : pids){
-            i = (int)s.charAt(3);//Generate pseudo random number from ID
-            while(i>=colours.size()){i-=colours.size();}//Get it into the colour array range
+            i = (int)s.charAt(3)%colours.size();//Generate pseudo random number from ID
             cTemp = new float[]{colours.get(i)[0],colours.get(i)[1],colours.get(i)[2],1.0f};
             Player p = new Player(cTemp, s);//Pick that colour
             colours.remove(colours.get(i));
             players.add(p);
         }
-        currentPlayer=0;
+        currentPlayer=players.get(0);
     }
 
     private void initialiseColours(){

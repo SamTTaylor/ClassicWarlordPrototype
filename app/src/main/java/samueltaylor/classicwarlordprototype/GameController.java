@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -146,13 +147,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     public void invite() {
-
-        Intent intent;
-        // show list of invitable players
-        intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 6);
-        //show loading fragment
-        showLoadingFragment("Loading Room...");
-        startActivityForResult(intent, RC_SELECT_PLAYERS);
+        if(mGoogleApiClient.isConnected()){
+            Intent intent;
+            // show list of invitable players
+            intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 6);
+            //show loading fragment
+            showLoadingFragment("Loading Room...");
+            startActivityForResult(intent, RC_SELECT_PLAYERS);
+        } else {
+            mSignInClicked = true;
+            mGoogleApiClient.connect();
+            signedin = true;
+        }
     }
 
     public void seeinvites(){
@@ -801,6 +807,23 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 //Format
                 text = getName(rtm.getSenderParticipantId()) + ": " + text + "\n";
                 imfragment.appendChat(text);
+                break;
+            case 'S'://Selection data received
+                ByteBuffer bb = ByteBuffer.allocate(4);
+
+                for(int i=1;i<5;i++){bb.put(buf[i]);}//set selected data
+                bb.rewind();
+                int s = bb.getInt();
+                mModel.getPlayer(rtm.getSenderParticipantId()).setSelectedregionid(s);
+
+                bb = ByteBuffer.allocate(4);//set prev selected data
+                for(int i=5;i<9;i++){bb.put(buf[i]);}
+                bb.rewind();
+                int p = bb.getInt();
+                mModel.getPlayer(rtm.getSenderParticipantId()).setPrevselectedregionid(p);
+
+                updateClickedRegions();//Update view
+                break;
         }
 
     }
@@ -830,6 +853,34 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
         message = getName(mMyId) + ": " + message + "\n";
         imfragment.appendChat(message);
+    }
+
+
+    private void sendMySelectionData(){
+        //get current and previous selection data
+        int s = mModel.getPlayer(mMyId).getSelectedregionid();
+        int p = mModel.getPlayer(mMyId).getPrevselectedregionid();
+        // Buffer ints as bytes
+        byte[] bytes = new byte[9];
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        bb.putInt(s);
+        //Label message as selection data & add the ints to the array
+        bytes[0] = 'S';
+
+        int i=1;
+        for(Byte b : bb.array()){// add selected
+            bytes[i]=b;
+            i++;
+        }
+
+        bb = ByteBuffer.allocate(4);
+        bb.putInt(p);
+        for(Byte b : bb.array()){// add previous
+            bytes[i]=b;
+            i++;
+        }
+        //send it
+        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
     }
 
     public String getName(String id){
@@ -862,20 +913,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
     public void regionClicked(int id) {
         mModel.getPlayer(mMyId).setSelectedregionid(id);
+        sendMySelectionData();
         updateClickedRegions();
     }
 
+
     private void updateClickedRegions(){
         for(Player p : mModel.getPlayers()){
-            if(p.getSelectedregionid()!=-1) {
-                if(p.getPrevselectedregionid()==p.getSelectedregionid()){
-                    mapfragment.deselectRegion(p.getSelectedregionid());
-                } else {
-                    if(p.getPrevselectedregionid()!=-1){mapfragment.deselectRegion(p.getPrevselectedregionid());}
-                    mapfragment.selectRegion(p.getSelectedregionid(), mModel.getPlayerColour(p.getParticipantid()));
-                }
+            if(p.getPrevselectedregionid()!=-1){
+                mapfragment.deselectRegion(p.getPrevselectedregionid());
+            }
+            if (p.getSelectedregionid()!=-1) {
+                mapfragment.selectRegion(p.getSelectedregionid(), mModel.getPlayerColour(p.getParticipantid()));
             }
 
         }
+
     }
+
 }
