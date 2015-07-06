@@ -324,13 +324,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
         }
     }
-    Region mPrevRegion;
+
     public void selectRegion(int id, float[] playercolour){
-        if(mPrevRegion!=null){
-            mPrevRegion.toggleDrawMode(0);
-        }
-        mPrevRegion=regions[id];
-        Log.d("TAG", playercolour.toString());
         regions[id].setmPlayerColor(playercolour);
         regions[id].toggleDrawMode(2);
     }

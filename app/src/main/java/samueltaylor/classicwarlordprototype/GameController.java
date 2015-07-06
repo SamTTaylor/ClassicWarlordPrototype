@@ -56,6 +56,7 @@ import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
 import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
 import samueltaylor.classicwarlordprototype.Fragments.fragMain;
 import samueltaylor.classicwarlordprototype.Model.GameModel;
+import samueltaylor.classicwarlordprototype.Model.Player;
 import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
@@ -859,7 +860,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         mModel = new GameModel(r, pids);
     }
-    public void regionClicked(int id){
-        mapfragment.selectRegion(id, mModel.getPlayerColour(mMyId));
+    public void regionClicked(int id) {
+        mModel.getPlayer(mMyId).setSelectedregionid(id);
+        updateClickedRegions();
+    }
+
+    private void updateClickedRegions(){
+        for(Player p : mModel.getPlayers()){
+            if(p.getSelectedregionid()!=-1) {
+                if(p.getPrevselectedregionid()==p.getSelectedregionid()){
+                    mapfragment.deselectRegion(p.getSelectedregionid());
+                } else {
+                    if(p.getPrevselectedregionid()!=-1){mapfragment.deselectRegion(p.getPrevselectedregionid());}
+                    mapfragment.selectRegion(p.getSelectedregionid(), mModel.getPlayerColour(p.getParticipantid()));
+                }
+            }
+
+        }
     }
 }

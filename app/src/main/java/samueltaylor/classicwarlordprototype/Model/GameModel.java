@@ -59,4 +59,16 @@ public class GameModel {
         }
         return null;
     }
+
+    public Player getPlayer(String pid){
+        for(Player p : players){
+            if(p.getParticipantid().equals(pid)){
+                return p;
+            }
+        }
+        return null;
+    }
+    public List<Player> getPlayers(){
+        return players;
+    }
 }

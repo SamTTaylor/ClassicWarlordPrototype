@@ -16,6 +16,8 @@ public class Player extends Object{
     private int unallocatedforces;
     private int unallocatedbombs;
     private float[] colour;
+    int selectedregionid=-1;
+    int prevselectedregionid=-1;
 
     public Player(float[] c, String pid){
         armies = new ArrayList<>();
@@ -73,4 +75,18 @@ public class Player extends Object{
     public float[] getColour(){
         return colour;
     }
+    public int getSelectedregionid(){return selectedregionid;}
+
+    public void setSelectedregionid(int i)
+    {
+        if(prevselectedregionid==selectedregionid) {
+            prevselectedregionid = -1;
+        }else{
+            prevselectedregionid=selectedregionid;
+        }
+        selectedregionid = i;
+    }
+
+    public int getPrevselectedregionid(){return prevselectedregionid;}
+    public void resetPrevselectedregionid(){prevselectedregionid=-1;}
 }
