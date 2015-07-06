@@ -53,6 +53,7 @@ import java.util.Set;
 import samueltaylor.classicwarlordprototype.Fragments.fragGameHUDPlayers;
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 import samueltaylor.classicwarlordprototype.Fragments.fragIM;
+import samueltaylor.classicwarlordprototype.Fragments.fragInfo;
 import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
 import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
 import samueltaylor.classicwarlordprototype.Fragments.fragMain;
@@ -68,7 +69,7 @@ import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
  */
 public class GameController extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener, fragMain.OnFragmentInteractionListener, fragGameMap.OnFragmentInteractionListener, fragInvitationReceived.OnFragmentInteractionListener,
-        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener
+        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener
 {
 
     //Online gameplay stuff
@@ -652,7 +653,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 h.postDelayed(this, 1000);
             }
         }, 1000);
-        // update the names on screen
+
+
+        // update the names on screen from room
         updatePlayers();
     }
 
@@ -671,6 +674,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     fragGameHUDPlayers hudfragment;
     fragGameMap mapfragment;
     fragInvitationReceived invitefragment;
+    fragInfo infofragment;
 
 
 
@@ -703,11 +707,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         loadingfragment = new fragLoading();
         imfragment = new fragIM();
         hudfragment = new fragGameHUDPlayers();
+        infofragment = new fragInfo();
         loadingfragment.setText("Loading World...");
         transaction=manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
         transaction.add(R.id.activity_main_layout, imfragment, "im");
         transaction.add(R.id.activity_main_layout, loadingfragment, "loading");
+        transaction.add(R.id.activity_main_layout, infofragment, "info");
         transaction.commit();
     }
 
@@ -779,6 +785,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onLoadingFragmentInteraction(Uri uri) {}
     @Override
     public void onIMFragmentInteraction(Uri uri) {}
+    @Override
+    public void onInfoFragmentInteraction(Uri uri) {}
+
+
+
 
 
 
@@ -910,6 +921,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             pids.add(p.getParticipantId());
         }
         mModel = new GameModel(r, pids);
+
+        //Start turns
+        //TODO: START THE TURNS SYSTEM, SET INFO FRAG COLOUR AND TEXT TO PLAYER 1 USING PUBLIC METHOD
+
     }
     public void regionClicked(int id) {
         mModel.getPlayer(mMyId).setSelectedregionid(id);

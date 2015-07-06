@@ -15,17 +15,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Player: Red\nPhase: Mountains"
             android:id="@+id/txtInfo"
             android:layout_gravity="center_vertical"
-            android:visibility="visible"
+            android:visibility="gone"
             android:textStyle="bold" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btnIcon"
-            android:background="@drawable/mountainiconmd" />
+            android:background="@drawable/mountainiconlg" />
 
     </LinearLayout>
 
