@@ -53,7 +53,7 @@ public class GameModel {
 
     public float[] getPlayerColour(String pid){
         for(Player p : players){
-            if(p.getParticipantid() == pid){
+            if(p.getParticipantid().equals(pid)){
                 return p.getColour();
             }
         }

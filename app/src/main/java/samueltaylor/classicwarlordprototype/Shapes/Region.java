@@ -63,9 +63,10 @@ public class Region {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
     float mColor[];
+    float mPlayerColor[];
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
-    float cBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    float mPlayerOutline[] = cBlack;
     int fillVertexCount;
     int outlineVertexCount;
     float mFillColor[];//Used to determine shape fill colour on Draw
@@ -73,7 +74,8 @@ public class Region {
     public String mName= "UnNamed";
     Polygon poly;
 
-    public int mDrawMode = 0;
+    private int mDrawMode = 0;
+    int prevMode=0;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -185,20 +187,23 @@ public class Region {
         switch (mDrawMode){
             case 0://Initial
                 mFillColor = mColor;
-                mOutlineColor = cBlack;
+                mOutlineColor = mPlayerOutline;
+                prevMode = 0;
                 break;
             case 1://Colour Identification for pixel grab
                 mFillColor = mColorID;
                 mOutlineColor = mColorID;
-                mDrawMode=0;
+                mDrawMode=prevMode;
                 break;
             case 2://Selected
-                mFillColor = new float[] {1.0f, 1.0f, 0.0f, 1.0f};//Yellow
-                mOutlineColor = cBlack;
+                mFillColor = mPlayerColor;
+                mOutlineColor = mPlayerOutline;
+                prevMode = 3;
                 break;
             default://default
                 mFillColor = mColor;
-                mOutlineColor = cBlack;
+                mOutlineColor = mPlayerOutline;
+                prevMode = 0;
                 break;
        }
 
@@ -218,4 +223,6 @@ public class Region {
     public void toggleDrawMode(int i) {
         mDrawMode=i;
     }
+    public void setmPlayerColor(float[] f){mPlayerColor = f;}
+    public void resetmPlayerOutline(){mOutlineColor=cBlack;}
 }

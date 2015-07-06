@@ -860,6 +860,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel = new GameModel(r, pids);
     }
     public void regionClicked(int id){
-        mapfragment.selectRegion(id);
+        mapfragment.selectRegion(id, mModel.getPlayerColour(mMyId));
     }
 }
