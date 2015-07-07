@@ -22,28 +22,32 @@
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:padding="2dp">
 
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/btnPlayerColour"
                     android:background="@drawable/ovalbutton"
-                    android:width="40dp"
-                    android:height="40dp"
+                    android:width="60dp"
+                    android:height="60dp"
                     android:gravity="center_vertical|center_horizontal"
                     android:layout_gravity="left" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Players"
                     android:id="@+id/btnShowPlayers"
-                    android:background="@drawable/rectmenubutton"
+                    android:background="@drawable/playerslg"
                     android:layout_marginLeft="20dp"
-                    android:textStyle="bold"
-                    android:textSize="18dp"
-                    android:layout_weight="1" />
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

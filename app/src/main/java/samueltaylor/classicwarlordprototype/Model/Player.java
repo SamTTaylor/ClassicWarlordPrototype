@@ -16,16 +16,18 @@ public class Player extends Object{
     private int unallocatedforces;
     private int unallocatedbombs;
     private float[] colour;
+    private String colourstring;
     int selectedregionid=-1;
     int prevselectedregionid=-1;
 
-    public Player(float[] c, String pid){
+    public Player(float[] c, String cs, String pid){
         armies = new ArrayList<>();
         empires = new ArrayList<>();
         participantid = pid;
         unallocatedforces=0;
         unallocatedbombs=0;
         colour = c;
+        colourstring=cs;
     }
 
     int countEmpires(){
@@ -65,7 +67,15 @@ public class Player extends Object{
     }
 
     void allocateArmy(Region r, int amount){
+        Army a = new Army(this, amount);
+        r.allocateArmy(a);
+    }
 
+    public void newEmpire(Region r){//Creates a new empire starting at specified region
+        Empire empire = new Empire(r);
+        empires.add(empire);
+        r.setEmpire(empire);
+        allocateArmy(r,1);
     }
 
     public String getParticipantid(){
@@ -75,6 +85,8 @@ public class Player extends Object{
     public float[] getColour(){
         return colour;
     }
+    public String getColourstring(){return colourstring;}
+
     public int getSelectedregionid(){return selectedregionid;}
 
     public void setSelectedregionid(int i)
@@ -90,4 +102,6 @@ public class Player extends Object{
     public int getPrevselectedregionid(){return prevselectedregionid;}
     public void setPrevselectedregionid(int i){prevselectedregionid=i;}
     public void resetPrevselectedregionid(){prevselectedregionid=-1;}
+
+    public void deselectall(){selectedregionid=-1;prevselectedregionid=-1;}
 }

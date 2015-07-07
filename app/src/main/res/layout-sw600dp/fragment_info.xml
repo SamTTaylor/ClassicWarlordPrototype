@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="right"
         android:background="@color/PanelColor"
-        android:padding="5dp">
+        android:padding="5dp"
+        android:id="@+id/lBackground">
 
         <TextView
             android:layout_width="wrap_content"

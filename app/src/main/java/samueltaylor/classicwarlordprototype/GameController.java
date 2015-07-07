@@ -3,63 +3,60 @@ package samueltaylor.classicwarlordprototype;
 /**
  * Created by Sam on 03/05/2015.
  */
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ConfigurationInfo;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import android.view.KeyEvent;
+        import android.app.Activity;
+        import android.app.FragmentManager;
+        import android.app.FragmentTransaction;
+        import android.content.Intent;
+        import android.net.Uri;
+        import android.os.Bundle;
+        import android.os.Handler;
+        import android.support.v4.app.FragmentActivity;
+        import android.util.Log;
+        import android.view.KeyEvent;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.GamesStatusCodes;
-import com.google.android.gms.games.multiplayer.Invitation;
-import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
-import com.google.android.gms.games.multiplayer.realtime.Room;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
-import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
-import com.google.android.gms.plus.Plus;
-import com.google.example.games.basegameutils.BaseGameUtils;
+        import com.google.android.gms.common.ConnectionResult;
+        import com.google.android.gms.common.api.GoogleApiClient;
+        import com.google.android.gms.games.Games;
+        import com.google.android.gms.games.GamesActivityResultCodes;
+        import com.google.android.gms.games.GamesStatusCodes;
+        import com.google.android.gms.games.multiplayer.Invitation;
+        import com.google.android.gms.games.multiplayer.Multiplayer;
+        import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
+        import com.google.android.gms.games.multiplayer.Participant;
+        import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
+        import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
+        import com.google.android.gms.games.multiplayer.realtime.Room;
+        import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
+        import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
+        import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
+        import com.google.android.gms.plus.Plus;
+        import com.google.example.games.basegameutils.BaseGameUtils;
 
-import org.xmlpull.v1.XmlPullParserException;
+        import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+        import java.io.BufferedInputStream;
+        import java.io.FileNotFoundException;
+        import java.io.IOException;
+        import java.io.InputStream;
+        import java.nio.ByteBuffer;
+        import java.util.ArrayList;
+        import java.util.HashMap;
+        import java.util.HashSet;
+        import java.util.List;
+        import java.util.Map;
+        import java.util.Set;
 
-import samueltaylor.classicwarlordprototype.Fragments.fragGameHUDPlayers;
-import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
-import samueltaylor.classicwarlordprototype.Fragments.fragIM;
-import samueltaylor.classicwarlordprototype.Fragments.fragInfo;
-import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
-import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
-import samueltaylor.classicwarlordprototype.Fragments.fragMain;
-import samueltaylor.classicwarlordprototype.Model.GameModel;
-import samueltaylor.classicwarlordprototype.Model.Player;
-import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
+        import samueltaylor.classicwarlordprototype.Fragments.fragDialog;
+        import samueltaylor.classicwarlordprototype.Fragments.fragGameHUDPlayers;
+        import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
+        import samueltaylor.classicwarlordprototype.Fragments.fragIM;
+        import samueltaylor.classicwarlordprototype.Fragments.fragInfo;
+        import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
+        import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
+        import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+        import samueltaylor.classicwarlordprototype.Model.GameModel;
+        import samueltaylor.classicwarlordprototype.Model.Player;
+        import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
 /**
@@ -69,7 +66,7 @@ import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
  */
 public class GameController extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener, fragMain.OnFragmentInteractionListener, fragGameMap.OnFragmentInteractionListener, fragInvitationReceived.OnFragmentInteractionListener,
-        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener
+        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener, fragDialog.OnFragmentInteractionListener
 {
 
     //Online gameplay stuff
@@ -410,7 +407,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // and show the popup on the screen.
         Log.d(TAG, "Invite Received.");
         mIncomingInvitationId = invitation.getInvitationId();
-       //show invitation fragment
+        //show invitation fragment
         showinvitefragment();
     }
 
@@ -675,7 +672,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     fragGameMap mapfragment;
     fragInvitationReceived invitefragment;
     fragInfo infofragment;
-
+    fragDialog alertfragment;
 
 
     void initialiseNonMapFragments(){
@@ -699,15 +696,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     SVGtoRegionParser mParser;
     void loadGame() throws InterruptedException {
         mapfragment = new fragGameMap();
+        loadingfragment = new fragLoading();
+        imfragment = new fragIM();
+        hudfragment = new fragGameHUDPlayers();
+        infofragment = new fragInfo();
         loadWorld();
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         transaction.replace(R.id.activity_main_layout, mapfragment, "game");
         transaction.commit();
-        loadingfragment = new fragLoading();
-        imfragment = new fragIM();
-        hudfragment = new fragGameHUDPlayers();
-        infofragment = new fragInfo();
         loadingfragment.setText("Loading World...");
         transaction=manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, hudfragment, "hud");
@@ -734,6 +731,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         mapfragment.mWorld = world;
         initialiseModel(world, mParticipants);
+        nextPlayer();
     }
 
     void showLoadingFragment(String loadingText){
@@ -771,6 +769,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
 
+    public void showDialogFragment(int type, String s){
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        alertfragment = new fragDialog();
+        alertfragment.setMessage(s);
+        alertfragment.setType(type);
+        transaction.add(R.id.activity_main_layout, alertfragment, "alert");
+        transaction.commit();
+    }
+    public void removeDialogFragment(){
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(alertfragment);
+        transaction.commit();
+    }
+
 
     //Fragment Listeners
     @Override
@@ -787,7 +801,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onIMFragmentInteraction(Uri uri) {}
     @Override
     public void onInfoFragmentInteraction(Uri uri) {}
-
+    @Override
+    public void onAlertFragmentInteraction(Uri uri) {}
 
 
 
@@ -811,6 +826,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onRealTimeMessageReceived(RealTimeMessage rtm) {
         byte[] buf = rtm.getMessageData();
+        byte[] b;
         switch(buf[0]){
             case 'M'://IM Message Received
                 buf[0] = ' ';//Clear unwanted character
@@ -820,20 +836,24 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 imfragment.appendChat(text);
                 break;
             case 'S'://Selection data received
-                ByteBuffer bb = ByteBuffer.allocate(4);
-
-                for(int i=1;i<5;i++){bb.put(buf[i]);}//set selected data
-                bb.rewind();
-                int s = bb.getInt();
+                b = new byte[4];
+                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
+                int s= ByteToRegionID(b);
                 mModel.getPlayer(rtm.getSenderParticipantId()).setSelectedregionid(s);
 
-                bb = ByteBuffer.allocate(4);//set prev selected data
-                for(int i=5;i<9;i++){bb.put(buf[i]);}
-                bb.rewind();
-                int p = bb.getInt();
-                mModel.getPlayer(rtm.getSenderParticipantId()).setPrevselectedregionid(p);
+                b = new byte[4];
+                for(int i=0;i<b.length;i++){b[i]=buf[i+5];}
+                s= ByteToRegionID(b);
+                mModel.getPlayer(rtm.getSenderParticipantId()).setPrevselectedregionid(s);
 
                 updateClickedRegions();//Update view
+                break;
+            case 'N'://New empire for current player
+                b = new byte[4];
+                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
+                int e = ByteToRegionID(b);
+                mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
+                addRegiontoEmpireinView(e);
                 break;
         }
 
@@ -845,7 +865,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             hudfragment.myName = getName(mMyId);
             for (Participant p : mParticipants) {
                 hudfragment.addPlayerName(p.getDisplayName());
-                hudfragment.addPlayerColour(mModel.getPlayerColour(p.getParticipantId()));
+                hudfragment.addPlayerColour(mModel.getParticipantColour(p.getParticipantId()));
             }
         }
     }
@@ -872,27 +892,41 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         int s = mModel.getPlayer(mMyId).getSelectedregionid();
         int p = mModel.getPlayer(mMyId).getPrevselectedregionid();
         // Buffer ints as bytes
+        byte[] b = RegionIDToByte(s);
         byte[] bytes = new byte[9];
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        bb.putInt(s);
+        for(int i=0;i<b.length;i++){
+            bytes[i+1]=b[i];
+        }
         //Label message as selection data & add the ints to the array
         bytes[0] = 'S';
 
-        int i=1;
-        for(Byte b : bb.array()){// add selected
-            bytes[i]=b;
-            i++;
-        }
 
-        bb = ByteBuffer.allocate(4);
-        bb.putInt(p);
-        for(Byte b : bb.array()){// add previous
-            bytes[i]=b;
-            i++;
+        b = RegionIDToByte(p);
+        for(int i=0;i<b.length;i++){
+            bytes[5+i]=b[i];
         }
         //send it
         Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
     }
+
+    private void sendRegionUpdate(int type, int regionid){
+        switch (type){
+            case 0://Add new empire for current player from region
+                // Buffer ints as bytes
+                byte[] b = RegionIDToByte(regionid);
+                byte[] bytes = new byte[6];
+                for(int i=0;i<b.length;i++){
+                    bytes[i+1]=b[i];
+                }
+                bytes[0] = 'N';//Label as new empire
+                //send it
+                Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+                break;
+            default://no type supplied
+                break;
+        }
+    }
+
 
     public String getName(String id){
         String name = "No player Found";
@@ -906,13 +940,39 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return name;
     }
 
+    //Converts 1 region's ID into a byte for transport
+    private byte[] RegionIDToByte(int id){
+        // Buffer int as bytes
+        byte[] bytes = new byte[4];
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        bb.putInt(id);
+
+        int i=0;
+        for(Byte b : bb.array()){// add selected
+            bytes[i]=b;
+            i++;
+        }
+        //return bytes to be sent
+        return bytes;
+    }
+    private int ByteToRegionID(byte[] b){
+        ByteBuffer bb = ByteBuffer.allocate(4);
+
+        for(int i=0;i<4;i++){bb.put(b[i]);}//set selected data
+        bb.rewind();
+        int s = bb.getInt();
+        return s;
+    }
 
 
 
 
-     /*
-     * GAME LOGIC SECTION. Methods that implement the game's rules.
-     */
+
+
+
+    /*
+    * GAME LOGIC SECTION. Methods that implement the game's rules.
+    */
     GameModel mModel;
     private void initialiseModel(List<SVGtoRegionParser.Region> r, List<Participant> plist){
         List<String> pids = new ArrayList<>();
@@ -921,17 +981,50 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             pids.add(p.getParticipantId());
         }
         mModel = new GameModel(r, pids);
-
-        //Start turns
-        //TODO: START THE TURNS SYSTEM, SET INFO FRAG COLOUR AND TEXT TO PLAYER 1 USING PUBLIC METHOD
-
     }
+
+    private void nextPlayer(){
+        mModel.nextPlayer();
+        if(mModel.getNextphase()==true){
+            mModel.nextPhase();
+            infofragment.nextPhase();
+        }
+        infofragment.setColour(mModel.getCurrentplayer().getColour(),mModel.getCurrentplayer().getColourstring());
+    }
+
+
+    //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
-    }
 
+        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
+            switch (mModel.getCurrentphase()){
+
+                case "Mountain":
+                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
+                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
+                        alertfragment.setRegionid(id);
+                    }
+                    break;
+
+
+                case "Reinforcement":
+                    break;
+
+
+                case "Bombing":
+                    break;
+
+
+                case "Attack":
+                    break;
+
+
+            }
+        }
+    }
 
     private void updateClickedRegions(){
         for(Player p : mModel.getPlayers()){
@@ -939,11 +1032,29 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 mapfragment.deselectRegion(p.getPrevselectedregionid());
             }
             if (p.getSelectedregionid()!=-1) {
-                mapfragment.selectRegion(p.getSelectedregionid(), mModel.getPlayerColour(p.getParticipantid()));
+                mapfragment.selectRegion(p.getSelectedregionid(), mModel.getParticipantColour(p.getParticipantid()));
             }
 
         }
+    }
 
+    public void mountainSelected(int id){
+        removeDialogFragment();
+        mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+        addRegiontoEmpireinView(id);
+        sendRegionUpdate(0, id);//This should only be reached by device owner
+    }
+
+    private void addRegiontoEmpireinView(int id){
+        mapfragment.getRegion(id).setmPlayerOutline(mModel.getCurrentplayer().getColour());
+        mapfragment.reRender();
+        DeselectForCurrentPlayer();
+    }
+
+    public void DeselectForCurrentPlayer(){
+        mapfragment.deselectRegion(mModel.getCurrentplayer().getSelectedregionid());
+        mModel.getCurrentplayer().setSelectedregionid(-1);
+        mModel.getCurrentplayer().setPrevselectedregionid(-1);
     }
 
 }

@@ -12,8 +12,9 @@ public class Empire extends Object{
 
     private List<Region> regions;
 
-    public Empire(){
+    public Empire(Region r){
         regions = new ArrayList<>();
+        regions.add(r);
     }
 
     public Region getRegion(String name){

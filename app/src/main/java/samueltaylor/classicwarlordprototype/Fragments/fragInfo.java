@@ -9,9 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.R;
 
 
@@ -21,9 +21,10 @@ public class fragInfo extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     //Objects
+    LinearLayout buttonbackground;
     Button btnIcon;
     TextView txtInfo;
-    Color buttonColor;
+    int backgroundColour;
     String colorString="";
     int phase;
 
@@ -58,6 +59,7 @@ public class fragInfo extends Fragment {
         //Add buttons and listeners
         txtInfo = (TextView) getActivity().findViewById(R.id.txtInfo);
         btnIcon = (Button) getActivity().findViewById(R.id.btnIcon);
+        buttonbackground = (LinearLayout) getActivity().findViewById(R.id.lBackground);
         btnIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +68,10 @@ public class fragInfo extends Fragment {
                 if(txtInfo.getVisibility()==View.GONE){txtInfo.setVisibility(View.VISIBLE);}else{txtInfo.setVisibility(View.GONE);}
             }
         });
+        buttonbackground.setBackgroundColor(backgroundColour);
+        //Refresh button
+        btnIcon.callOnClick();
+        txtInfo.setVisibility(View.GONE);
     }
 
     @Override
@@ -91,29 +97,30 @@ public class fragInfo extends Fragment {
 
     public void setColour(float[] colour, String cString){
         int[] intcolour = new int[]{(int)(colour[0]*255),(int)(colour[1]*255),(int)(colour[2]*255)};
-        btnIcon.setHighlightColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
+        backgroundColour = Color.rgb(intcolour[0], intcolour[1], intcolour[2]);
         colorString=cString;
-        //refresh button info
-        btnIcon.callOnClick();
-        btnIcon.callOnClick();
     }
+
     public void nextPhase(){
         phase++;
         if(phase>3){
             phase = 1;
         }
+        //Refresh the button and info text
+        btnIcon.callOnClick();
+        btnIcon.callOnClick();
     }
 
     private String phaseToString(){
         switch (phase){
             case 0:
-                return "Mountain";
+                return "Choosing Mountain";
             case 1:
-                return "Reinforce";
+                return "Reinforcement";
             case 2:
-                return "Bombing";
+                return "Firing Bombs";
             case 3:
-                return "Attack/Move";
+                return "Attack/Moving";
             default:
                 return "None";
         }

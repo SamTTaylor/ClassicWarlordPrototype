@@ -198,7 +198,7 @@ public class Region {
             case 2://Selected
                 mFillColor = mPlayerColor;
                 mOutlineColor = mPlayerOutline;
-                prevMode = 3;
+                prevMode = 2;
                 break;
             default://default
                 mFillColor = mColor;
@@ -224,5 +224,6 @@ public class Region {
         mDrawMode=i;
     }
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
+    public void setmPlayerOutline(float[] f){mPlayerOutline=f;}
     public void resetmPlayerOutline(){mOutlineColor=cBlack;}
 }

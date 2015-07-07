@@ -72,4 +72,11 @@ public class Region extends Object{
         }
         return true;
     }
+
+    public String getName(){return name;}
+    public String getType(){return type;}
+    public boolean isOwned() {if(empire==null){return false;}else{return true;}}
+
+    public void setEmpire(Empire e){empire=e;}
+
 }
