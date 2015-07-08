@@ -1,5 +1,7 @@
 package samueltaylor.classicwarlordprototype.Model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -56,14 +58,16 @@ public class GameModel {
         }
 
         phases = new LinkedList<>(Arrays.asList("Mountain", "Reinforcement", "Bombing", "Attack"));
-        nextPlayer();
     }
 
     public void nextPlayer(){//Move to next player's turn
         currentplayerindex++;
-        if(currentplayerindex>players.size()){
+        Log.e("Nextplayer", String.valueOf(currentplayerindex));
+        if(currentplayerindex>=players.size()){
             currentplayerindex=0;
-            nextphase=true;
+            if(currentphase!=0){//Mountain phase (0) precedes usual phase cycle
+                nextphase=true;
+            }
         }
         currentplayer = players.get(currentplayerindex);
     }
@@ -71,7 +75,7 @@ public class GameModel {
     public void nextPhase(){
         currentphase++;
         if(currentphase>phases.size()){
-            currentphase=0;
+            currentphase=1;//Reset to reinforcement phase
         }
     }
 

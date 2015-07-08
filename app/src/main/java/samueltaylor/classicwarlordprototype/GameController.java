@@ -13,6 +13,7 @@ package samueltaylor.classicwarlordprototype;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
+        import android.widget.LinearLayout;
 
         import com.google.android.gms.common.ConnectionResult;
         import com.google.android.gms.common.api.GoogleApiClient;
@@ -998,7 +999,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
-
+        Log.e("Tag", mModel.getCurrentplayer().getColourstring() + " : " + mModel.getCurrentphase());
         if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
             switch (mModel.getCurrentphase()){
 
@@ -1049,6 +1050,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mapfragment.getRegion(id).setmPlayerOutline(mModel.getCurrentplayer().getColour());
         mapfragment.reRender();
         DeselectForCurrentPlayer();
+        nextPlayer();
     }
 
     public void DeselectForCurrentPlayer(){
@@ -1056,5 +1058,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getCurrentplayer().setSelectedregionid(-1);
         mModel.getCurrentplayer().setPrevselectedregionid(-1);
     }
+
+    //TODO: Move to next player and implement adjacent region check (use isOwned, remember to zoom in whole way before doing the check), find alternate method for highlighting owned regions
 
 }

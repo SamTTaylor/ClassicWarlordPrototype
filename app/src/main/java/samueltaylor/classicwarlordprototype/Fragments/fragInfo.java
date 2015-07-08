@@ -99,6 +99,9 @@ public class fragInfo extends Fragment {
         int[] intcolour = new int[]{(int)(colour[0]*255),(int)(colour[1]*255),(int)(colour[2]*255)};
         backgroundColour = Color.rgb(intcolour[0], intcolour[1], intcolour[2]);
         colorString=cString;
+        if(buttonbackground!=null){
+            buttonbackground.setBackgroundColor(backgroundColour);
+        }
     }
 
     public void nextPhase(){
