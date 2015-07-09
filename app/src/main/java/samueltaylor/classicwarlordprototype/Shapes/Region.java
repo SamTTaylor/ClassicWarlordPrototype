@@ -52,6 +52,7 @@ public class Region {
 
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
+
     private final int mProgram;
     private int mPositionHandle;
     private int mColorHandle;
@@ -62,15 +63,21 @@ public class Region {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
+    private float mOutlineCoords[] = {};//For checking adjacent Regions from fragGameMap
+
+    int fillVertexCount;
+    int outlineVertexCount;
+
+    //Lots of colours
     float mColor[];
     float mPlayerColor[];
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float mPlayerOutline[] = cBlack;
-    int fillVertexCount;
-    int outlineVertexCount;
     float mFillColor[];//Used to determine shape fill colour on Draw
     float mOutlineColor[];//Used to determine shape outline colour on Draw
+
     public String mName= "UnNamed";
     Polygon poly;
 
@@ -80,6 +87,7 @@ public class Region {
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Region(fragGameMap renderer, float[] coords, float[] color) {
+        mOutlineCoords = coords;
         regionCoords = coords;
         fillVertexCount = regionCoords.length / COORDS_PER_VERTEX;
         List<PolygonPoint> PointList = new ArrayList<>();
@@ -117,6 +125,7 @@ public class Region {
             drawOrder[j] = (short) j;
             j++;
         }
+
         regionCoords = new float[newCoords.size()];
         for(int i=0;i<newCoords.size();i++){
             regionCoords[i] = newCoords.get(i);
@@ -146,10 +155,12 @@ public class Region {
         int fragmentShader = renderer.loadShader(
                 GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
+
         mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
+
     }
 
     /**
@@ -211,7 +222,6 @@ public class Region {
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
 
-
         //Draw outline
         GLES20.glUniform4fv(mColorHandle, 1, mOutlineColor, 0);//Set black colour
         GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
@@ -226,4 +236,8 @@ public class Region {
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
     public void setmPlayerOutline(float[] f){mPlayerOutline=f;}
     public void resetmPlayerOutline(){mOutlineColor=cBlack;}
+
+    public float[] getmOutlineCoords(){
+        return mOutlineCoords;
+    }
 }

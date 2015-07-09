@@ -15,11 +15,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.math.RoundingMode;
+
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -156,18 +154,20 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveY;
     public boolean mClicked = false;//Has the surface been clicked
     public float[] mClickedPos = new float[2];
+    private GL10 mGl;
 
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        mGl = gl;
         GLES20.glDisable(GLES20.GL_DITHER);
         // initialiseWorld();
         initialiseWorld();
         mSurfaceCreated = true;
         //Draw world
-        for (Region r : regions) {
-            r.draw(mMVPMatrix);
+        for (int i=0;i<regions.length;i++) {
+            regions[i].draw(mMVPMatrix);
         }
         ((GameController)getActivity()).fadeOutLoadingFragment();
     }
@@ -188,14 +188,13 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
                 case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
                 case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 1.0f }; break;
                 case "light":  color= new float[]{ 1.0f, 1.0f, 1.0f, 1.0f }; break;
-                case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 1.0f }; break;
+                case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 1.0f}; break;
             }
             regions[i] = new Region(this, regionCoords, color);
             if(r.name!=null){
                 regions[i].mName=r.name;
             }
             assignID(i);
-
             i++;
         }
     }
@@ -236,7 +235,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
-
     }
 
 
@@ -290,8 +288,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         G = G * 4 + 2;
         B = B * 4 + 2;
 
-        // combine into an RGB565 value if needed in future:
-        int RGB565 = (R << 11) | (G << 5) | B;
+//        // combine into an RGB565 value if needed in future:
+//        int RGB565 = (R << 11) | (G << 5) | B;
 
         // assign the colors
         regions[regionnumber].mColorID[0] = ((float)R)/UBR;
@@ -325,12 +323,62 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         }
     }
 
+    //Gets adjacent regions to a region by looking around its vertices, used to allow extensibility for custom maps in future without
+    //requiring content generating users to list adjacent regions manually
+    public List<String> getAdjacentRegions(int id){
+        int sensitivity = 10;//Check distance from the point
+        List<String> adjacentRegionNames = new ArrayList<>();
+        float ratio = (float) mGLView.getWidth() / mGLView.getHeight();
+        for(int i=0; i<regions[id].getmOutlineCoords().length;i+=3){//Cycle through xy coords and check around them for regions
+            float x = regions[id].getmOutlineCoords()[i];
+            float y = regions[id].getmOutlineCoords()[i+1];
+            Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 25, x - mWorldWidth / 2, -mWorldHeight /2+y, 0f, 0f, 1.0f, 0.0f);
+            Matrix.orthoM(mOrthographicMatrix, 0, ratio * -1.1f, -ratio * -1.1f, -1 * -1.1f, 1 * -1.1f, 3, 30);
+            Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
+            Matrix.translateM(mMVPMatrix, 0, -mWorldWidth / 2, -mWorldHeight/2, 0.0f);
+            for(Region r : regions){
+                r.toggleDrawMode(1);//Colour ID mode
+                r.draw(mMVPMatrix);
+            }
+            for(int xy=0;xy<4;xy++){//Check 4 points around the coord
+                ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
+                switch (xy){
+                    case 0:
+                        mGl.glReadPixels(mGLView.getWidth()/2, (mGLView.getHeight()-mGLView.getHeight()/2)+sensitivity, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+                        break;
+                    case 1://Y2
+                        mGl.glReadPixels(mGLView.getWidth() / 2, (mGLView.getHeight() - mGLView.getHeight() / 2) - sensitivity, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+                        break;
+                    case 2://X
+                        mGl.glReadPixels(mGLView.getWidth() / 2 + sensitivity, (mGLView.getHeight() - mGLView.getHeight() / 2), 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+                        break;
+                    case 3://X2
+                        mGl.glReadPixels(mGLView.getWidth() / 2 + -sensitivity, (mGLView.getHeight() - mGLView.getHeight() / 2), 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+                        break;
+                }
+
+                byte b[] = new byte[4];
+                PixelBuffer.get(b);
+
+                int R = (b[0] & 0xFF) >> 5;//Read RGB565 code
+                int G = (b[1] & 0xFF) >> 4;
+                int B = (b[2] & 0xFF) >> 5;
+
+                //Manipulate it back to ID
+                int regionnumber = (R << 7) | (G << 3) | B;
+                if(adjacentRegionNames.contains(regions[regionnumber].mName)==false){
+                    adjacentRegionNames.add(regions[regionnumber].mName);
+                }
+            }
+        }
+        return adjacentRegionNames;
+    }
+
     public void selectRegion(int id, float[] playercolour){
         regions[id].setmPlayerColor(playercolour);
         regions[id].toggleDrawMode(2);
         reRender();
     }
-
     public void deselectRegion(int id){
         regions[id].toggleDrawMode(0);
         reRender();
@@ -339,9 +387,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public Region getRegion(int id){
         return regions[id];
     }
-
     public void reRender(){
         mGLView.requestRender();
     }
+
+
 
 }

@@ -57,6 +57,7 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
         import samueltaylor.classicwarlordprototype.Model.Player;
+        import samueltaylor.classicwarlordprototype.Model.Region;
         import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
@@ -996,35 +997,38 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
-        mModel.getPlayer(mMyId).setSelectedregionid(id);
-        sendMySelectionData();
-        updateClickedRegions();
-        Log.e("Tag", mModel.getCurrentplayer().getColourstring() + " : " + mModel.getCurrentphase());
-        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
-            switch (mModel.getCurrentphase()){
 
-                case "Mountain":
-                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
-                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
-                        alertfragment.setRegionid(id);
-                    }
-                    break;
-
-
-                case "Reinforcement":
-                    break;
-
-
-                case "Bombing":
-                    break;
-
-
-                case "Attack":
-                    break;
-
-
-            }
+        for(Region r : getRegionAdjacentRegions(id)){
+            mapfragment.selectRegion(mModel.getRegionIDByName(r.getName()),mModel.getCurrentplayer().getColour());
         }
+//        mModel.getPlayer(mMyId).setSelectedregionid(id);
+//        sendMySelectionData();
+//        updateClickedRegions();
+//        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
+//            switch (mModel.getCurrentphase()){
+//
+//                case "Mountain":
+//                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
+//                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
+//                        alertfragment.setRegionid(id);
+//                    }
+//                    break;
+//
+//
+//                case "Reinforcement":
+//                    break;
+//
+//
+//                case "Bombing":
+//                    break;
+//
+//
+//                case "Attack":
+//                    break;
+//
+//
+//            }
+//        }
     }
 
     private void updateClickedRegions(){
@@ -1057,6 +1061,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mapfragment.deselectRegion(mModel.getCurrentplayer().getSelectedregionid());
         mModel.getCurrentplayer().setSelectedregionid(-1);
         mModel.getCurrentplayer().setPrevselectedregionid(-1);
+    }
+
+    public List<Region> getRegionAdjacentRegions(int id){
+        if(mModel.getRegion(id).getAdjacentregions()==null){
+            List<String> lsts = mapfragment.getAdjacentRegions(id);
+            for(int i=0;i<lsts.size();i++){
+                mModel.getRegion(id).addAdjacentRegion(mModel.getRegionByName(lsts.get(i)));
+            }
+        }
+        return mModel.getRegion(id).getAdjacentregions();
     }
 
     //TODO: Move to next player and implement adjacent region check (use isOwned, remember to zoom in whole way before doing the check), find alternate method for highlighting owned regions

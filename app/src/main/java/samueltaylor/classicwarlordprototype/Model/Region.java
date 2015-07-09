@@ -22,7 +22,6 @@ public class Region extends Object{
     private String name;
 
     public Region(String n, String t){
-        adjacentregions = new ArrayList<>();
         name=n;
         type=t;
         scorched=false;
@@ -59,7 +58,18 @@ public class Region extends Object{
     }
 
     public List<Region> getAdjacentregions(){
-        return adjacentregions;
+        if(adjacentregions==null){
+            return null;
+        } else {
+            return adjacentregions;
+        }
+    }
+
+    public void addAdjacentRegion(Region r){
+        if(adjacentregions==null){
+            adjacentregions = new ArrayList<>();
+        }
+        adjacentregions.add(r);
     }
 
     public boolean allocateBomb(int type){

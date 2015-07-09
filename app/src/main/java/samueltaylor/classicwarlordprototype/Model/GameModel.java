@@ -13,6 +13,8 @@ import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
  * Created by Sam on 05/07/2015.
  */
 public class GameModel {
+
+    //Game Management
     private List<Player> players;
     private List<Region> world;
     private List<String> phases;
@@ -20,18 +22,22 @@ public class GameModel {
     private int currentphase=0;
     private boolean nextphase=false;
 
+    //Players
     private Player currentplayer;
     private List<float[]> colours;
     private List<String> colournames;
 
     //PLAYER COLOURS: BLUE, RED, TAN, GREEN, ORANGE, PURPLE, PINK
-    float cBlue[] = { 0.0f, 0.35f, 0.6f, 1.0f };
+    float cBlue[] = { 0.0f, 0.35f, 0.6f, 1.0f};
     float cRed[] = { 0.7f, 0.1f, 0.1f, 1.0f };
     float cGreen[] = { 0.1f, 0.6f, 0.1f, 1.0f };
     float cOrange[] = { 1.0f, 0.5f, 0.0f, 1.0f };
     float cPurple[] = { 0.5f, 0.0f, 0.71f, 1.0f };
     float cTan[] = { 0.71f, 0.5f, 0.25f, 1.0f };
     float cPink[] = { 1.0f, 0.1f, 0.5f, 1.0f };
+
+    //Counters
+    int mountaincount=0;
 
     public GameModel(List<SVGtoRegionParser.Region> r, List<String> pids){
         initialiseColours();
@@ -55,6 +61,9 @@ public class GameModel {
         for(SVGtoRegionParser.Region re : r){
             Region tmpRegion = new Region(re.name, re.type);
             world.add(tmpRegion);
+            if(re.type.equals("mountain")){
+                mountaincount++;
+            }
         }
 
         phases = new LinkedList<>(Arrays.asList("Mountain", "Reinforcement", "Bombing", "Attack"));
@@ -62,7 +71,6 @@ public class GameModel {
 
     public void nextPlayer(){//Move to next player's turn
         currentplayerindex++;
-        Log.e("Nextplayer", String.valueOf(currentplayerindex));
         if(currentplayerindex>=players.size()){
             currentplayerindex=0;
             if(currentphase!=0){//Mountain phase (0) precedes usual phase cycle
@@ -83,6 +91,18 @@ public class GameModel {
         colours = new LinkedList<>(Arrays.asList(cBlue,cRed,cGreen,cOrange,cPurple,cPink,cTan));
         colournames = new LinkedList<>(Arrays.asList("Blue", "Red", "Green", "Orange", "Purple", "Pink", "Tan"));
     }
+
+    public boolean mountainsAvailable(){
+        if((double)mountaincount/players.size()<1){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+
+    //Get/set
 
     public float[] getParticipantColour(String pid){
         for(Player p : players){
@@ -110,5 +130,26 @@ public class GameModel {
     public Region getRegion(int id){
         return world.get(id);
     }
+    public Region getRegionByName(String name){
+        for(Region r : world){
+            if(name.equals(r.getName())){
+                return r;
+            }
+        }
+        return null;
+    }
+    public int getRegionIDByName(String name){
+        for(int i=0;i<world.size();i++){
+            if(name.equals(getRegion(i).getName())){
+                return i;
+            }
+        }
+        return 0;
+    }
+
+
+    public void setMountaincount(int i){mountaincount+=i;}
+    public int getMountaincount(){ return mountaincount;}
+
 }
 
