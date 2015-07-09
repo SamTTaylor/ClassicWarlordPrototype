@@ -966,6 +966,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
     }
 
+    //TODO Inform other players that a mountain has been selected and to reduce the count
+    private void sendMountainCountReduction(int id){
+
+    }
+
     public String getName(String id){
         String name = "No player Found";
         if (mRoomId != null) {
@@ -1082,21 +1087,47 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         while(check==false){//Wait until getadjacentregions is not null
             if(mModel.getRegion(id).getAdjacentregions()!=null){
                 for(Region r : mModel.getRegion(id).getAdjacentregions()){
-                    if(r.isOwned()==true && check==false){
-                        String s =  mModel.getRegion(id).getName();
-                        String s2 = r.getName();
-                        showDialogFragment(2, "Cannot select mountain: '" + s +"'. Adjacent mountain: '"+s2+"' has already been selected.");//Dialog 1 is mountain dialog
+                    if(r.isOwned()==true && check==false){//Adjacent mountain has been picked already, give error and rollback
+                        showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() +"'. Adjacent mountain: '"+ r.getName() +"' has already been selected.");//Dialog 1 is mountain dialog
                         dialogfragment.setRegionid(id);
                         check=true;
                     }
                 }
-                if(check==false){
-                    mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
-                    addRegiontoEmpireinView(id);
-                    sendRegionUpdate(0, id);//This should only be reached by device owner
+                if(check==false){//No adjacent mountain
+                    reduceMountainCount(id);
+                    sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
+                    if(checkRemainingMountains()==true){
+                        mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+                        addRegiontoEmpireinView(id);
+                        sendRegionUpdate(0, id);//This should only be reached by device owner
+                    } else {
+                        //Rollback last selections
+                        Log.e("Tag", "No more mountains");
+                    }
                     check = true;
                 }
             }
+        }
+    }
+
+
+    private void reduceMountainCount(int id){
+        for (Region r : mModel.getRegion(id).getAdjacentregions()){
+            if(r.getType().equals("mountain")&& r.getCounted()==false){
+                mModel.setRemainingmountaincount(-1);
+                r.setCounted(true);
+            }
+        }
+        mModel.setRemainingmountaincount(-1);//For the selected mountain itself
+        mModel.getRegion(id).setCounted(true);
+        Log.e("Tag", String.valueOf(mModel.getRemainingmountaincount()));
+    }
+    private boolean checkRemainingMountains(){
+        if(mModel.getRemainingmountaincount()/mModel.getPlayers().size()<1){
+            //Not enough mountains left to go around
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -1124,6 +1155,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Move to next player and implement adjacent region check (use isOwned, remember to zoom in whole way before doing the check), find alternate method for highlighting owned regions
+    //TODO: Broadcast mountain count reduction and implement rollback find alternate method for highlighting owned regions
 
 }

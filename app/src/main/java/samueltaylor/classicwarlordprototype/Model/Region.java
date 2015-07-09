@@ -21,6 +21,8 @@ public class Region extends Object{
     private String type;
     private String name;
 
+    private boolean counted=false;
+
     public Region(String n, String t){
         name=n;
         type=t;
@@ -88,5 +90,8 @@ public class Region extends Object{
     public boolean isOwned() {if(empire==null){return false;}else{return true;}}
 
     public void setEmpire(Empire e){empire=e;}
+
+    public void setCounted(boolean f){counted=f;}
+    public boolean getCounted(){return counted;}
 
 }

@@ -1,7 +1,5 @@
 package samueltaylor.classicwarlordprototype.Model;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -37,7 +35,7 @@ public class GameModel {
     float cPink[] = { 1.0f, 0.1f, 0.5f, 1.0f };
 
     //Counters
-    int mountaincount=0;
+    int remainingmountaincount =0;
 
     public GameModel(List<SVGtoRegionParser.Region> r, List<String> pids){
         initialiseColours();
@@ -62,7 +60,7 @@ public class GameModel {
             Region tmpRegion = new Region(re.name, re.type);
             world.add(tmpRegion);
             if(re.type.equals("mountain")){
-                mountaincount++;
+                remainingmountaincount++;
             }
         }
 
@@ -93,7 +91,7 @@ public class GameModel {
     }
 
     public boolean mountainsAvailable(){
-        if((double)mountaincount/players.size()<1){
+        if((double) remainingmountaincount /players.size()<1){
             return false;
         } else {
             return true;
@@ -148,8 +146,9 @@ public class GameModel {
     }
 
 
-    public void setMountaincount(int i){mountaincount+=i;}
-    public int getMountaincount(){ return mountaincount;}
+    public void setRemainingmountaincount(int i){
+        remainingmountaincount +=i;}
+    public int getRemainingmountaincount(){ return remainingmountaincount;}
 
 }
 

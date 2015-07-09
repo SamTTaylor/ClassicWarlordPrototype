@@ -102,6 +102,9 @@ public class fragInfo extends Fragment {
         if(buttonbackground!=null){
             buttonbackground.setBackgroundColor(backgroundColour);
         }
+        if(txtInfo!=null){
+            txtInfo.setText("Player: " + colorString + "\n" + "Phase: " + phaseToString());
+        }
     }
 
     public void nextPhase(){
