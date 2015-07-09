@@ -13,7 +13,6 @@ package samueltaylor.classicwarlordprototype;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
-        import android.widget.LinearLayout;
 
         import com.google.android.gms.common.ConnectionResult;
         import com.google.android.gms.common.api.GoogleApiClient;
@@ -674,7 +673,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     fragGameMap mapfragment;
     fragInvitationReceived invitefragment;
     fragInfo infofragment;
-    fragDialog alertfragment;
+    fragDialog dialogfragment;
 
 
     void initialiseNonMapFragments(){
@@ -774,16 +773,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void showDialogFragment(int type, String s){
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        alertfragment = new fragDialog();
-        alertfragment.setMessage(s);
-        alertfragment.setType(type);
-        transaction.add(R.id.activity_main_layout, alertfragment, "alert");
+        dialogfragment = new fragDialog();
+        dialogfragment.setMessage(s);
+        dialogfragment.setType(type);
+        transaction.add(R.id.activity_main_layout, dialogfragment, "alert");
         transaction.commit();
     }
     public void removeDialogFragment(){
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(alertfragment);
+        transaction.remove(dialogfragment);
         transaction.commit();
     }
 
@@ -857,6 +856,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
                 addRegiontoEmpireinView(e);
                 break;
+            case 'A'://Receiving adjacent region info
+
+                b = new byte[4];
+                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Get first region id
+                e = ByteToRegionID(b);
+                for(int i=5;i<buf.length;i+=4){//For each remaining region
+                    b[0]=buf[i];b[1]=buf[i+1];b[2]=buf[i+2];b[3]=buf[i+3];//Convert it to byte[4]
+                    int x=ByteToRegionID(b);//Get id from byte
+                    mModel.getRegion(e).addAdjacentRegion(mModel.getRegion(x));//Add adjacent
+                }
+                break;
         }
 
     }
@@ -929,6 +939,32 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    //Sends adjacent regions when they are found by getAdjacentRegions
+    //This saves other people's devices from doing the same work
+    private void sendAdjacentRegions(int id){
+        List <Byte> regionsasbytes = new ArrayList<>();
+        byte label = 'A'; //Adjacent Region byte
+
+        regionsasbytes.add(label);//Source region goes first
+        byte[] bytes = RegionIDToByte(id);
+        for(byte b : bytes){
+            regionsasbytes.add(b);
+        }
+
+        for(Region r : mModel.getRegion(id).getAdjacentregions()){//Package all adjacent IDs
+            bytes = RegionIDToByte(mModel.getRegionIDByName(r.getName()));
+            for(byte b : bytes){
+                regionsasbytes.add(b);
+            }
+        }
+
+        bytes = new byte[regionsasbytes.size()];//Convert list to array
+        for(int i=0; i<regionsasbytes.size();i++){
+            bytes[i] = regionsasbytes.get(i);
+        }
+        //Send!
+        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+    }
 
     public String getName(String id){
         String name = "No player Found";
@@ -997,38 +1033,35 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
+        mModel.getPlayer(mMyId).setSelectedregionid(id);
+        sendMySelectionData();
+        updateClickedRegions();
+        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
+            switch (mModel.getCurrentphase()){
 
-        for(Region r : getRegionAdjacentRegions(id)){
-            mapfragment.selectRegion(mModel.getRegionIDByName(r.getName()),mModel.getCurrentplayer().getColour());
+                case "Mountain":
+                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
+                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
+                        dialogfragment.setRegionid(id);
+                        getRegionAdjacentRegions(id);
+                    }
+                    break;
+
+
+                case "Reinforcement":
+                    break;
+
+
+                case "Bombing":
+                    break;
+
+
+                case "Attack":
+                    break;
+
+
+            }
         }
-//        mModel.getPlayer(mMyId).setSelectedregionid(id);
-//        sendMySelectionData();
-//        updateClickedRegions();
-//        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
-//            switch (mModel.getCurrentphase()){
-//
-//                case "Mountain":
-//                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
-//                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
-//                        alertfragment.setRegionid(id);
-//                    }
-//                    break;
-//
-//
-//                case "Reinforcement":
-//                    break;
-//
-//
-//                case "Bombing":
-//                    break;
-//
-//
-//                case "Attack":
-//                    break;
-//
-//
-//            }
-//        }
     }
 
     private void updateClickedRegions(){
@@ -1045,9 +1078,26 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     public void mountainSelected(int id){
         removeDialogFragment();
-        mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
-        addRegiontoEmpireinView(id);
-        sendRegionUpdate(0, id);//This should only be reached by device owner
+        boolean check=false;
+        while(check==false){//Wait until getadjacentregions is not null
+            if(mModel.getRegion(id).getAdjacentregions()!=null){
+                for(Region r : mModel.getRegion(id).getAdjacentregions()){
+                    if(r.isOwned()==true && check==false){
+                        String s =  mModel.getRegion(id).getName();
+                        String s2 = r.getName();
+                        showDialogFragment(2, "Cannot select mountain: '" + s +"'. Adjacent mountain: '"+s2+"' has already been selected.");//Dialog 1 is mountain dialog
+                        dialogfragment.setRegionid(id);
+                        check=true;
+                    }
+                }
+                if(check==false){
+                    mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+                    addRegiontoEmpireinView(id);
+                    sendRegionUpdate(0, id);//This should only be reached by device owner
+                    check = true;
+                }
+            }
+        }
     }
 
     private void addRegiontoEmpireinView(int id){
@@ -1069,6 +1119,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             for(int i=0;i<lsts.size();i++){
                 mModel.getRegion(id).addAdjacentRegion(mModel.getRegionByName(lsts.get(i)));
             }
+            sendAdjacentRegions(id);
         }
         return mModel.getRegion(id).getAdjacentregions();
     }

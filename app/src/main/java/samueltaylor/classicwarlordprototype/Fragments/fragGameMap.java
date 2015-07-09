@@ -325,6 +325,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     //Gets adjacent regions to a region by looking around its vertices, used to allow extensibility for custom maps in future without
     //requiring content generating users to list adjacent regions manually
+    //TODO Fix bug that checks around the centre of view when getting regions around an edge region
     public List<String> getAdjacentRegions(int id){
         int sensitivity = 10;//Check distance from the point
         List<String> adjacentRegionNames = new ArrayList<>();
@@ -366,7 +367,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
                 //Manipulate it back to ID
                 int regionnumber = (R << 7) | (G << 3) | B;
-                if(adjacentRegionNames.contains(regions[regionnumber].mName)==false){
+                if(adjacentRegionNames.contains(regions[regionnumber].mName)==false && regionnumber!=id){
                     adjacentRegionNames.add(regions[regionnumber].mName);
                 }
             }

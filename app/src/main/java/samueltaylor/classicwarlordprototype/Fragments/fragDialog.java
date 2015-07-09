@@ -74,6 +74,12 @@ public class fragDialog extends Fragment {
                 txtInput.setVisibility(View.GONE);
                 txtMessage.setText(message);
                 break;
+            case 2:
+                txtInput.setVisibility(View.GONE);
+                btnCancel.setVisibility(View.GONE);
+                btnConfirm.setText("OK");
+                txtMessage.setText(message);
+                break;
             default:
                 break;
         }
@@ -84,6 +90,7 @@ public class fragDialog extends Fragment {
                 case 1: //Mountain Confirmation
                     ((GameController) getActivity()).mountainSelected(regionid);
                     break;
+
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
