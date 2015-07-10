@@ -13,8 +13,6 @@ public class Player extends Object{
     private String participantid;
     private List<Army> armies;
     private List<Empire> empires;
-    private int unallocatedforces;
-    private int unallocatedbombs;
     private float[] colour;
     private String colourstring;
     int selectedregionid=-1;
@@ -24,8 +22,6 @@ public class Player extends Object{
         armies = new ArrayList<>();
         empires = new ArrayList<>();
         participantid = pid;
-        unallocatedforces=0;
-        unallocatedbombs=0;
         colour = c;
         colourstring=cs;
     }
@@ -39,15 +35,7 @@ public class Player extends Object{
         return regions;
     }
 
-    int countReinforcements(){
-        int reinforcements=0;
-        //Count empires, for each empire, tally regions' worth
-        return reinforcements;
-    }
 
-    public void Reinforce(){
-        unallocatedforces+=countReinforcements();
-    }
 
     void moveArmy(Region src, Region dst){
 
@@ -76,6 +64,10 @@ public class Player extends Object{
         empires.add(empire);
         r.setEmpire(empire);
         allocateArmy(r,1);
+    }
+
+    public List<Empire> getEmpires(){
+        return empires;
     }
 
     public String getParticipantid(){

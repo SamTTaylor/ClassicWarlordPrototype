@@ -11,6 +11,8 @@ import java.util.List;
 public class Empire extends Object{
 
     private List<Region> regions;
+    private int unallocatedforces;
+    private int unallocatedbombs;
 
     public Empire(Region r){
         regions = new ArrayList<>();
@@ -56,5 +58,15 @@ public class Empire extends Object{
         } catch (Throwable throwable) {
             Log.e("EMPIRE", "Failed to finalize empire: "+throwable.toString());
         }
+    }
+
+    int countReinforcements(){
+        int reinforcements=0;
+        //Count empires, for each empire, tally regions' worth
+        return reinforcements;
+    }
+
+    public void Reinforce(){
+        unallocatedforces+=countReinforcements();
     }
 }

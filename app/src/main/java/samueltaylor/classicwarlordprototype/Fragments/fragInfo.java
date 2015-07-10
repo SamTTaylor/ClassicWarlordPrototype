@@ -1,10 +1,13 @@
 package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +29,7 @@ public class fragInfo extends Fragment {
     TextView txtInfo;
     int backgroundColour;
     String colorString="";
-    int phase;
+    int phase=-1;
 
     public static fragInfo newInstance(String param1, String param2) {
         fragInfo fragment = new fragInfo();
@@ -72,6 +75,7 @@ public class fragInfo extends Fragment {
         //Refresh button
         btnIcon.callOnClick();
         txtInfo.setVisibility(View.GONE);
+        nextPhase();
     }
 
     @Override
@@ -110,11 +114,57 @@ public class fragInfo extends Fragment {
     public void nextPhase(){
         phase++;
         if(phase>3){
-            phase = 1;
+            phase = 1;//Move back to reinforcement phase on loop
+        }
+        switch (phase){
+            case 0://Mountain
+                if(LargeScreen()==true){
+                    setButtonBG(getResources().getDrawable(R.drawable.mountainiconlg));
+                } else {
+                    setButtonBG(getResources().getDrawable(R.drawable.mountainiconmd));
+                }
+                break;
+            case 1://Reinforcement
+                if(LargeScreen()==true){
+                    setButtonBG(getResources().getDrawable(R.drawable.reinforceiconlg));
+                } else {
+                    setButtonBG(getResources().getDrawable(R.drawable.reinforceiconmd));
+                }
+                break;
+            case 2://Firing bombs
+
+                break;
+            case 3://Attack/move
+
+                break;
+            default://None
+                break;
         }
         //Refresh the button and info text
         btnIcon.callOnClick();
         btnIcon.callOnClick();
+    }
+
+    private boolean LargeScreen(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int heightPixels = metrics.heightPixels;
+        float scaleFactor = metrics.density;
+        float heightDp = heightPixels / scaleFactor;
+        if(heightDp>=600){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void setButtonBG(Drawable drawable){
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            btnIcon.setBackgroundDrawable(drawable);
+        } else {
+            btnIcon.setBackground(drawable);
+        }
     }
 
     private String phaseToString(){

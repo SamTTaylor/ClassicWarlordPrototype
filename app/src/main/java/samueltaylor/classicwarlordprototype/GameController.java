@@ -886,6 +886,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                 }
                 break;
+            case 'R'://sendMoveToReinforcementPrompt()
+                moveToReinforcement();
+                break;
         }
 
     }
@@ -912,7 +915,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(int x=1; x<i; x++){
             bytes[x] = message.getBytes()[x-1];
         }
-        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        if(mRoomId!=null) {
+            Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        }
         message = getName(mMyId) + ": " + message + "\n";
         imfragment.appendChat(message);
     }
@@ -938,7 +943,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         //send it
         for(Participant pa : mParticipants){
-            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+            if(mRoomId!=null){
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+            }
         }
     }
 
@@ -954,7 +961,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 bytes[0] = 'N';//Label as new empire
                 //send it
                 for(Participant p : mParticipants){
-                    Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+                    if(mRoomId!=null) {
+                        Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+                    }
                 }
                 break;
             default://no type supplied
@@ -987,7 +996,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         //Send!
         for(Participant p : mParticipants){
-            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
         }
     }
 
@@ -1016,7 +1027,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         //Send!
         for(Participant p : mParticipants){
-            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
+        }
+    }
+
+    private void sendMoveToReinforcementPrompt(){
+        byte[] bytes = new byte[1];
+        bytes[0] = 'R';//Label as Reinforcements Prompt
+        //Send!
+        for(Participant p : mParticipants){
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
         }
     }
 
@@ -1087,7 +1111,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
-        Log.e("Tag", String.valueOf(mModel.getRemainingmountaincount()));
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
@@ -1138,8 +1161,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         boolean check=true;
         for(Region r : mModel.getRegion(id).getAdjacentregions()){
             if(r.isOwned()==true && check==true){//Adjacent mountain has been picked already, give error and rollback
-                showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() +"'. Adjacent mountain: '"+ r.getName() +"' has already been selected.");//Dialog 2 is mountain rejection
-                dialogfragment.setRegionid(id);
+                showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.");//Dialog 2 is basic dialog
                 check=false;
             }
         }
@@ -1150,9 +1172,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
                 addRegiontoEmpireinView(id);
                 sendRegionUpdate(0, id);//This should only be reached by device owner
-            } else {
-                //Rollback last selections
-                Log.e("Tag", "No more mountains");
+            } else {//If there aren't enough mountains to go around after this selection
+                moveToReinforcement(); //Rollback mountain selections and move to next phase (reinforcement)
+                sendMoveToReinforcementPrompt(); //Tell everyone else too aswell
             }
         }
 
@@ -1166,7 +1188,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getRegion(id).setCounted(true);
         for (Region r : mModel.getRegion(id).getAdjacentregions()){
             if(r.getType().equals("mountain")&& r.getCounted()==false){
-                Log.e("Tag", r.getName());
                 x++;
                 r.setCounted(true);
             }
@@ -1181,6 +1202,30 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             return true;
         }
     }
+
+    private void moveToReinforcement(){//Roll back mountains and end mountain selection phase
+        showMoveToReinforcementDialog();
+        for(Player p : mModel.getPlayers()){//Cycle through the players
+            if(p == mModel.getCurrentplayer()){//Don't take anyone's region that has not completed this round
+                break;
+            } else {
+                String name = p.getEmpires().get(p.getEmpires().size()-1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
+                int id = mModel.getRegionIDByName(name);
+                mapfragment.getRegion(id).resetmPlayerOutline();//Set outline back to black again
+                p.getEmpires().remove(p.getEmpires().size()-1);//Remove last empire
+            }
+        }
+        mapfragment.reRender();
+        mModel.setCurrentplayer(0);//Reset back to first player
+        infofragment.setColour(mModel.getCurrentplayer().getColour(),mModel.getCurrentplayer().getColourstring());
+        infofragment.nextPhase();
+    }
+
+    private void showMoveToReinforcementDialog(){
+        showDialogFragment(2, "More players than mountains remaining, rolling back most this round's selections and moving to reinforcement phase...");//Dialog 2 is basic dialog
+    }
+
+
 
     private void addRegiontoEmpireinView(int id){
         mapfragment.getRegion(id).setmPlayerOutline(mModel.getCurrentplayer().getColour());
@@ -1212,6 +1257,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         while(getAdjacentComplete == false) {}//Wait until getadjacentregions is finished
     }
 
-    //TODO: Broadcast mountain count reduction and implement rollback find alternate method for highlighting owned regions
+    //TODO: Implement rollback & reinforcement phase transition find alternate method for highlighting owned regions
 
 }

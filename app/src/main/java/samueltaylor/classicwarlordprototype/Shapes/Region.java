@@ -235,7 +235,7 @@ public class Region {
     }
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
     public void setmPlayerOutline(float[] f){mPlayerOutline=f;}
-    public void resetmPlayerOutline(){mOutlineColor=cBlack;}
+    public void resetmPlayerOutline(){mPlayerOutline=cBlack;}
 
     public float[] getmOutlineCoords(){
         return mOutlineCoords;

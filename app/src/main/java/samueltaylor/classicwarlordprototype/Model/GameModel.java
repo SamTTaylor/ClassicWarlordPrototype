@@ -121,6 +121,7 @@ public class GameModel {
     }
     public List<Player> getPlayers(){return players;}
     public Player getCurrentplayer(){return currentplayer;}
+    public void setCurrentplayer(int id){currentplayer = players.get(id);currentplayerindex=id;}
 
     public String getCurrentphase() {return phases.get(currentphase);}
     public boolean getNextphase(){return nextphase;}
