@@ -860,6 +860,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 int e = ByteToRegionID(b);
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
                 addRegiontoEmpireinView(e);
+                nextPlayer();
                 break;
             case 'A'://Receiving adjacent region info sendAdjacentRegions()
                 b = new byte[4];
@@ -1125,18 +1126,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                     break;
 
-
                 case "Reinforcement":
                     break;
-
 
                 case "Bombing":
                     break;
 
-
                 case "Attack":
                     break;
-
 
             }
         }
@@ -1154,6 +1151,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+
+    //MOUNTAIN SELECTION PHASE
     boolean getAdjacentComplete =false;
     public void mountainSelected(int id){
         removeDialogFragment();
@@ -1171,6 +1170,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if(checkRemainingMountains()==true){
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
                 addRegiontoEmpireinView(id);
+                nextPlayer();//Mountain selection complete, move to next player
                 sendRegionUpdate(0, id);//This should only be reached by device owner
             } else {//If there aren't enough mountains to go around after this selection
                 moveToReinforcement(); //Rollback mountain selections and move to next phase (reinforcement)
@@ -1216,9 +1216,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }
         mapfragment.reRender();
-        mModel.setCurrentplayer(0);//Reset back to first player
-        infofragment.setColour(mModel.getCurrentplayer().getColour(),mModel.getCurrentplayer().getColourstring());
+        mModel.nextPhase();
+        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
         infofragment.nextPhase();
+        allocateReinforcementsToCurrentPlayer();
     }
 
     private void showMoveToReinforcementDialog(){
@@ -1226,12 +1227,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
+    //REINFORCEMENT PHASE
+    private void allocateReinforcementsToCurrentPlayer(){
+
+    }
+
 
     private void addRegiontoEmpireinView(int id){
         mapfragment.getRegion(id).setmPlayerOutline(mModel.getCurrentplayer().getColour());
         mapfragment.reRender();
         DeselectForCurrentPlayer();
-        nextPlayer();
     }
 
     public void DeselectForCurrentPlayer(){
@@ -1257,6 +1262,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         while(getAdjacentComplete == false) {}//Wait until getadjacentregions is finished
     }
 
-    //TODO: Implement rollback & reinforcement phase transition find alternate method for highlighting owned regions
+    //TODO: Implement allocateReinforcementsToCurrentPlayer & onClick for reinforcement phase, find decent way to display forces available to each empire Find alternate method for highlighting owned regions
 
 }

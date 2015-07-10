@@ -83,6 +83,7 @@ public class GameModel {
         if(currentphase>phases.size()){
             currentphase=1;//Reset to reinforcement phase
         }
+        setCurrentplayer(0);//Reset back to first player
     }
 
     private void initialiseColours(){
