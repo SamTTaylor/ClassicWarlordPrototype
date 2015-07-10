@@ -381,8 +381,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         reRender();
     }
     public void deselectRegion(int id){
-        regions[id].toggleDrawMode(0);
-        reRender();
+        if(id!=-1){
+            regions[id].toggleDrawMode(0);
+            reRender();
+        }
     }
 
     public Region getRegion(int id){

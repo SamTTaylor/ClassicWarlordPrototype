@@ -774,8 +774,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         dialogfragment = new fragDialog();
+        if(dialogfragment.isVisible()){
+            transaction.remove(dialogfragment);
+            transaction.commit();
+        }
         dialogfragment.setMessage(s);
         dialogfragment.setType(type);
+        transaction = manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, dialogfragment, "alert");
         transaction.commit();
     }
@@ -829,14 +834,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         byte[] buf = rtm.getMessageData();
         byte[] b;
         switch(buf[0]){
-            case 'M'://IM Message Received
+            case 'M'://IM Message Received UpdateChat()
                 buf[0] = ' ';//Clear unwanted character
                 String text = new String(buf);
                 //Format
                 text = getName(rtm.getSenderParticipantId()) + ": " + text + "\n";
                 imfragment.appendChat(text);
                 break;
-            case 'S'://Selection data received
+            case 'S'://Selection data received sendMySelectionData()
                 b = new byte[4];
                 for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
                 int s= ByteToRegionID(b);
@@ -849,15 +854,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
                 updateClickedRegions();//Update view
                 break;
-            case 'N'://New empire for current player
+            case 'N'://New empire for current player sendRegionUpdate()
                 b = new byte[4];
                 for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
                 int e = ByteToRegionID(b);
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
                 addRegiontoEmpireinView(e);
                 break;
-            case 'A'://Receiving adjacent region info
-
+            case 'A'://Receiving adjacent region info sendAdjacentRegions()
                 b = new byte[4];
                 for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Get first region id
                 e = ByteToRegionID(b);
@@ -865,6 +869,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     b[0]=buf[i];b[1]=buf[i+1];b[2]=buf[i+2];b[3]=buf[i+3];//Convert it to byte[4]
                     int x=ByteToRegionID(b);//Get id from byte
                     mModel.getRegion(e).addAdjacentRegion(mModel.getRegion(x));//Add adjacent
+                }
+                break;
+            case 'C'://Mountain count reduction sendMountainCountReduction()
+                b = new byte[4];
+                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Unpack the region id byte into byte[4]
+                e = ByteToRegionID(b);//Get the ID of centre mountain
+                mModel.getRegion(e).setCounted(true);
+                mModel.setRemainingmountaincount(-1);//Reduce remaining mountain count by 1
+                for(int i=5;i<buf.length;i+=4){//For each remaining adjacent mountain
+                    b[0]=buf[i];b[1]=buf[i+1];b[2]=buf[i+2];b[3]=buf[i+3];//Convert it to byte[4]
+                    int x=ByteToRegionID(b);//Get id from byte
+                    if(mModel.getRegion(x).getCounted()==false){
+                        mModel.setRemainingmountaincount(-1);//Reduce remaining mountain count by 1
+                        mModel.getRegion(x).setCounted(true);//Set counted to true
+                    }
                 }
                 break;
         }
@@ -918,7 +937,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             bytes[5+i]=b[i];
         }
         //send it
-        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        for(Participant pa : mParticipants){
+            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+        }
     }
 
     private void sendRegionUpdate(int type, int regionid){
@@ -932,7 +953,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 }
                 bytes[0] = 'N';//Label as new empire
                 //send it
-                Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+                for(Participant p : mParticipants){
+                    Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+                }
                 break;
             default://no type supplied
                 break;
@@ -963,12 +986,38 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             bytes[i] = regionsasbytes.get(i);
         }
         //Send!
-        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        for(Participant p : mParticipants){
+            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+        }
     }
 
-    //TODO Inform other players that a mountain has been selected and to reduce the count
     private void sendMountainCountReduction(int id){
+        List <Byte> regionsasbytes = new ArrayList<>();
+        byte label = 'C'; //Mountain count byte
 
+        regionsasbytes.add(label);//Source region goes first
+        byte[] bytes = RegionIDToByte(id);
+        for(byte b : bytes){
+            regionsasbytes.add(b);
+        }
+
+        for(Region r : mModel.getRegion(id).getAdjacentregions()){//Package all adjacent mountain IDs, had to be done client side as cannot trust destination to have adjacent regions yet
+            if(r.getType().equals("mountain")){
+                bytes = RegionIDToByte(mModel.getRegionIDByName(r.getName()));
+                for(byte b : bytes){
+                    regionsasbytes.add(b);
+                }
+            }
+        }
+
+        bytes = new byte[regionsasbytes.size()];//Convert list to array
+        for(int i=0; i<regionsasbytes.size();i++){
+            bytes[i] = regionsasbytes.get(i);
+        }
+        //Send!
+        for(Participant p : mParticipants){
+            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,p.getParticipantId());
+        }
     }
 
     public String getName(String id){
@@ -1038,6 +1087,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
+        Log.e("Tag", String.valueOf(mModel.getRemainingmountaincount()));
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
@@ -1046,7 +1096,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
                 case "Mountain":
                     if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
-                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() +"'");//Dialog 1 is mountain dialog
+                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
                         dialogfragment.setRegionid(id);
                         getRegionAdjacentRegions(id);
                     }
@@ -1081,46 +1131,47 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    boolean getAdjacentComplete =false;
     public void mountainSelected(int id){
         removeDialogFragment();
-        boolean check=false;
-        while(check==false){//Wait until getadjacentregions is not null
-            if(mModel.getRegion(id).getAdjacentregions()!=null){
-                for(Region r : mModel.getRegion(id).getAdjacentregions()){
-                    if(r.isOwned()==true && check==false){//Adjacent mountain has been picked already, give error and rollback
-                        showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() +"'. Adjacent mountain: '"+ r.getName() +"' has already been selected.");//Dialog 1 is mountain dialog
-                        dialogfragment.setRegionid(id);
-                        check=true;
-                    }
-                }
-                if(check==false){//No adjacent mountain
-                    reduceMountainCount(id);
-                    sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
-                    if(checkRemainingMountains()==true){
-                        mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
-                        addRegiontoEmpireinView(id);
-                        sendRegionUpdate(0, id);//This should only be reached by device owner
-                    } else {
-                        //Rollback last selections
-                        Log.e("Tag", "No more mountains");
-                    }
-                    check = true;
-                }
+        waitForAdjacentMountainCalc();
+        boolean check=true;
+        for(Region r : mModel.getRegion(id).getAdjacentregions()){
+            if(r.isOwned()==true && check==true){//Adjacent mountain has been picked already, give error and rollback
+                showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() +"'. Adjacent mountain: '"+ r.getName() +"' has already been selected.");//Dialog 2 is mountain rejection
+                dialogfragment.setRegionid(id);
+                check=false;
             }
         }
+        if(check==true){//Allowed mountain
+            reduceMountainCountLocal(id);
+            sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
+            if(checkRemainingMountains()==true){
+                mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+                addRegiontoEmpireinView(id);
+                sendRegionUpdate(0, id);//This should only be reached by device owner
+            } else {
+                //Rollback last selections
+                Log.e("Tag", "No more mountains");
+            }
+        }
+
+        getAdjacentComplete=false;
     }
 
 
-    private void reduceMountainCount(int id){
+    private void reduceMountainCountLocal(int id){
+        int x=0;//1 for mountain passed
+        mModel.setRemainingmountaincount(-1);
+        mModel.getRegion(id).setCounted(true);
         for (Region r : mModel.getRegion(id).getAdjacentregions()){
             if(r.getType().equals("mountain")&& r.getCounted()==false){
-                mModel.setRemainingmountaincount(-1);
+                Log.e("Tag", r.getName());
+                x++;
                 r.setCounted(true);
             }
         }
-        mModel.setRemainingmountaincount(-1);//For the selected mountain itself
-        mModel.getRegion(id).setCounted(true);
-        Log.e("Tag", String.valueOf(mModel.getRemainingmountaincount()));
+        mModel.setRemainingmountaincount(-x);
     }
     private boolean checkRemainingMountains(){
         if(mModel.getRemainingmountaincount()/mModel.getPlayers().size()<1){
@@ -1145,6 +1196,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     public List<Region> getRegionAdjacentRegions(int id){
+        getAdjacentComplete=false;
         if(mModel.getRegion(id).getAdjacentregions()==null){
             List<String> lsts = mapfragment.getAdjacentRegions(id);
             for(int i=0;i<lsts.size();i++){
@@ -1152,7 +1204,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
             sendAdjacentRegions(id);
         }
+        getAdjacentComplete=true;
         return mModel.getRegion(id).getAdjacentregions();
+    }
+
+    private void waitForAdjacentMountainCalc(){
+        while(getAdjacentComplete == false) {}//Wait until getadjacentregions is finished
     }
 
     //TODO: Broadcast mountain count reduction and implement rollback find alternate method for highlighting owned regions
