@@ -75,7 +75,7 @@ public class fragInfo extends Fragment {
         //Refresh button
         btnIcon.callOnClick();
         txtInfo.setVisibility(View.GONE);
-        nextPhase();
+        setPhase(0);
     }
 
     @Override
@@ -111,11 +111,8 @@ public class fragInfo extends Fragment {
         }
     }
 
-    public void nextPhase(){
-        phase++;
-        if(phase>3){
-            phase = 1;//Move back to reinforcement phase on loop
-        }
+    public void setPhase(int p){
+        phase = p;
         switch (phase){
             case 0://Mountain
                 if(LargeScreen()==true){
@@ -124,15 +121,19 @@ public class fragInfo extends Fragment {
                     setButtonBG(getResources().getDrawable(R.drawable.mountainiconmd));
                 }
                 break;
-            case 1://Reinforcement
+            case 1://Firing bombs
+                if(LargeScreen()==true){
+                    setButtonBG(getResources().getDrawable(R.drawable.bombiconlg));
+                } else {
+                    setButtonBG(getResources().getDrawable(R.drawable.bombiconmd));
+                }
+                break;
+            case 2://Reinforcement
                 if(LargeScreen()==true){
                     setButtonBG(getResources().getDrawable(R.drawable.reinforceiconlg));
                 } else {
                     setButtonBG(getResources().getDrawable(R.drawable.reinforceiconmd));
                 }
-                break;
-            case 2://Firing bombs
-
                 break;
             case 3://Attack/move
 
@@ -172,9 +173,9 @@ public class fragInfo extends Fragment {
             case 0:
                 return "Choosing Mountain";
             case 1:
-                return "Reinforcement";
-            case 2:
                 return "Firing Bombs";
+            case 2:
+                return "Reinforcement";
             case 3:
                 return "Attack/Moving";
             default:

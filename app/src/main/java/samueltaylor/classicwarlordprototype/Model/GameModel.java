@@ -80,8 +80,33 @@ public class GameModel {
 
     public void nextPhase(){
         currentphase++;
+        switch (currentphase){
+            case 0://Mountain
+                break;
+            case 1://Bombs
+                boolean bombs=false;
+                //Check if any bombs exist
+                for(Player p : players){
+                    for(Empire e : p.getEmpires()){
+                        for(Region r : e.getRegions()){
+                            if(r.getBomb()!=null){
+                                bombs=true;
+                            }
+                        }
+                    }
+                }
+                if(bombs==false){
+                    nextPhase();//No bombs, skip this phase
+                }
+                break;
+            case 2://Reinforcement
+                break;
+
+            case 3://Attack/defence
+                break;
+        }
         if(currentphase>phases.size()){
-            currentphase=1;//Reset to reinforcement phase
+            currentphase=1;//Reset to bombing phase
         }
         setCurrentplayer(0);//Reset back to first player
     }
@@ -124,7 +149,8 @@ public class GameModel {
     public Player getCurrentplayer(){return currentplayer;}
     public void setCurrentplayer(int id){currentplayer = players.get(id);currentplayerindex=id;}
 
-    public String getCurrentphase() {return phases.get(currentphase);}
+    public String getCurrentphaseString() {return phases.get(currentphase);}
+    public int getCurrentphase() {return currentphase;}
     public boolean getNextphase(){return nextphase;}
 
     public Region getRegion(int id){

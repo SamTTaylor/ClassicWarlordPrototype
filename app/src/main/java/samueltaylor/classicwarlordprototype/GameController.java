@@ -916,8 +916,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(int x=1; x<i; x++){
             bytes[x] = message.getBytes()[x-1];
         }
-        if(mRoomId!=null) {
-            Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes, mRoomId);
+        for(Participant pa : mParticipants){
+            if(mRoomId!=null){
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+            }
         }
         message = getName(mMyId) + ": " + message + "\n";
         imfragment.appendChat(message);
@@ -1104,7 +1106,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.nextPlayer();
         if(mModel.getNextphase()==true){
             mModel.nextPhase();
-            infofragment.nextPhase();
+            infofragment.setPhase(mModel.getCurrentphase());
         }
         infofragment.setColour(mModel.getCurrentplayer().getColour(),mModel.getCurrentplayer().getColourstring());
     }
@@ -1116,7 +1118,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         sendMySelectionData();
         updateClickedRegions();
         if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
-            switch (mModel.getCurrentphase()){
+            switch (mModel.getCurrentphaseString()){
 
                 case "Mountain":
                     if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
@@ -1218,7 +1220,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mapfragment.reRender();
         mModel.nextPhase();
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
-        infofragment.nextPhase();
+        infofragment.setPhase(mModel.getCurrentphase());
         allocateReinforcementsToCurrentPlayer();
     }
 

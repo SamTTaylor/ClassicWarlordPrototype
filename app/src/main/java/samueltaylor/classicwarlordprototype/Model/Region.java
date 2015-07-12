@@ -94,4 +94,5 @@ public class Region extends Object{
     public void setCounted(boolean f){counted=f;}
     public boolean getCounted(){return counted;}
 
+    public Bomb getBomb(){return bomb;}
 }
