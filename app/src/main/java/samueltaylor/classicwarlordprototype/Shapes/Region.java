@@ -38,16 +38,19 @@ public class Region {
 
     private final String vertexShaderCode =
             "uniform mat4 uMVPMatrix;" +
+                    "uniform vec4 vColor;" +
                     "attribute vec4 vPosition;" +
+                    "varying vec4 color;" +
                     "void main() {" +
-                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
+                    "  color = vColor * vPosition.z;" +
                     "}";
 
     private final String fragmentShaderCode =
             "precision mediump float;" +
-                    "uniform vec4 vColor;" +
+                    "varying vec4 color;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = color;" +
                     "}";
 
     private FloatBuffer vertexBuffer;
@@ -102,13 +105,13 @@ public class Region {
         for(DelaunayTriangle p : poly.getTriangles()){
             newCoords.add(p.points[0].getXf());
             newCoords.add(p.points[0].getYf());
-            newCoords.add(0.0f);
+            newCoords.add(0.3f);
             newCoords.add(p.points[1].getXf());
             newCoords.add(p.points[1].getYf());
-            newCoords.add(0.0f);
+            newCoords.add(1.0f);
             newCoords.add(p.points[2].getXf());
             newCoords.add(p.points[2].getYf());
-            newCoords.add(0.0f);
+            newCoords.add(0.7f);
         }
 
         fillVertexCount = newCoords.size() / COORDS_PER_VERTEX;
