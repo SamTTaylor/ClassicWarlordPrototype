@@ -218,6 +218,8 @@ public class Region {
                 break;
        }
 
+
+
         // Draw the region
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
