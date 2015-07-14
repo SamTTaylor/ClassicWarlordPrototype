@@ -35,7 +35,10 @@ package samueltaylor.classicwarlordprototype;
         import org.xmlpull.v1.XmlPullParserException;
 
         import java.io.BufferedInputStream;
+        import java.io.BufferedWriter;
+        import java.io.File;
         import java.io.FileNotFoundException;
+        import java.io.FileWriter;
         import java.io.IOException;
         import java.io.InputStream;
         import java.nio.ByteBuffer;
@@ -721,7 +724,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mParser = new SVGtoRegionParser();
         InputStream inputStream;
         try{
-            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.worldstraight));
+            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
             world = mParser.parse(inputStream);
         } catch (FileNotFoundException e){
             Log.e("FileNotFoundException", e.toString());
@@ -862,16 +865,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 addRegiontoEmpireinView(e);
                 nextPlayer();
                 break;
-            case 'A'://Receiving adjacent region info sendAdjacentRegions()
-                b = new byte[4];
-                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Get first region id
-                e = ByteToRegionID(b);
-                for(int i=5;i<buf.length;i+=4){//For each remaining region
-                    b[0]=buf[i];b[1]=buf[i+1];b[2]=buf[i+2];b[3]=buf[i+3];//Convert it to byte[4]
-                    int x=ByteToRegionID(b);//Get id from byte
-                    mModel.getRegion(e).addAdjacentRegion(mModel.getRegion(x));//Add adjacent
-                }
-                break;
             case 'C'://Mountain count reduction sendMountainCountReduction()
                 b = new byte[4];
                 for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Unpack the region id byte into byte[4]
@@ -974,36 +967,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    //Sends adjacent regions when they are found by getAdjacentRegions
-    //This saves other people's devices from doing the same work
-    private void sendAdjacentRegions(int id){
-        List <Byte> regionsasbytes = new ArrayList<>();
-        byte label = 'A'; //Adjacent Region byte
-
-        regionsasbytes.add(label);//Source region goes first
-        byte[] bytes = RegionIDToByte(id);
-        for(byte b : bytes){
-            regionsasbytes.add(b);
-        }
-
-        for(Region r : mModel.getRegion(id).getAdjacentregions()){//Package all adjacent IDs
-            bytes = RegionIDToByte(mModel.getRegionIDByName(r.getName()));
-            for(byte b : bytes){
-                regionsasbytes.add(b);
-            }
-        }
-
-        bytes = new byte[regionsasbytes.size()];//Convert list to array
-        for(int i=0; i<regionsasbytes.size();i++){
-            bytes[i] = regionsasbytes.get(i);
-        }
-        //Send!
-        for(Participant p : mParticipants){
-            if(mRoomId!=null) {
-                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
-            }
-        }
-    }
 
     private void sendMountainCountReduction(int id){
         List <Byte> regionsasbytes = new ArrayList<>();
@@ -1108,7 +1071,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             mModel.nextPhase();
             infofragment.setPhase(mModel.getCurrentphase());
         }
-        infofragment.setColour(mModel.getCurrentplayer().getColour(),mModel.getCurrentplayer().getColourstring());
+        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
     }
 
 
@@ -1155,12 +1118,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //MOUNTAIN SELECTION PHASE
-    boolean getAdjacentComplete =false;
     public void mountainSelected(int id){
         removeDialogFragment();
-        waitForAdjacentMountainCalc();
         boolean check=true;
-        for(Region r : mModel.getRegion(id).getAdjacentregions()){
+        for(Region r : getRegionAdjacentRegions(id)){
             if(r.isOwned()==true && check==true){//Adjacent mountain has been picked already, give error and rollback
                 showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.");//Dialog 2 is basic dialog
                 check=false;
@@ -1179,8 +1140,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 sendMoveToReinforcementPrompt(); //Tell everyone else too aswell
             }
         }
-
-        getAdjacentComplete=false;
     }
 
 
@@ -1248,20 +1207,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     public List<Region> getRegionAdjacentRegions(int id){
-        getAdjacentComplete=false;
-        if(mModel.getRegion(id).getAdjacentregions()==null){
-            List<String> lsts = mapfragment.getAdjacentRegions(id);
-            for(int i=0;i<lsts.size();i++){
-                mModel.getRegion(id).addAdjacentRegion(mModel.getRegionByName(lsts.get(i)));
-            }
-            sendAdjacentRegions(id);
-        }
-        getAdjacentComplete=true;
         return mModel.getRegion(id).getAdjacentregions();
-    }
-
-    private void waitForAdjacentMountainCalc(){
-        while(getAdjacentComplete == false) {}//Wait until getadjacentregions is finished
     }
 
     //TODO: Implement allocateReinforcementsToCurrentPlayer & onClick for reinforcement phase, find decent way to display forces available to each empire Find alternate method for highlighting owned regions

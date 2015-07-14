@@ -63,6 +63,13 @@ public class GameModel {
                 remainingmountaincount++;
             }
         }
+        //Once world has been build add adjacencies
+        for(SVGtoRegionParser.Region re : r){
+            Region tmpRegion = getRegionByName(re.name);
+            for(String s : re.adjacentregions){
+                tmpRegion.addAdjacentRegion(getRegionByName(s));
+            }
+        }
 
         phases = new LinkedList<>(Arrays.asList("Mountain", "Reinforcement", "Bombing", "Attack"));
     }
@@ -178,5 +185,6 @@ public class GameModel {
         remainingmountaincount +=i;}
     public int getRemainingmountaincount(){ return remainingmountaincount;}
 
+    public List<Region> getWorld(){return world;}
 }
 

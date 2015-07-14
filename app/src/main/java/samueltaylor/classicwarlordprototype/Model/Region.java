@@ -24,6 +24,7 @@ public class Region extends Object{
     private boolean counted=false;
 
     public Region(String n, String t){
+
         name=n;
         type=t;
         scorched=false;

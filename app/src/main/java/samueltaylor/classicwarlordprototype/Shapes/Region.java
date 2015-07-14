@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
@@ -41,9 +42,13 @@ public class Region {
                     "uniform vec4 vColor;" +
                     "attribute vec4 vPosition;" +
                     "varying vec4 color;" +
+                    "uniform int usegradient;" +
                     "void main() {" +
                     "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
-                    "  color = vColor * vPosition.z;" +
+                    "  if(usegradient>1)" +
+                    "    color = vColor * vPosition.z;" +
+                    "  else" +
+                    "    color = vColor;"+
                     "}";
 
     private final String fragmentShaderCode =
@@ -59,6 +64,7 @@ public class Region {
     private final int mProgram;
     private int mPositionHandle;
     private int mColorHandle;
+    private int mGradientHandle;
     private int mMVPMatrixHandle;
     private short drawOrder[];
     // number of coordinates per vertex in this array
@@ -172,6 +178,7 @@ public class Region {
      * @param mvpMatrix - The Model View Project matrix in which to draw
      * this shape.
      */
+    int mUseGradient;
     public void draw(float[] mvpMatrix) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
@@ -190,14 +197,14 @@ public class Region {
 
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-
+        mGradientHandle = GLES20.glGetUniformLocation(mProgram, "usegradient");
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-
+        mUseGradient = 0;
         switch (mDrawMode){
             case 0://Initial
                 mFillColor = mColor;
@@ -205,6 +212,7 @@ public class Region {
                 prevMode = 0;
                 break;
             case 1://Colour Identification for pixel grab
+                mUseGradient = 0;
                 mFillColor = mColorID;
                 mOutlineColor = mColorID;
                 mDrawMode=prevMode;
@@ -224,6 +232,8 @@ public class Region {
 
 
         // Draw the region
+        GLES20.glUniform1i(mGradientHandle,mUseGradient);
+//        GLES20.glUniform1fv(mGradientHandle,1,mUseGradient,0);
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
 

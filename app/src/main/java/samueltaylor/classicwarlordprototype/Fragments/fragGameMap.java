@@ -319,60 +319,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             //Manipulate it back to ID
             int regionnumber = (R << 7) | (G << 3) | B;
             ((GameController)getActivity()).regionClicked(regionnumber);
-
         }
-    }
-
-    //Gets adjacent regions to a region by looking around its vertices, used to allow extensibility for custom maps in future without
-    //requiring content generating users to list adjacent regions manually
-    //TODO Fix bug that checks around the centre of view when getting regions around an edge region
-    public List<String> getAdjacentRegions(int id){
-        int sensitivity = 10;//Check distance from the point
-        List<String> adjacentRegionNames = new ArrayList<>();
-        float ratio = (float) mGLView.getWidth() / mGLView.getHeight();
-        for(int i=0; i<regions[id].getmOutlineCoords().length;i+=3){//Cycle through xy coords and check around them for regions
-            float x = regions[id].getmOutlineCoords()[i];
-            float y = regions[id].getmOutlineCoords()[i+1];
-            Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 25, x - mWorldWidth / 2, -mWorldHeight /2+y, 0f, 0f, 1.0f, 0.0f);
-            Matrix.orthoM(mOrthographicMatrix, 0, ratio * -1.1f, -ratio * -1.1f, -1 * -1.1f, 1 * -1.1f, 3, 30);
-            Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
-            Matrix.translateM(mMVPMatrix, 0, -mWorldWidth / 2, -mWorldHeight/2, 0.0f);
-            for(Region r : regions){
-                r.toggleDrawMode(1);//Colour ID mode
-                r.draw(mMVPMatrix);
-            }
-            for(int xy=0;xy<4;xy++){//Check 4 points around the coord
-                ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
-                switch (xy){
-                    case 0:
-                        mGl.glReadPixels(mGLView.getWidth()/2, (mGLView.getHeight()-mGLView.getHeight()/2)+sensitivity, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
-                        break;
-                    case 1://Y2
-                        mGl.glReadPixels(mGLView.getWidth() / 2, (mGLView.getHeight() - mGLView.getHeight() / 2) - sensitivity, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
-                        break;
-                    case 2://X
-                        mGl.glReadPixels(mGLView.getWidth() / 2 + sensitivity, (mGLView.getHeight() - mGLView.getHeight() / 2), 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
-                        break;
-                    case 3://X2
-                        mGl.glReadPixels(mGLView.getWidth() / 2 + -sensitivity, (mGLView.getHeight() - mGLView.getHeight() / 2), 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
-                        break;
-                }
-
-                byte b[] = new byte[4];
-                PixelBuffer.get(b);
-
-                int R = (b[0] & 0xFF) >> 5;//Read RGB565 code
-                int G = (b[1] & 0xFF) >> 4;
-                int B = (b[2] & 0xFF) >> 5;
-
-                //Manipulate it back to ID
-                int regionnumber = (R << 7) | (G << 3) | B;
-                if(adjacentRegionNames.contains(regions[regionnumber].mName)==false && regionnumber!=id){
-                    adjacentRegionNames.add(regions[regionnumber].mName);
-                }
-            }
-        }
-        return adjacentRegionNames;
     }
 
     public void selectRegion(int id, float[] playercolour){
