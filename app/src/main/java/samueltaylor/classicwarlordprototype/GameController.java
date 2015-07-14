@@ -54,9 +54,12 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
         import samueltaylor.classicwarlordprototype.Fragments.fragIM;
         import samueltaylor.classicwarlordprototype.Fragments.fragInfo;
+        import samueltaylor.classicwarlordprototype.Fragments.fragInspect;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+        import samueltaylor.classicwarlordprototype.Model.Army;
+        import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
         import samueltaylor.classicwarlordprototype.Model.Player;
         import samueltaylor.classicwarlordprototype.Model.Region;
@@ -70,7 +73,8 @@ package samueltaylor.classicwarlordprototype;
  */
 public class GameController extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener, fragMain.OnFragmentInteractionListener, fragGameMap.OnFragmentInteractionListener, fragInvitationReceived.OnFragmentInteractionListener,
-        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener, fragDialog.OnFragmentInteractionListener
+        fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener, fragDialog.OnFragmentInteractionListener,
+        fragInspect.OnFragmentInteractionListener
 {
 
     //Online gameplay stuff
@@ -794,6 +798,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
 
+    private void showInspectFragment(){
+
+    }
+
+    public void removeInspectFragment(){
+
+    }
+
 
     //Fragment Listeners
     @Override
@@ -812,6 +824,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onInfoFragmentInteraction(Uri uri) {}
     @Override
     public void onAlertFragmentInteraction(Uri uri) {}
+    @Override
+    public void onInspectFragmentInteraction(Uri uri) {}
 
 
 
@@ -1087,20 +1101,35 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
                         showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
                         dialogfragment.setRegionid(id);
-                        getRegionAdjacentRegions(id);
                     }
                     break;
 
-                case "Reinforcement":
+                case "Bombing":
                     break;
 
-                case "Bombing":
+                case "Reinforcement":
+                    allocateReinforcementsToCurrentPlayer();
+                    for(Empire e : mModel.getCurrentplayer().getEmpires()){
+                        if(mModel.getRegion(id).getEmpire() == e){
+                            showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
+                            dialogfragment.setRegionid(id);
+                        }
+                    }
                     break;
 
                 case "Attack":
                     break;
 
             }
+        }
+    }
+    //Long touch logged
+    public void regionLongPressed(int id) {
+        mModel.getPlayer(mMyId).setSelectedregionid(id);
+        sendMySelectionData();
+        updateClickedRegions();
+        if(mModel.getRegion(id).getEmpire()!=null){
+            openInspectDialog(id);
         }
     }
 
@@ -1116,12 +1145,25 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    private void openInspectDialog(int id){
+        Region r = mModel.getRegion(id);
+        int a=0;
+        String b="None";
+        if(r.getArmy()!=null){
+            a = r.getArmy().getSize();
+        }
+        if(r.getBomb()!=null){
+            b = "Level" + r.getBomb().getSize()+r.getBomb().getTypeString();
+        }
+
+    }
+
 
     //MOUNTAIN SELECTION PHASE
     public void mountainSelected(int id){
         removeDialogFragment();
         boolean check=true;
-        for(Region r : getRegionAdjacentRegions(id)){
+        for (Region r : getRegionAdjacentRegions(id)){
             if(r.isOwned()==true && check==true){//Adjacent mountain has been picked already, give error and rollback
                 showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.");//Dialog 2 is basic dialog
                 check=false;
@@ -1183,18 +1225,24 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         allocateReinforcementsToCurrentPlayer();
     }
 
-    private void showMoveToReinforcementDialog(){
+    private void showMoveToReinforcementDialog() {
         showDialogFragment(2, "More players than mountains remaining, rolling back most this round's selections and moving to reinforcement phase...");//Dialog 2 is basic dialog
     }
 
 
     //REINFORCEMENT PHASE
     private void allocateReinforcementsToCurrentPlayer(){
+        for(Empire e : mModel.getCurrentplayer().getEmpires()){
+            e.Reinforce();
+        }
+    }
+
+    public void reinforceRegion(int id){
 
     }
 
 
-    private void addRegiontoEmpireinView(int id){
+    private void addRegiontoEmpireinView(int id) {
         mapfragment.getRegion(id).setUseGradient(true, mModel.getCurrentplayer().getColour());
         mapfragment.reRender();
         DeselectForCurrentPlayer();
@@ -1209,7 +1257,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public List<Region> getRegionAdjacentRegions(int id){
         return mModel.getRegion(id).getAdjacentregions();
     }
-
-    //TODO: Implement allocateReinforcementsToCurrentPlayer & onClick for reinforcement phase, find decent way to display forces available to each empire Find alternate method for highlighting owned regions
+    //TODO: Finish construction of inspection fragment, finish allocation of reinforcements for current player
+    //TODO: Implement allocateReinforcementsToCurrentPlayer & onClick for reinforcement phase
 
 }

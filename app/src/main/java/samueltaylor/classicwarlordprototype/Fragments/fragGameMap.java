@@ -153,6 +153,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveX;
     public float mMoveY;
     public boolean mClicked = false;//Has the surface been clicked
+    public boolean mLongPressed=false;
     public float[] mClickedPos = new float[2];
     private GL10 mGl;
 
@@ -302,7 +303,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         if(mClicked == true){
             mClicked=false;
             //Draw all the regions in their assigned ID colour
-
             for(Region r : regions){
                 r.toggleDrawMode(1);//Colour ID mode
                 r.draw(mMVPMatrix);
@@ -319,6 +319,27 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             //Manipulate it back to ID
             int regionnumber = (R << 7) | (G << 3) | B;
             ((GameController)getActivity()).regionClicked(regionnumber);
+        }
+
+        if(mLongPressed== true){
+            mLongPressed=false;
+            //Draw all the regions in their assigned ID colour
+            for(Region r : regions){
+                r.toggleDrawMode(1);//Colour ID mode
+                r.draw(mMVPMatrix);
+            }
+            ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
+            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight() - (int) mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+            byte b[] = new byte[4];
+            PixelBuffer.get(b);
+
+            int R = (b[0] & 0xFF) >> 5;//Read RGB565 code
+            int G = (b[1] & 0xFF) >> 4;
+            int B = (b[2] & 0xFF) >> 5;
+
+            //Manipulate it back to ID
+            int regionnumber = (R << 7) | (G << 3) | B;
+            ((GameController)getActivity()).regionLongPressed(regionnumber);
         }
     }
 

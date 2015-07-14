@@ -28,4 +28,6 @@ public class Army extends Object {
     void splitArmy(Region r, int x){
 
     }
+
+    public int getSize(){return size;}
 }

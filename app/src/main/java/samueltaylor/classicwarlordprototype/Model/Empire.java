@@ -11,8 +11,8 @@ import java.util.List;
 public class Empire extends Object{
 
     private List<Region> regions;
-    private int unallocatedforces;
-    private int unallocatedbombs;
+    private int unallocatedforces=0;
+    private int unallocatedbombs=0;
 
     public Empire(Region r){
         regions = new ArrayList<>();
@@ -20,11 +20,11 @@ public class Empire extends Object{
     }
 
     public Region getRegion(String name){
-//        for(Region r : regions){
-//            if(r.name.equals(name)){
-//                return r;
-//            }
-//        }
+        for(Region r : regions){
+            if(r.getName().equals(name)){
+                return r;
+            }
+        }
         return null;
     }
 
@@ -61,8 +61,27 @@ public class Empire extends Object{
     }
 
     int countReinforcements(){
-        int reinforcements=0;
-        //Count empires, for each empire, tally regions' worth
+        int reinforcements=1;//1 army for each empire
+        int cities=0;
+        int dense=0;
+        int rural=0;
+        //Count regions, for each region, add to count
+        for(Region r : regions){
+            switch (r.getType()){
+                case"city":
+                    cities++;
+                    break;
+                case"dense":
+                    dense++;
+                    break;
+                case"rural":
+                    rural++;
+                    break;
+            }
+        }
+        reinforcements+=cities;//1 army for each city
+        reinforcements+=dense/2;//1 army for 2 dense
+        reinforcements+=rural/3;//1 army for 3 rural
         return reinforcements;
     }
 

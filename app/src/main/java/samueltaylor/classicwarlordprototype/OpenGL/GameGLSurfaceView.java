@@ -77,4 +77,11 @@ public class GameGLSurfaceView extends GLSurfaceView {
         mRenderer.mClickedPos[1] = e.getY();
         requestRender();
     }
+
+    public void viewLongPress(MotionEvent e){
+        mRenderer.mClicked=false;
+        mRenderer.mClickedPos[0] = e.getX();
+        mRenderer.mClickedPos[1] = e.getY();
+        requestRender();
+    }
 }

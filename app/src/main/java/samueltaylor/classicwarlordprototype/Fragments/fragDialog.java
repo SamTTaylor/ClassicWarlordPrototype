@@ -70,14 +70,17 @@ public class fragDialog extends Fragment {
         btnCancel = (Button) getActivity().findViewById(R.id.btnCancel);
 
         switch (type){//Adjust layout to type
-            case 1: //Mountain
+            case 1: //Mountain confirmation
                 txtInput.setVisibility(View.GONE);
                 txtMessage.setText(message);
                 break;
-            case 2:
+            case 2://Basic Message
                 txtInput.setVisibility(View.GONE);
                 btnCancel.setVisibility(View.GONE);
                 btnConfirm.setText("OK");
+                txtMessage.setText(message);
+                break;
+            case 3://Reinforcement Deployment
                 txtMessage.setText(message);
                 break;
             default:
@@ -89,6 +92,9 @@ public class fragDialog extends Fragment {
             switch (type){
                 case 1: //Mountain Confirmation
                     ((GameController) getActivity()).mountainSelected(regionid);
+                    break;
+                case 3://Reinforcement Deployment
+                    ((GameController)getActivity()).reinforceRegion(regionid);
                     break;
 
                 default:

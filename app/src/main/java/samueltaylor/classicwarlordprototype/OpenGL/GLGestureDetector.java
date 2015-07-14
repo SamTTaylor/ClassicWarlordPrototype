@@ -3,6 +3,10 @@ package samueltaylor.classicwarlordprototype.OpenGL;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
+import com.google.android.gms.games.Game;
+
+import samueltaylor.classicwarlordprototype.GameController;
+
 /**
  * Created by Sam on 24/06/2015.
  */
@@ -28,5 +32,6 @@ public class GLGestureDetector extends GestureDetector.SimpleOnGestureListener {
     public void onLongPress(MotionEvent e)
     {
         //Possibly add additional options to long select on regions
+        mSurfaceView.viewLongPress(e);
     }
 }

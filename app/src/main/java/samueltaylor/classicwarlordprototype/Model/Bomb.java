@@ -76,5 +76,16 @@ public class Bomb extends Object{
     public int getBombtype(){
         return bombtype;
     }
+    public String getTypeString(){
+        switch (bombtype){
+            case 0:
+                return "A";
+            case 1:
+                return "H";
+            default:
+                return "";
+        }
+    }
+    public int getSize(){return size;}
 
 }

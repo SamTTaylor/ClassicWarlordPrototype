@@ -91,9 +91,11 @@ public class Region extends Object{
     public boolean isOwned() {if(empire==null){return false;}else{return true;}}
 
     public void setEmpire(Empire e){empire=e;}
+    public Empire getEmpire(){return empire;}
 
     public void setCounted(boolean f){counted=f;}
     public boolean getCounted(){return counted;}
 
     public Bomb getBomb(){return bomb;}
+    public Army getArmy(){return army;}
 }
