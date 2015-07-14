@@ -1677,6 +1677,7 @@ L496.388946533,711.7835083 L490.908874512,712.13708496
 L488.080444336,709.131835937 L482.600372315,708.778320312
 L469.165344239,717.086791992 L448.482452393,696.757507324 
 </path>
+    <name>Hamburg</name>
     <adjacent>Heligoland</adjacent>
     <adjacent>Nederland</adjacent>
     <adjacent>Jutland</adjacent>
@@ -2457,7 +2458,6 @@ L454.25,421.000030518
     <adjacent>Telemark</adjacent>
     <adjacent>Oslo</adjacent>
     <adjacent>Varmland</adjacent>
-    
     <adjacent>Trondelag</adjacent>
     <adjacent>Fjordland</adjacent>
 </region>
