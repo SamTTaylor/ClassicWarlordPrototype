@@ -1172,7 +1172,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             } else {
                 String name = p.getEmpires().get(p.getEmpires().size()-1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
                 int id = mModel.getRegionIDByName(name);
-                mapfragment.getRegion(id).resetmPlayerOutline();//Set outline back to black again
+                mapfragment.getRegion(id).setUseGradient(false, null);//Set outline back to black again
                 p.getEmpires().remove(p.getEmpires().size()-1);//Remove last empire
             }
         }
@@ -1195,7 +1195,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     private void addRegiontoEmpireinView(int id){
-        mapfragment.getRegion(id).setmPlayerOutline(mModel.getCurrentplayer().getColour());
+        mapfragment.getRegion(id).setUseGradient(true, mModel.getCurrentplayer().getColour());
         mapfragment.reRender();
         DeselectForCurrentPlayer();
     }

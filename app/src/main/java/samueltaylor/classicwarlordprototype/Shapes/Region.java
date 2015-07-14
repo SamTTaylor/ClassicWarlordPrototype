@@ -40,13 +40,14 @@ public class Region {
     private final String vertexShaderCode =
             "uniform mat4 uMVPMatrix;" +
                     "uniform vec4 vColor;" +
+                    "uniform vec4 playercolour;" +
                     "attribute vec4 vPosition;" +
                     "varying vec4 color;" +
                     "uniform int usegradient;" +
                     "void main() {" +
                     "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
-                    "  if(usegradient>1)" +
-                    "    color = vColor * vPosition.z;" +
+                    "  if((usegradient>1) && (vPosition.z>0.0))" +
+                    "    color = playercolour;" +
                     "  else" +
                     "    color = vColor;"+
                     "}";
@@ -65,6 +66,7 @@ public class Region {
     private int mPositionHandle;
     private int mColorHandle;
     private int mGradientHandle;
+    private int mPlayerColourHandle;
     private int mMVPMatrixHandle;
     private short drawOrder[];
     // number of coordinates per vertex in this array
@@ -79,11 +81,10 @@ public class Region {
 
     //Lots of colours
     float mColor[];
-    float mPlayerColor[];
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    float mPlayerOutline[] = cBlack;
+    float mPlayerColor[] = cBlack;
     float mFillColor[];//Used to determine shape fill colour on Draw
     float mOutlineColor[];//Used to determine shape outline colour on Draw
 
@@ -111,13 +112,13 @@ public class Region {
         for(DelaunayTriangle p : poly.getTriangles()){
             newCoords.add(p.points[0].getXf());
             newCoords.add(p.points[0].getYf());
-            newCoords.add(0.3f);
+            newCoords.add(0.0f);
             newCoords.add(p.points[1].getXf());
             newCoords.add(p.points[1].getYf());
             newCoords.add(1.0f);
             newCoords.add(p.points[2].getXf());
             newCoords.add(p.points[2].getYf());
-            newCoords.add(0.7f);
+            newCoords.add(0.0f);
         }
 
         fillVertexCount = newCoords.size() / COORDS_PER_VERTEX;
@@ -178,7 +179,8 @@ public class Region {
      * @param mvpMatrix - The Model View Project matrix in which to draw
      * this shape.
      */
-    int mUseGradient;
+    int mUseGradient=0;
+    boolean mUseGradientSetting=false;
     public void draw(float[] mvpMatrix) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
@@ -198,17 +200,22 @@ public class Region {
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         mGradientHandle = GLES20.glGetUniformLocation(mProgram, "usegradient");
+        mPlayerColourHandle = GLES20.glGetUniformLocation(mProgram, "playercolour");
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-        mUseGradient = 0;
+        if(mUseGradientSetting==true){
+            mUseGradient=2;
+        } else {
+            mUseGradient=0;
+        }
         switch (mDrawMode){
             case 0://Initial
                 mFillColor = mColor;
-                mOutlineColor = mPlayerOutline;
+                mOutlineColor = cBlack;
                 prevMode = 0;
                 break;
             case 1://Colour Identification for pixel grab
@@ -218,13 +225,14 @@ public class Region {
                 mDrawMode=prevMode;
                 break;
             case 2://Selected
+                mUseGradient = 0;
                 mFillColor = mPlayerColor;
-                mOutlineColor = mPlayerOutline;
+                mOutlineColor = cBlack;
                 prevMode = 2;
                 break;
             default://default
                 mFillColor = mColor;
-                mOutlineColor = mPlayerOutline;
+                mOutlineColor = cBlack;
                 prevMode = 0;
                 break;
        }
@@ -233,12 +241,13 @@ public class Region {
 
         // Draw the region
         GLES20.glUniform1i(mGradientHandle,mUseGradient);
-//        GLES20.glUniform1fv(mGradientHandle,1,mUseGradient,0);
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
+        GLES20.glUniform4fv(mPlayerColourHandle, 1, mPlayerColor, 0);//Set region gradient colour
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
 
         //Draw outline
-        GLES20.glUniform4fv(mColorHandle, 1, mOutlineColor, 0);//Set black colour
+        GLES20.glUniform4fv(mPlayerColourHandle, 1, cBlack, 0);//Set region gradient colour
+        GLES20.glUniform4fv(mColorHandle, 1, mOutlineColor, 0);//Set outline colour
         GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, fillVertexCount, outlineVertexCount);
 
         // Disable vertex array
@@ -249,8 +258,13 @@ public class Region {
         mDrawMode=i;
     }
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
-    public void setmPlayerOutline(float[] f){mPlayerOutline=f;}
-    public void resetmPlayerOutline(){mPlayerOutline=cBlack;}
+    public void setUseGradient(boolean b, float[] colour){
+        mUseGradientSetting=b;
+        mPlayerColor = colour;
+        if(colour == null){
+            mPlayerColor = cBlack;
+        }
+    }
 
     public float[] getmOutlineCoords(){
         return mOutlineCoords;
