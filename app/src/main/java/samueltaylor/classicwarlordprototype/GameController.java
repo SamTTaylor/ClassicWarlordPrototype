@@ -35,10 +35,7 @@ package samueltaylor.classicwarlordprototype;
         import org.xmlpull.v1.XmlPullParserException;
 
         import java.io.BufferedInputStream;
-        import java.io.BufferedWriter;
-        import java.io.File;
         import java.io.FileNotFoundException;
-        import java.io.FileWriter;
         import java.io.IOException;
         import java.io.InputStream;
         import java.nio.ByteBuffer;
@@ -120,7 +117,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     String mIncomingInvitationId = null;
 
     // Message buffer for sending messages
-    byte[] mMsgBuf = new byte[2];
+//    byte[] mMsgBuf = new byte[2];
 
 
     @Override
@@ -143,10 +140,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                 .build();
 
-        if(mGoogleApiClient.isConnected()==true){
-            signedin = true;
-        } else {
+        if (!mGoogleApiClient.isConnected()) {
             signedin = false;
+        }
+        else {
+            signedin = true;
         }
 
     }
@@ -375,7 +373,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
         if (keyCode == KeyEvent.KEYCODE_BACK ) {
-            if(inRoom()==true){
+            if(inRoom()){
                 leaveRoom();
             } else {
                 this.finish();
@@ -451,7 +449,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 // retrieve and cache the invitation ID
                 Log.d(TAG,"onConnected: connection hint has a room invite!");
                 acceptInviteToRoom(inv.getInvitationId());
-                return;
             }
         }
     }
@@ -627,11 +624,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //Check if we are currently in game
     boolean inRoom(){
-        if (mRoomId!=null) {
-            return true;
-        } else {
-            return false;
-        }
+        return mRoomId != null;
     }
 
     // Reset game variables in preparation for a new game.
@@ -847,10 +840,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     // Score of other participants. We update this as we receive their scores
     // from the network.
-    Map<String, Integer> mParticipantChoice = new HashMap<String, Integer>();
+    Map<String, Integer> mParticipantChoice = new HashMap<>();
 
     // Participants who sent us their final score.
-    Set<String> mFinishedParticipants = new HashSet<String>();
+    Set<String> mFinishedParticipants = new HashSet<>();
 
     // Called when we receive a real-time message from the network.
     // Messages should start with a byte indicating how they should be interpreted
@@ -869,12 +862,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 break;
             case 'S'://Selection data received sendMySelectionData()
                 b = new byte[4];
-                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
+                System.arraycopy(buf, 1, b, 0, b.length);
                 int s= ByteToRegionID(b);
                 mModel.getPlayer(rtm.getSenderParticipantId()).setSelectedregionid(s);
 
                 b = new byte[4];
-                for(int i=0;i<b.length;i++){b[i]=buf[i+5];}
+                System.arraycopy(buf, 5, b, 0, b.length);
                 s= ByteToRegionID(b);
                 mModel.getPlayer(rtm.getSenderParticipantId()).setPrevselectedregionid(s);
 
@@ -882,7 +875,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 break;
             case 'N'://New empire for current player sendRegionUpdate()
                 b = new byte[4];
-                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}
+                System.arraycopy(buf, 1, b, 0, b.length);
                 int e = ByteToRegionID(b);
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
                 addRegiontoEmpireinView(e);
@@ -890,14 +883,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 break;
             case 'C'://Mountain count reduction sendMountainCountReduction()
                 b = new byte[4];
-                for(int i=0;i<b.length;i++){b[i]=buf[i+1];}//Unpack the region id byte into byte[4]
+                System.arraycopy(buf, 1, b, 0, b.length);
                 e = ByteToRegionID(b);//Get the ID of centre mountain
                 mModel.getRegion(e).setCounted(true);
                 mModel.setRemainingmountaincount(-1);//Reduce remaining mountain count by 1
                 for(int i=5;i<buf.length;i+=4){//For each remaining adjacent mountain
                     b[0]=buf[i];b[1]=buf[i+1];b[2]=buf[i+2];b[3]=buf[i+3];//Convert it to byte[4]
                     int x=ByteToRegionID(b);//Get id from byte
-                    if(mModel.getRegion(x).getCounted()==false){
+                    if(!mModel.getRegion(x).getCounted()){
                         mModel.setRemainingmountaincount(-1);//Reduce remaining mountain count by 1
                         mModel.getRegion(x).setCounted(true);//Set counted to true
                     }
@@ -949,17 +942,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // Buffer ints as bytes
         byte[] b = RegionIDToByte(s);
         byte[] bytes = new byte[9];
-        for(int i=0;i<b.length;i++){
-            bytes[i+1]=b[i];
-        }
+        System.arraycopy(b, 0, bytes, 1, b.length);
         //Label message as selection data & add the ints to the array
         bytes[0] = 'S';
 
 
         b = RegionIDToByte(p);
-        for(int i=0;i<b.length;i++){
-            bytes[5+i]=b[i];
-        }
+        System.arraycopy(b, 0, bytes, 5, b.length);
         //send it
         for(Participant pa : mParticipants){
             if(mRoomId!=null){
@@ -974,9 +963,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 // Buffer ints as bytes
                 byte[] b = RegionIDToByte(regionid);
                 byte[] bytes = new byte[6];
-                for(int i=0;i<b.length;i++){
-                    bytes[i+1]=b[i];
-                }
+                System.arraycopy(b, 0, bytes, 1, b.length);
                 bytes[0] = 'N';//Label as new empire
                 //send it
                 for(Participant p : mParticipants){
@@ -1065,8 +1052,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         for(int i=0;i<4;i++){bb.put(b[i]);}//set selected data
         bb.rewind();
-        int s = bb.getInt();
-        return s;
+        return bb.getInt();
     }
 
 
@@ -1081,7 +1067,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     GameModel mModel;
     private void initialiseModel(List<SVGtoRegionParser.Region> r, List<Participant> plist){
         List<String> pids = new ArrayList<>();
-        int i=0;
         for(Participant p : plist){
             pids.add(p.getParticipantId());
         }
@@ -1090,7 +1075,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void nextPlayer(){
         mModel.nextPlayer();
-        if(mModel.getNextphase()==true){
+        if(mModel.getNextphase()){
             mModel.nextPhase();
             infofragment.setPhase(mModel.getCurrentphase());
         }
@@ -1107,7 +1092,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             switch (mModel.getCurrentphaseString()){
 
                 case "Mountain":
-                    if(mModel.getRegion(id).getType().equals("mountain") && mModel.getRegion(id).isOwned()==false){
+                    if(mModel.getRegion(id).getType().equals("mountain") && !mModel.getRegion(id).isOwned()){
                         showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
                         dialogfragment.setRegionid(id);
                     }
@@ -1161,15 +1146,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         removeDialogFragment();
         boolean check=true;
         for (Region r : getRegionAdjacentRegions(id)){
-            if(r.isOwned()==true && check==true){//Adjacent mountain has been picked already, give error and rollback
+            if(r.isOwned() && check){//Adjacent mountain has been picked already, give error and rollback
                 showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.");//Dialog 2 is basic dialog
                 check=false;
             }
         }
-        if(check==true){//Allowed mountain
+        if(check){//Allowed mountain
             reduceMountainCountLocal(id);
             sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
-            if(checkRemainingMountains()==true){
+            if(checkRemainingMountains()){
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
                 addRegiontoEmpireinView(id);
                 nextPlayer();//Mountain selection complete, move to next player
@@ -1187,7 +1172,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.setRemainingmountaincount(-1);
         mModel.getRegion(id).setCounted(true);
         for (Region r : mModel.getRegion(id).getAdjacentregions()){
-            if(r.getType().equals("mountain")&& r.getCounted()==false){
+            if(r.getType().equals("mountain")&& !r.getCounted()){
                 x++;
                 r.setCounted(true);
             }
@@ -1195,12 +1180,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.setRemainingmountaincount(-x);
     }
     private boolean checkRemainingMountains(){
-        if(mModel.getRemainingmountaincount()/mModel.getPlayers().size()<1){
-            //Not enough mountains left to go around
-            return false;
-        } else {
-            return true;
-        }
+        return mModel.getRemainingmountaincount() / mModel.getPlayers().size() >= 1;
     }
 
     private void moveToReinforcement(){//Roll back mountains and end mountain selection phase
