@@ -803,12 +803,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         inspectfragment = new fragInspect();
-        if(inspectfragment.isVisible()){
-            transaction.remove(inspectfragment);
-            transaction.commit();
-        }
         inspectfragment.setRegion(mModel.getRegion(id));
-        transaction = manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, inspectfragment, "inspect");
         transaction.commit();
     }
@@ -1139,7 +1134,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
     //Long touch logged
     public void regionLongPressed(int id) {
-        Log.e("Tag", "Long Press passed to Controller");
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();

@@ -60,7 +60,7 @@ public class Empire extends Object{
         }
     }
 
-    int countReinforcements(){
+    public int countReinforcements(){
         int reinforcements=1;//1 army for each empire
         int cities=0;
         int dense=0;

@@ -67,11 +67,11 @@ public class fragInspect extends Fragment {
             txtArmy.setText("-");
         }
         if(region.getBomb()!=null){
-            txtArmy.setText(region.getBomb().getTypeString() + " : " + String.valueOf(region.getBomb().getSize()));
+            txtBomb.setText(region.getBomb().getTypeString() + " : " + String.valueOf(region.getBomb().getSize()));
         } else {
-            txtArmy.setText("-");
+            txtBomb.setText("-");
         }
-        txtReinforcements.setText(String.valueOf(region.getEmpire().getUnallocatedforces()));
+        txtReinforcements.setText(String.valueOf(region.getEmpire().countReinforcements()));
 
 
         btnOk.setOnClickListener(new View.OnClickListener() {

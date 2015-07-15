@@ -85,6 +85,7 @@ public class Region {
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float mPlayerColor[] = cBlack;
+    float mSelectedColour[] = cBlack;
     float mFillColor[];//Used to determine shape fill colour on Draw
     float mOutlineColor[];//Used to determine shape outline colour on Draw
 
@@ -226,7 +227,7 @@ public class Region {
                 break;
             case 2://Selected
                 mUseGradient = 0;
-                mFillColor = mPlayerColor;
+                mFillColor = mSelectedColour;
                 mOutlineColor = cBlack;
                 prevMode = 2;
                 break;
@@ -258,6 +259,7 @@ public class Region {
         mDrawMode=i;
     }
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
+    public void setmSelectedColour(float[] f){mSelectedColour = f;}
     public void setUseGradient(boolean b, float[] colour){
         mUseGradientSetting=b;
         mPlayerColor = colour;

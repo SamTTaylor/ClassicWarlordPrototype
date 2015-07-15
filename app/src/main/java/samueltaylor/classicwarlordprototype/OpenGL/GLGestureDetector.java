@@ -32,7 +32,6 @@ public class GLGestureDetector extends GestureDetector.SimpleOnGestureListener {
     @Override
     public void onLongPress(MotionEvent e)
     {
-        Log.e("Tag", "Long Press registered by View");
         //Possibly add additional options to long select on regions
         mSurfaceView.viewLongPress(e);
     }
