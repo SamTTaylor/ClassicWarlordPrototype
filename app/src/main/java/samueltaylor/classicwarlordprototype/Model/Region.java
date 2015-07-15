@@ -101,4 +101,5 @@ public class Region extends Object{
 
     public int getAllocatedforces(){return allocatedforces;}
     public void adjustAllocatedforces(int i){allocatedforces+=i;}
+    public void resetAllocatedforces(){allocatedforces=0;}
 }

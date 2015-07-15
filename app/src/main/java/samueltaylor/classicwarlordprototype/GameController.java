@@ -1106,7 +1106,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 case "Reinforcement":
                     for(Empire e : mModel.getCurrentplayer().getEmpires()){
                         if(mModel.getRegion(id).getEmpire() == e){                                                                 //Max is forces available in empire, min is -forces allocated to region this phase
-                            showDialogFragment(3, "Add/Remove reinforcements for Region: '" + mModel.getRegion(id).getName() + "'",e.getUnallocatedforces(),-mModel.getRegion(id).getAllocatedforces());//Input dialog
+                            showDialogFragment(3, "Add/Remove reinforcements for '" + mModel.getRegion(id).getName() + "'. \nAllocated here this turn: "+mModel.getRegion(id).getAllocatedforces()+"\nRemaining in Empire: "+e.getUnallocatedforces(),e.getUnallocatedforces(),-mModel.getRegion(id).getAllocatedforces());//Input dialog
                             dialogfragment.setRegionid(id);
                         }
                     }
@@ -1211,6 +1211,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     //REINFORCEMENT PHASE
     private void allocateReinforcementsToCurrentPlayer(){
         for(Empire e : mModel.getCurrentplayer().getEmpires()){
+            e.resetUnallocatedforces();
             e.Reinforce();
         }
     }

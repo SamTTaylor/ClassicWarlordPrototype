@@ -90,4 +90,10 @@ public class Empire extends Object{
     }
     public int getUnallocatedforces(){return unallocatedforces;}
     public void adjustUnallocatedforces(int i){unallocatedforces+=i;}
+    public void resetUnallocatedforces(){
+        for(Region r : regions){
+            r.resetAllocatedforces();
+        }
+        unallocatedforces=0;
+    }
 }
