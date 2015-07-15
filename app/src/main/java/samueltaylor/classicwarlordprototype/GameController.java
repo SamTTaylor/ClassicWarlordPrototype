@@ -771,7 +771,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
 
-    public void showDialogFragment(int type, String s){
+    public void showDialogFragment(int type, String s, int max, int min){
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         dialogfragment = new fragDialog();
@@ -781,6 +781,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         dialogfragment.setMessage(s);
         dialogfragment.setType(type);
+        dialogfragment.setMax(max);
+        dialogfragment.setMin(min);
         transaction = manager.beginTransaction();
         transaction.add(R.id.activity_main_layout, dialogfragment, "alert");
         transaction.commit();
@@ -1093,7 +1095,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
                 case "Mountain":
                     if(mModel.getRegion(id).getType().equals("mountain") && !mModel.getRegion(id).isOwned()){
-                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
+                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'",0,0);//Confirmation Dialog
                         dialogfragment.setRegionid(id);
                     }
                     break;
@@ -1102,10 +1104,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     break;
 
                 case "Reinforcement":
-                    allocateReinforcementsToCurrentPlayer();
                     for(Empire e : mModel.getCurrentplayer().getEmpires()){
-                        if(mModel.getRegion(id).getEmpire() == e){
-                            showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'");//Dialog 1 is mountain dialog
+                        if(mModel.getRegion(id).getEmpire() == e){                                                                 //Max is forces available in empire, min is -forces allocated to region this phase
+                            showDialogFragment(3, "Add/Remove reinforcements for Region: '" + mModel.getRegion(id).getName() + "'",e.getUnallocatedforces(),-mModel.getRegion(id).getAllocatedforces());//Input dialog
                             dialogfragment.setRegionid(id);
                         }
                     }
@@ -1147,7 +1148,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         boolean check=true;
         for (Region r : getRegionAdjacentRegions(id)){
             if(r.isOwned() && check){//Adjacent mountain has been picked already, give error and rollback
-                showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.");//Dialog 2 is basic dialog
+                showDialogFragment(2, "Cannot select mountain: '" + mModel.getRegion(id).getName() + "'. Adjacent mountain: '" + r.getName() + "' has already been selected.",0,0);//Dialog 2 is basic dialog
                 check=false;
             }
         }
@@ -1203,7 +1204,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void showMoveToReinforcementDialog() {
-        showDialogFragment(2, "More players than mountains remaining, rolling back most this round's selections and moving to reinforcement phase...");//Dialog 2 is basic dialog
+        showDialogFragment(2, "More players than mountains remaining, rolling back most this round's selections and moving to reinforcement phase...",0,0);//Dialog 2 is basic dialog
     }
 
 
@@ -1214,8 +1215,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    public void reinforceRegion(int id){
-
+    public void reinforceRegion(int id, int amount){
+        removeDialogFragment();
+        //Appropriate amounts verified in fragDialog
+        mModel.getRegion(id).getEmpire().adjustUnallocatedforces(-amount);
+        mModel.getRegion(id).getArmy().incrementSize(amount);
+        mModel.getRegion(id).adjustAllocatedforces(amount);
     }
 
 

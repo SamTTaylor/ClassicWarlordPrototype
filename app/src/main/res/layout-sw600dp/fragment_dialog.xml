@@ -34,19 +34,46 @@
                 android:textStyle="bold"
                 android:gravity="center_horizontal" />
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txtInput"
-                android:layout_gravity="center_horizontal"
-                android:maxLength="1"
-                android:maxLines="1"
-                android:minLines="1"
-                android:width="50dp"
-                android:text="0"
-                android:textStyle="bold"
-                android:gravity="center_vertical|center_horizontal"
-                android:textSize="28dp" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:id="@+id/inputLayout"
+                android:layout_marginBottom="20dp">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:id="@+id/btnMinus"
+                    android:background="@drawable/rectmenubutton"
+                    android:textSize="30dp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txtInput"
+                    android:layout_gravity="center_horizontal"
+                    android:maxLength="2"
+                    android:maxLines="1"
+                    android:minLines="1"
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:editable="false"
+                    android:textSize="30dp" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+"
+                    android:id="@+id/btnPlus"
+                    android:background="@drawable/rectmenubutton"
+                    android:textSize="30dp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"

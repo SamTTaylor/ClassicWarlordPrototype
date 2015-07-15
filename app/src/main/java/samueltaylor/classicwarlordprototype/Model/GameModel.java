@@ -73,7 +73,7 @@ public class GameModel {
             }
         }
 
-        phases = new LinkedList<>(Arrays.asList("Mountain", "Reinforcement", "Bombing", "Attack"));
+        phases = new LinkedList<>(Arrays.asList("Mountain", "Bombing", "Reinforcement", "Attack"));
     }
 
     public void nextPlayer(){//Move to next player's turn

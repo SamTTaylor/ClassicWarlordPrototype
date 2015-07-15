@@ -12,7 +12,7 @@ import samueltaylor.classicwarlordprototype.GameController;
  */
 public class Region extends Object{
 
-    private boolean selected;
+    private int allocatedforces=0;
     private Army army=null;
     private Bomb bomb;
     private Empire empire=null;
@@ -98,4 +98,7 @@ public class Region extends Object{
 
     public Bomb getBomb(){return bomb;}
     public Army getArmy(){return army;}
+
+    public int getAllocatedforces(){return allocatedforces;}
+    public void adjustAllocatedforces(int i){allocatedforces+=i;}
 }
