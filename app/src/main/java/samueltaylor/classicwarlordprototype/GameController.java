@@ -901,6 +901,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             case 'R'://sendMoveToReinforcementPrompt()
                 moveToReinforcement();
                 break;
+            case 'U'://Reinforcement update sendRegionUpdate(1,id)
+                b = new byte[4];
+                System.arraycopy(buf, 1, b, 0, b.length);
+                s= ByteToRegionID(b);
+
+                b = new byte[4];
+                System.arraycopy(buf, 5, b, 0, b.length);
+                int i= ByteToRegionID(b);//Allocated Forces
+                mModel.getRegion(s).getArmy().setSize(i);//Set size rather than increment due to difficulties discerning negative numbers
+                break;
         }
 
     }
@@ -974,6 +984,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                 }
                 break;
+            case 1: //Reinforcement update
+                // Buffer ints as bytes
+                b = RegionIDToByte(regionid);
+                bytes = new byte[9];
+                System.arraycopy(b, 0, bytes, 1, b.length);//Package region id
+                b = RegionIDToByte(mModel.getRegion(regionid).getArmy().getSize());//Converting int to ID using regionID method
+                System.arraycopy(b, 0, bytes, 5, b.length);//Package new army size
+                bytes[0] = 'U';//Label as new empire
+                //send it
+                for(Participant p : mParticipants){
+                    if(mRoomId!=null) {
+                        Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+                    }
+                }
+                break;
             default://no type supplied
                 break;
         }
@@ -1021,6 +1046,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }
     }
+
 
     public String getName(String id){
         String name = "No player Found";
@@ -1084,6 +1110,32 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
     }
 
+    //End Turn
+    public void endTurn(boolean confirmed){
+        switch (mModel.getCurrentphaseString()){
+            case "Bombing":
+                break;
+
+            case "Reinforcement":
+                boolean reinforcementsused=true;
+                if(!confirmed){
+                    for(Empire e : mModel.getCurrentplayer().getEmpires()){
+                        if(e.getUnallocatedforces()>0){
+                            reinforcementsused=false;
+                        }
+                    }
+                }
+                if(!reinforcementsused && !confirmed){//If confirmed is passed as true (by the confirmation dialog) then reinforcementsused=false does not matter
+                    showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end turn?",0,0);//Confirmation Dialog);
+                } else {
+                    nextPlayer();
+                }
+                break;
+
+            case "Attack":
+                break;
+        }
+    }
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
@@ -1222,6 +1274,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getRegion(id).getEmpire().adjustUnallocatedforces(-amount);
         mModel.getRegion(id).getArmy().incrementSize(amount);
         mModel.getRegion(id).adjustAllocatedforces(amount);
+        sendRegionUpdate(1, id);//Reinforcement Update
     }
 
 

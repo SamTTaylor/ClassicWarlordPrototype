@@ -101,13 +101,14 @@ public class fragDialog extends Fragment {
         btnConfirm.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             //Confirm based on dialog type
             switch (type){
-                case 1: //Mountain Confirmation
-                    ((GameController) getActivity()).mountainSelected(regionid);
+                case 1: //Confirmation
+                        ((GameController) getActivity()).mountainSelected(regionid);
                     break;
                 case 3://Reinforcement Deployment
                     ((GameController)getActivity()).reinforceRegion(regionid, current);
                     break;
-
+                case 4://End turn confirmation
+                    ((GameController) getActivity()).endTurn(true);
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
@@ -117,15 +118,12 @@ public class fragDialog extends Fragment {
 
 
         btnPlus.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            //Dismiss self
             if(current<max){
                 current++;
                 txtInput.setText(String.valueOf(current));
             }
         }});
         btnMinus.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            //Dismiss self
-            Log.e("Tag", String.valueOf(current) + " : " + String.valueOf(min));
             if(current > min){
                 current--;
                 txtInput.setText(String.valueOf(current));
