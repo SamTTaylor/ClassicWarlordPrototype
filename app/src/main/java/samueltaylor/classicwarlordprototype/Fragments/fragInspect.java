@@ -7,27 +7,32 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import samueltaylor.classicwarlordprototype.GameController;
+import samueltaylor.classicwarlordprototype.Model.Region;
 import samueltaylor.classicwarlordprototype.R;
 
 
 public class fragInspect extends Fragment {
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
+    private Region region;
+    private TextView txtTitle;
+    private TextView txtArmy;
+    private TextView txtBomb;
+    private TextView txtReinforcements;
+    private Button btnOk;
 
     public static fragInspect newInstance(String param1, String param2) {
         fragInspect fragment = new fragInspect();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -40,8 +45,6 @@ public class fragInspect extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -51,55 +54,35 @@ public class fragInspect extends Fragment {
         //UI calls after fragment has finished loading elements
 
         //Add buttons and listeners
-//        txtMessage = (TextView) getActivity().findViewById(R.id.txtDialogMessage);
-//        txtInput = (EditText) getActivity().findViewById(R.id.txtInput);
-//        btnConfirm = (Button) getActivity().findViewById(R.id.btnConfirm);
-//        btnCancel = (Button) getActivity().findViewById(R.id.btnCancel);
-//
-//        switch (type){//Adjust layout to type
-//            case 1: //Mountain confirmation
-//                txtInput.setVisibility(View.GONE);
-//                txtMessage.setText(message);
-//                break;
-//            case 2://Basic Message
-//                txtInput.setVisibility(View.GONE);
-//                btnCancel.setVisibility(View.GONE);
-//                btnConfirm.setText("OK");
-//                txtMessage.setText(message);
-//                break;
-//            case 3://Reinforcement Deployment
-//                txtMessage.setText(message);
-//                break;
-//            default:
-//                break;
-//        }
-//
-//        btnConfirm.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-//            //Confirm based on dialog type
-//            switch (type){
-//                case 1: //Mountain Confirmation
-//                    ((GameController) getActivity()).mountainSelected(regionid);
-//                    break;
-//                case 3://Reinforcement Deployment
-//                    ((GameController)getActivity()).reinforceRegion(regionid);
-//                    break;
-//
-//                default:
-//                    ((GameController) getActivity()).removeDialogFragment();
-//                    break;
-//            }
-//
-//        }});
-//
-//
-//        btnCancel.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //Dismiss self
-//                ((GameController) getActivity()).removeDialogFragment();
-//            }
-//        });
+        txtTitle = (TextView) getActivity().findViewById(R.id.txtInspectTitle);
+        txtArmy = (TextView) getActivity().findViewById(R.id.txtInspectArmy);
+        txtBomb = (TextView) getActivity().findViewById(R.id.txtInspectBomb);
+        txtReinforcements = (TextView) getActivity().findViewById(R.id.txtInspectReinforcements);
+        btnOk = (Button) getActivity().findViewById(R.id.btnInspectConfirm);
+
+        txtTitle.setText(region.getName());
+        if(region.getArmy()!=null){
+            txtArmy.setText(String.valueOf(region.getArmy().getSize()));
+        } else {
+            txtArmy.setText("-");
+        }
+        if(region.getBomb()!=null){
+            txtArmy.setText(region.getBomb().getTypeString() + " : " + String.valueOf(region.getBomb().getSize()));
+        } else {
+            txtArmy.setText("-");
+        }
+        txtReinforcements.setText(String.valueOf(region.getEmpire().getUnallocatedforces()));
+
+
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Dismiss self
+                ((GameController) getActivity()).removeInspectFragment();
+            }});
     }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -131,8 +114,10 @@ public class fragInspect extends Fragment {
     }
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onInspectFragmentInteraction(Uri uri);
     }
+
+    public void setRegion(Region r){region = r;}
+
 
 }

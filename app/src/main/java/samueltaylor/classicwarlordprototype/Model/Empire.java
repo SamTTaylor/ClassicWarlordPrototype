@@ -88,4 +88,5 @@ public class Empire extends Object{
     public void Reinforce(){
         unallocatedforces+=countReinforcements();
     }
+    public int getUnallocatedforces(){return unallocatedforces;}
 }

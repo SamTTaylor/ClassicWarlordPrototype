@@ -10,14 +10,12 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -154,7 +152,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public float mMoveY;
     public boolean mClicked = false;//Has the surface been clicked
     public boolean mLongPressed=false;
-    public float[] mClickedPos = new float[2];
+    public float[] mTouchedPos = new float[2];
     private GL10 mGl;
 
     //Initial drawing
@@ -308,7 +306,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
                 r.draw(mMVPMatrix);
             }
             ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
-            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight() - (int) mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+            gl.glReadPixels((int) mTouchedPos[0], mGLView.getHeight() - (int) mTouchedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
             PixelBuffer.get(b);
 
@@ -329,7 +327,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
                 r.draw(mMVPMatrix);
             }
             ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
-            gl.glReadPixels((int) mClickedPos[0], mGLView.getHeight() - (int) mClickedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
+            gl.glReadPixels((int) mTouchedPos[0], mGLView.getHeight() - (int) mTouchedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
             PixelBuffer.get(b);
 

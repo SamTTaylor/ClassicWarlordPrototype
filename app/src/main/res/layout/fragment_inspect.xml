@@ -16,7 +16,7 @@
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:background="@color/PanelColor"
             android:padding="5dp"
@@ -32,101 +32,102 @@
 
             <LinearLayout
                 android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:paddingRight="20dp">
 
-                <TextView
+                <TableLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Forces"
-                    android:id="@+id/textView12"
-                    android:layout_gravity="left" />
+                    android:layout_height="match_parent">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="0"
-                    android:id="@+id/textView13"
-                    android:layout_gravity="left|right" />
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/imgArmy"
+                            android:background="@drawable/armyiconmd"
+                            android:layout_column="1" />
+
+                        <TextView
+                            style="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="Unset"
+                            android:id="@+id/txtInspectArmy"
+                            android:layout_gravity="center_vertical|right"
+                            android:textStyle="bold"
+                            android:layout_column="2" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/imgBomb"
+                            android:background="@drawable/bombiconmd"
+                            android:layout_column="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="Unset"
+                            android:id="@+id/txtInspectBomb"
+                            android:layout_gravity="center_vertical|right"
+                            android:textStyle="bold"
+                            style="1"
+                            android:layout_column="2" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/imgReinforce"
+                            android:background="@drawable/reinforceiconmd"
+                            android:layout_column="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="Unset"
+                            android:id="@+id/txtInspectReinforcements"
+                            android:layout_gravity="center"
+                            android:textStyle="bold"
+                            android:layout_column="2" />
+
+                    </TableRow>
+
+                </TableLayout>
             </LinearLayout>
 
-            <LinearLayout
-                android:orientation="horizontal"
+            <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Bomb"
-                    android:id="@+id/lblBomb" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="0"
-                    android:id="@+id/txtBomb" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Forces"
-                    android:id="@+id/textView8" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="0"
-                    android:id="@+id/textView9" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="Forces"
-                    android:id="@+id/lblForces" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="0"
-                    android:id="@+id/txtForces" />
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:text="OK"
+                android:id="@+id/btnInspectConfirm"
+                android:textStyle="bold"
+                android:background="@drawable/rectmenubutton"
+                android:width="80dp"
+                android:layout_gravity="center_horizontal" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OK"
-                    android:id="@+id/btnConfirm"
-                    android:textStyle="bold"
-                    android:background="@drawable/rectmenubutton"
-                    android:width="80dp"
-                    android:layout_marginRight="5dp" />
 
             </LinearLayout>
 

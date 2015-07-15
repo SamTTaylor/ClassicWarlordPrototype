@@ -681,6 +681,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     fragInvitationReceived invitefragment;
     fragInfo infofragment;
     fragDialog dialogfragment;
+    fragInspect inspectfragment;
 
 
     void initialiseNonMapFragments(){
@@ -798,12 +799,25 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
 
-    private void showInspectFragment(){
-
+    private void showInspectFragment(int id){
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        inspectfragment = new fragInspect();
+        if(inspectfragment.isVisible()){
+            transaction.remove(inspectfragment);
+            transaction.commit();
+        }
+        inspectfragment.setRegion(mModel.getRegion(id));
+        transaction = manager.beginTransaction();
+        transaction.add(R.id.activity_main_layout, inspectfragment, "inspect");
+        transaction.commit();
     }
 
     public void removeInspectFragment(){
-
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(inspectfragment);
+        transaction.commit();
     }
 
 
@@ -1125,11 +1139,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
     //Long touch logged
     public void regionLongPressed(int id) {
+        Log.e("Tag", "Long Press passed to Controller");
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
         if(mModel.getRegion(id).getEmpire()!=null){
-            openInspectDialog(id);
+            showInspectFragment(id);
         }
     }
 
@@ -1145,18 +1160,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void openInspectDialog(int id){
-        Region r = mModel.getRegion(id);
-        int a=0;
-        String b="None";
-        if(r.getArmy()!=null){
-            a = r.getArmy().getSize();
-        }
-        if(r.getBomb()!=null){
-            b = "Level" + r.getBomb().getSize()+r.getBomb().getTypeString();
-        }
-
-    }
 
 
     //MOUNTAIN SELECTION PHASE
