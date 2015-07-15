@@ -911,6 +911,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 int i= ByteToRegionID(b);//Allocated Forces
                 mModel.getRegion(s).getArmy().setSize(i);//Set size rather than increment due to difficulties discerning negative numbers
                 break;
+            case 'P'://sendNextPlayerPrompt()
+                nextPlayer();
+                break;
         }
 
     }
@@ -1047,6 +1050,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    private void sendNextPlayerPrompt(){
+        byte[] bytes = new byte[1];
+        bytes[0] = 'P';//Label as Reinforcements Prompt
+        //Send!
+        for(Participant p : mParticipants){
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
+        }
+    }
+
 
     public String getName(String id){
         String name = "No player Found";
@@ -1101,13 +1115,34 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel = new GameModel(r, pids);
     }
 
-    private void nextPlayer(){
+    private void nextPlayer(){//Not called on movement to reinforcement phase, see moveToReinforcement()
         mModel.nextPlayer();
         if(mModel.getNextphase()){
             mModel.nextPhase();
             infofragment.setPhase(mModel.getCurrentphase());
         }
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
+
+        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId) && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+            infofragment.setBtnEndTurnVisibility(true);
+        } else {
+            infofragment.setBtnEndTurnVisibility(false);
+        }
+
+        switch (mModel.getCurrentphase()){
+            case 0://Mountain
+                break;
+            case 1://Bombing
+                break;
+            case 2://Reinforcement
+                if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
+                    allocateReinforcementsToCurrentPlayer();
+                }
+                break;
+            case 3://Attack/move
+                break;
+
+        }
     }
 
     //End Turn
@@ -1129,6 +1164,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end turn?",0,0);//Confirmation Dialog);
                 } else {
                     nextPlayer();
+                    sendNextPlayerPrompt();
                 }
                 break;
 
@@ -1252,7 +1288,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.nextPhase();
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
         infofragment.setPhase(mModel.getCurrentphase());
-        allocateReinforcementsToCurrentPlayer();
+        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
+            allocateReinforcementsToCurrentPlayer();
+        }
+        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId) && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+            infofragment.setBtnEndTurnVisibility(true);
+        } else {
+            infofragment.setBtnEndTurnVisibility(false);
+        }
     }
 
     private void showMoveToReinforcementDialog() {
@@ -1274,7 +1317,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getRegion(id).getEmpire().adjustUnallocatedforces(-amount);
         mModel.getRegion(id).getArmy().incrementSize(amount);
         mModel.getRegion(id).adjustAllocatedforces(amount);
-        sendRegionUpdate(1, id);//Reinforcement Update
+        sendRegionUpdate(1, id);//Reinforcement Update after each confirmation for simplicity, probably less efficient than sending them all at the end of the turn
+                                //Also allows better visibility of current player's actions for other players
     }
 
 

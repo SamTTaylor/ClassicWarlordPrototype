@@ -94,7 +94,12 @@ public class fragDialog extends Fragment {
             case 3://Input Message
                 txtMessage.setText(message);
                 break;
+            case 4://Input Message
+                inputLayout.setVisibility(View.GONE);
+                txtMessage.setText(message);
+                break;
             default:
+                txtMessage.setText("Default dialog type");
                 break;
         }
 

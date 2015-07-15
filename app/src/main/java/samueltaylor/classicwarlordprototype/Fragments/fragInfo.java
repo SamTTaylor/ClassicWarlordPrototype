@@ -15,6 +15,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.games.Game;
+
+import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.R;
 
 
@@ -26,6 +29,7 @@ public class fragInfo extends Fragment {
     //Objects
     LinearLayout buttonbackground;
     Button btnIcon;
+    Button btnEndTurn;
     TextView txtInfo;
     int backgroundColour;
     String colorString="";
@@ -62,6 +66,7 @@ public class fragInfo extends Fragment {
         //Add buttons and listeners
         txtInfo = (TextView) getActivity().findViewById(R.id.txtInfo);
         btnIcon = (Button) getActivity().findViewById(R.id.btnIcon);
+        btnEndTurn = (Button) getActivity().findViewById(R.id.btnEndTurn);
         buttonbackground = (LinearLayout) getActivity().findViewById(R.id.lBackground);
         btnIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,6 +74,12 @@ public class fragInfo extends Fragment {
                 //Update text and toggle visibility
                 txtInfo.setText("Player: " + colorString + "\n" + "Phase: " + phaseToString());
                 if(txtInfo.getVisibility()==View.GONE){txtInfo.setVisibility(View.VISIBLE);}else{txtInfo.setVisibility(View.GONE);}
+            }
+        });
+        btnEndTurn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((GameController) getActivity()).endTurn(false);//End turn
             }
         });
         buttonbackground.setBackgroundColor(backgroundColour);
@@ -183,4 +194,13 @@ public class fragInfo extends Fragment {
         }
     }
 
+    public void setBtnEndTurnVisibility(boolean vis){
+        if(btnEndTurn!=null){
+            if(vis){
+                btnEndTurn.setVisibility(View.VISIBLE);
+            } else {
+                btnEndTurn.setVisibility(View.GONE);
+            }
+        }
+    }
 }
