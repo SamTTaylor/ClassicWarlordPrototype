@@ -90,7 +90,7 @@ public class Region extends Object{
     public String getType(){return type;}
     public boolean isOwned() {if(empire==null){return false;}else{return true;}}
 
-    public void setEmpire(Empire e){empire=e;}
+    public void setEmpire(Empire e){empire=e;}//Should be set only through the Empire.addRegion(); method
     public Empire getEmpire(){return empire;}
 
     public void setCounted(boolean f){counted=f;}

@@ -114,10 +114,12 @@ public class GameModel {
             case 3://Attack/defence
                 break;
         }
-        if(currentphase>phases.size()){
-            currentphase=1;//Reset to bombing phase
+        if(currentphase>=phases.size()){
+            currentphase=0;//Reset to first phase
+            nextPhase();
         }
         setCurrentplayer(0);//Reset back to first player
+        nextphase=false;
     }
 
     private void initialiseColours(){

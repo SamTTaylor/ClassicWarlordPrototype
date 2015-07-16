@@ -79,7 +79,7 @@ public class fragInfo extends Fragment {
         btnEndTurn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((GameController) getActivity()).endTurn(false);//End turn
+                ((GameController) getActivity()).endTurn(false);//End turn without confirmation
             }
         });
         buttonbackground.setBackgroundColor(backgroundColour);
@@ -147,7 +147,11 @@ public class fragInfo extends Fragment {
                 }
                 break;
             case 3://Attack/move
-
+                if(LargeScreen()==true){
+                    setButtonBG(getResources().getDrawable(R.drawable.moveiconlg));
+                } else {
+                    setButtonBG(getResources().getDrawable(R.drawable.moveiconmd));
+                }
                 break;
             default://None
                 break;

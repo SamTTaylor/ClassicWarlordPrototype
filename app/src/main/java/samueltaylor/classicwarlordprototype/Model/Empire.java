@@ -31,6 +31,7 @@ public class Empire extends Object{
     public void addRegion(Region r){
         if(regions.contains(r)==false){
             regions.add(r);
+            r.setEmpire(this);
         } else {
             Log.e("EMPIRE", "Region already in Empire");
         }
@@ -49,12 +50,11 @@ public class Empire extends Object{
     }
 
     public void joinEmpire(Empire e){
-        for(Region r : e.getRegions()){
+        for(Region r : e.getRegions()){//Take all regions from target empire
             addRegion(r);
-            e.removeRegion(r);
         }
         try {
-            e.finalize();
+            e.finalize();//Attempt to destroy target empire
         } catch (Throwable throwable) {
             Log.e("EMPIRE", "Failed to finalize empire: "+throwable.toString());
         }

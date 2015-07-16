@@ -914,6 +914,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             case 'P'://sendNextPlayerPrompt()
                 nextPlayer();
                 break;
+            case 'T'://New region for current player sendRegionUpdate(2, id)
+                b = new byte[4];
+                System.arraycopy(buf, 1, b, 0, b.length);
+                i= ByteToRegionID(b);//Allocated Forces
+                takeRegionForCurrentPlayer(i);
+                break;
         }
 
     }
@@ -994,7 +1000,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 System.arraycopy(b, 0, bytes, 1, b.length);//Package region id
                 b = RegionIDToByte(mModel.getRegion(regionid).getArmy().getSize());//Converting int to ID using regionID method
                 System.arraycopy(b, 0, bytes, 5, b.length);//Package new army size
-                bytes[0] = 'U';//Label as new empire
+                bytes[0] = 'U';//Label as reinforcement update
+                //send it
+                for(Participant p : mParticipants){
+                    if(mRoomId!=null) {
+                        Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+                    }
+                }
+                break;
+            case 2://New region for current player
+                // Buffer ints as bytes
+                bytes = new byte[5];
+                b = RegionIDToByte(mModel.getRegion(regionid).getArmy().getSize());//Converting int to ID using regionID method
+                System.arraycopy(b, 0, bytes, 1, b.length);//Package new army size
+                bytes[0] = 'T';//Label as new region
                 //send it
                 for(Participant p : mParticipants){
                     if(mRoomId!=null) {
@@ -1103,6 +1122,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
 
+
+
+
     /*
     * GAME LOGIC SECTION. Methods that implement the game's rules.
     */
@@ -1115,7 +1137,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel = new GameModel(r, pids);
     }
 
-    private void nextPlayer(){//Not called on movement to reinforcement phase, see moveToReinforcement()
+    private void nextPlayer(){//Not called on initial movement to reinforcement phase, see moveToReinforcement()
         mModel.nextPlayer();
         if(mModel.getNextphase()){
             mModel.nextPhase();
@@ -1123,7 +1145,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
 
-        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId) && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+        if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
             infofragment.setBtnEndTurnVisibility(true);
         } else {
             infofragment.setBtnEndTurnVisibility(false);
@@ -1135,7 +1157,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             case 1://Bombing
                 break;
             case 2://Reinforcement
-                if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
+                if(iAmCurrentPlayer()){
                     allocateReinforcementsToCurrentPlayer();
                 }
                 break;
@@ -1161,7 +1183,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                 }
                 if(!reinforcementsused && !confirmed){//If confirmed is passed as true (by the confirmation dialog) then reinforcementsused=false does not matter
-                    showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end turn?",0,0);//Confirmation Dialog);
+                    showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end your turn?",0,0);//Confirmation Dialog);
                 } else {
                     nextPlayer();
                     sendNextPlayerPrompt();
@@ -1169,6 +1191,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 break;
 
             case "Attack":
+                if(!confirmed){
+                    showDialogFragment(4, "Are you sure you wish to end your turn?",0,0);//Confirmation Dialog);
+                } else {
+                    nextPlayer();
+                    sendNextPlayerPrompt();
+                }
                 break;
         }
     }
@@ -1180,27 +1208,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         updateClickedRegions();
         if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
             switch (mModel.getCurrentphaseString()){
-
                 case "Mountain":
-                    if(mModel.getRegion(id).getType().equals("mountain") && !mModel.getRegion(id).isOwned()){
-                        showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'",0,0);//Confirmation Dialog
-                        dialogfragment.setRegionid(id);
-                    }
+                    handleMountainClick(id);
                     break;
-
                 case "Bombing":
                     break;
-
                 case "Reinforcement":
-                    for(Empire e : mModel.getCurrentplayer().getEmpires()){
-                        if(mModel.getRegion(id).getEmpire() == e){                                                                 //Max is forces available in empire, min is -forces allocated to region this phase
-                            showDialogFragment(3, "Add/Remove reinforcements for '" + mModel.getRegion(id).getName() + "'. \nAllocated here this turn: "+mModel.getRegion(id).getAllocatedforces()+"\nRemaining in Empire: "+e.getUnallocatedforces(),e.getUnallocatedforces(),-mModel.getRegion(id).getAllocatedforces());//Input dialog
-                            dialogfragment.setRegionid(id);
-                        }
-                    }
+                    handleReinforcementClick(id);
                     break;
-
                 case "Attack":
+                    handleAttackMoveClick(id);
                     break;
 
             }
@@ -1229,8 +1246,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
+    boolean iAmCurrentPlayer(){
+        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
+            return true;
+        }
+        return false;
+    }
 
     //MOUNTAIN SELECTION PHASE
+    private void handleMountainClick(int id){
+        if(mModel.getRegion(id).getType().equals("mountain") && !mModel.getRegion(id).isOwned()) {
+            showDialogFragment(1, "Confirm selection of mountain: '" + mModel.getRegion(id).getName() + "'", 0, 0);//Confirmation Dialog
+            dialogfragment.setRegionid(id);
+        }
+    }
+
     public void mountainSelected(int id){
         removeDialogFragment();
         boolean check=true;
@@ -1288,10 +1318,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.nextPhase();
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
         infofragment.setPhase(mModel.getCurrentphase());
-        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
+        if(iAmCurrentPlayer()){
             allocateReinforcementsToCurrentPlayer();
         }
-        if(mModel.getCurrentplayer().getParticipantid().equals(mMyId) && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+        if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
             infofragment.setBtnEndTurnVisibility(true);
         } else {
             infofragment.setBtnEndTurnVisibility(false);
@@ -1304,6 +1334,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //REINFORCEMENT PHASE
+    private void handleReinforcementClick(int id){
+        for(Empire e : mModel.getCurrentplayer().getEmpires()){
+            if(mModel.getRegion(id).getEmpire() == e){                                                                 //Max is forces available in empire, min is -forces allocated to region this phase
+                showDialogFragment(3, "Add/Remove reinforcements for '" + mModel.getRegion(id).getName() + "'. \nAllocated here this turn: "+mModel.getRegion(id).getAllocatedforces()+"\nRemaining in Empire: "+e.getUnallocatedforces(),e.getUnallocatedforces(),-mModel.getRegion(id).getAllocatedforces());//Input dialog
+                dialogfragment.setRegionid(id);
+            }
+        }
+    }
+
     private void allocateReinforcementsToCurrentPlayer(){
         for(Empire e : mModel.getCurrentplayer().getEmpires()){
             e.resetUnallocatedforces();
@@ -1321,11 +1360,128 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                                 //Also allows better visibility of current player's actions for other players
     }
 
+    //ATTACK PHASE
+    private boolean firstclick = true;
+    private void handleAttackMoveClick(int id){
+        if(mModel.getCurrentplayer().getSelectedregionid()!=-1 && mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getEmpire()!=null){
+            for(Region r : mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getEmpire().getRegions()){
+                Log.e("Tag", r.getName());
+            }
+        }
 
+        if(prevSelectedIsMine()){
+            if(selectedIsNotMine(id) && selectedIsAdjacentToPrev(id)){
+                //Moving to adjacent region that is not mine
+                if(selectedIsHostile(id)){
+                    //ATTACK
+                    if(!spaceForAtomBomb(id)){showDialogFragment(2,"No space for atom bomb in this empire, therefore you cannot attack from it",0,0);} else {
+
+                    }
+                } else {
+                    //MOVE
+                    showDialogFragment(5,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
+                }
+            } else {
+                //MOVE INSIDE EMPIRE
+            }
+
+        } else {
+            if(!firstclick){
+                showDialogFragment(2,"Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination",0,0);
+                firstclick=true;
+            } else {
+                firstclick = false;
+            }
+        }
+    }
+
+    private boolean spaceForAtomBomb(int id){//Check region's empire for space for a potential atom bomb
+        Empire e = mModel.getRegion(id).getEmpire();
+        for (Region r : e.getRegions()){
+            if(r.getBomb()!=null || r.getBomb().getTypeString().equals("A")){
+                return true;
+            }
+        }
+        return false;//No regions with space for new bomb or A bomb expansion
+    }
+
+    private boolean selectedIsNotMine(int id){
+        if(mModel.getRegion(id).getArmy()==null || mModel.getRegion(id).getArmy().getPlayer() != mModel.getCurrentplayer()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean selectedIsHostile(int id){
+        if(mModel.getRegion(id).getArmy()!=null && mModel.getRegion(id).getArmy().getPlayer()!=mModel.getCurrentplayer()){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean selectedIsAdjacentToPrev(int id){
+        for(Region r : mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getAdjacentregions()) {
+            if (r == mModel.getRegion(id)) {
+                return true;//Selected is adjacent to prev selected
+            }
+        }
+        return false; //Not adjacent
+    }
+
+    private boolean prevSelectedIsMine(){
+        int prev = mModel.getCurrentplayer().getPrevselectedregionid();
+        if(prev != -1 && //Have I got a previously selected region?
+                mModel.getRegion(prev).getArmy()!=null && //Army exists?
+                mModel.getRegion(prev).getArmy().getPlayer().getParticipantid().equals(mMyId)){ //Army is mine?
+            return true;
+        }
+        return false;
+    }
+
+    public void takeRegionForCurrentPlayer(int pledge){
+        if(pledge>0) {
+            Region source = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
+            Region dest = mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid());
+
+            //Move army
+            source.getArmy().incrementSize(-pledge);
+            if (dest.getArmy() != null) {
+                dest.getArmy().destroy();
+            } else {
+                Army a = new Army(mModel.getCurrentplayer(), pledge);
+                dest.allocateArmy(a);
+            }
+            //Add dest to source empire
+            source.getEmpire().addRegion(dest);
+
+
+            //Tell everyone else
+            if (iAmCurrentPlayer()) {
+                sendRegionUpdate(2, mModel.getCurrentplayer().getSelectedregionid());
+            }
+
+            //Apply in view
+            addRegiontoEmpireinView(mModel.getCurrentplayer().getSelectedregionid());
+
+            checkRegionForEmpireMerge(dest);
+        }
+    }
+
+    //Checks around a region for 2 empires belonging to the player, if there are 2 or more, it merges them to a single empire
+    private void checkRegionForEmpireMerge(Region r){
+        for(Region re : r.getAdjacentregions()){
+            if(re.getEmpire()!=null && re.getEmpire()!= r.getEmpire()){//If new empire found
+                r.getEmpire().joinEmpire(re.getEmpire());//Join it to the source empire
+            }
+        }
+    }
+
+
+    //GENERAL VIEW MANIPULATION
     private void addRegiontoEmpireinView(int id) {
         mapfragment.getRegion(id).setUseGradient(true, mModel.getCurrentplayer().getColour());
         mapfragment.reRender();
-        DeselectForCurrentPlayer();
+        DeselectForCurrentPlayer(); //Bear this in mind when relying on player selection data
     }
 
     public void DeselectForCurrentPlayer(){
@@ -1337,7 +1493,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public List<Region> getRegionAdjacentRegions(int id){
         return mModel.getRegion(id).getAdjacentregions();
     }
-    //TODO: Finish construction of inspection fragment, finish allocation of reinforcements for current player
-    //TODO: Implement allocateReinforcementsToCurrentPlayer & onClick for reinforcement phase
+
+    //TODO: Implement moveToAttackMovePhase on NextPlayer, create attack phase icon, implement onregionclick for attackmove phase
 
 }

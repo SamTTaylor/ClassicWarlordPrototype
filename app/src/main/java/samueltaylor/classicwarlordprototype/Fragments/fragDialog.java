@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,22 +80,20 @@ public class fragDialog extends Fragment {
         inputLayout = (LinearLayout) getActivity().findViewById(R.id.inputLayout);
 
         switch (type){//Adjust layout to type
-            case 1: //Confirmation message
-                inputLayout.setVisibility(View.GONE);
-                txtMessage.setText(message);
+            case 1:
+                confirmationMessage();
                 break;
-            case 2://Basic Message
-                inputLayout.setVisibility(View.GONE);
-                btnCancel.setVisibility(View.GONE);
-                btnConfirm.setText("OK");
-                txtMessage.setText(message);
+            case 2:
+                basicMessage();
                 break;
-            case 3://Input Message
-                txtMessage.setText(message);
+            case 3:
+                inputMessage();
                 break;
-            case 4://Input Message
-                inputLayout.setVisibility(View.GONE);
-                txtMessage.setText(message);
+            case 4:
+                confirmationMessage();
+                break;
+            case 5:
+                inputMessage();
                 break;
             default:
                 txtMessage.setText("Default dialog type");
@@ -107,13 +104,19 @@ public class fragDialog extends Fragment {
             //Confirm based on dialog type
             switch (type){
                 case 1: //Confirmation
-                        ((GameController) getActivity()).mountainSelected(regionid);
+                    ((GameController) getActivity()).mountainSelected(regionid);
                     break;
                 case 3://Reinforcement Deployment
                     ((GameController)getActivity()).reinforceRegion(regionid, current);
                     break;
                 case 4://End turn confirmation
                     ((GameController) getActivity()).endTurn(true);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+                case 5://Move army to unoccupied region
+                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
@@ -166,6 +169,22 @@ public class fragDialog extends Fragment {
 
     public interface OnFragmentInteractionListener {
         public void onAlertFragmentInteraction(Uri uri);
+    }
+
+    private void basicMessage(){
+        inputLayout.setVisibility(View.GONE);
+        btnCancel.setVisibility(View.GONE);
+        btnConfirm.setText("OK");
+        txtMessage.setText(message);
+    }
+
+    private void inputMessage(){
+        txtMessage.setText(message);
+    }
+
+    private void confirmationMessage(){
+        inputLayout.setVisibility(View.GONE);
+        txtMessage.setText(message);
     }
 
     public void setType(int t){type = t;}
