@@ -138,6 +138,10 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).attackConfirmed(current, 2);//Attack from sea, 2 guesses
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
+                case 9://Move army around within empire
+                    ((GameController) getActivity()).defenceConfirmed(current);//Defence number has been guessed
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
@@ -202,6 +206,9 @@ public class fragDialog extends Fragment {
 
     private void inputMessage(){
         txtMessage.setText(message);
+        if(min>0){
+            txtInput.setText(String.valueOf(min));
+        }
     }
 
     private void confirmationMessage(){
