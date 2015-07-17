@@ -18,7 +18,7 @@ public class Region extends Object{
     private Empire empire=null;
     private List<Region> adjacentregions;
     private boolean scorched;
-    private String type;
+    private String type; //Types are mountain, city, dense, rural, sea and light
     private String name;
 
     private boolean counted=false;

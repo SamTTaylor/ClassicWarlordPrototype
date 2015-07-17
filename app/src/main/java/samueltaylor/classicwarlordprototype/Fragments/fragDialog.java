@@ -79,7 +79,7 @@ public class fragDialog extends Fragment {
         btnMinus = (Button) getActivity().findViewById(R.id.btnMinus);
         inputLayout = (LinearLayout) getActivity().findViewById(R.id.inputLayout);
 
-        switch (type){//Adjust layout to type
+        switch (type){//Adjust layout to type, check btnConfirm onclick for what each type means
             case 1:
                 confirmationMessage();
                 break;
@@ -96,6 +96,12 @@ public class fragDialog extends Fragment {
                 inputMessage();
                 break;
             case 6:
+                inputMessage();
+                break;
+            case 7:
+                inputMessage();
+                break;
+            case 8:
                 inputMessage();
                 break;
             default:
@@ -121,7 +127,15 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 6://Move army around within empire
-                    ((GameController) getActivity()).moveArmyInsideEmpire(-1,-1,current);
+                    ((GameController) getActivity()).moveArmyInsideEmpire(-1, -1, current);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+                case 7://Move army around within empire
+                    ((GameController) getActivity()).attackConfirmed(current, 1);//Attack from land, 1 guess
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+                case 8://Move army around within empire
+                    ((GameController) getActivity()).attackConfirmed(current, 2);//Attack from sea, 2 guesses
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 default:

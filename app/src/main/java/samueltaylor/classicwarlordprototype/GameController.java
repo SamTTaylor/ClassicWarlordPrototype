@@ -1109,6 +1109,23 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+    private void sendDefencePrompt(int prev, int id, int pledge, int guesses){
+        // Buffer ints as bytes
+        byte[] bytes = new byte[13];
+        byte[] b = RegionIDToByte(mModel.getCurrentplayer().getSelectedregionid());//Copy selected region id into bytes
+        System.arraycopy(b, 0, bytes, 1, b.length);//Package pledge size
+        b = RegionIDToByte(mModel.getCurrentplayer().getPrevselectedregionid());//Copy pre selected region id into bytes
+        System.arraycopy(b, 0, bytes, 5, b.length);//Package pledge size
+        b = RegionIDToByte(regionid);//Copy regionid into bytes ***NOTE***regionid is actually the amount of troops moving, its not a region id
+        System.arraycopy(b, 0, bytes, 9, b.length);//Package pledge size
+        bytes[0] = 'W';//W for Within empire, or, We're running out of labels
+        //send it
+        for(Participant p : mParticipants){
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
+        }
+    }
 
     public String getName(String id){
         String name = "No player Found";
@@ -1391,36 +1408,90 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //ATTACK PHASE
     private boolean firstclick = true;
+    private int abombfromregion=-1;
+    private boolean waitingfordefenceresponse=false;
     private void handleAttackMoveClick(int id){
-        if(prevSelectedIsMine()){
-            if(regionIsNotMine(id) && regionIsAdjacentToPrev(id)){
-                //Moving to adjacent region that is not mine
-                if(selectedIsHostile(id)){
-                    //ATTACK
-                    if(!spaceForAtomBomb(id)){showDialogFragment(2,"No space for atom bomb in this empire, therefore you cannot attack from it",0,0);} else {
-
+        if(abombfromregion!=-1){//All A bombs must be placed immediately
+            placeABombForRegion(id);
+        } else if (waitingfordefenceresponse) {
+            showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
+        } else{
+            if(prevSelectedIsMine()){
+                if(regionIsNotMine(id) && regionIsAdjacentToPrev(id)){
+                    //Moving to adjacent region that is not mine
+                    if(selectedIsHostile(id)){
+                        //ATTACK
+                        if(!spaceForAtomBomb(id)){showDialogFragment(2,"No space for atom bomb in this empire, therefore you cannot attack from it",0,0);} else {
+                            attackRegion(id, mModel.getCurrentplayer().getPrevselectedregionid());
+                        }
+                    } else {
+                        //MOVE
+                        showDialogFragment(5,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
+                        //See fragDialog type 5for more info
                     }
-                } else {
-                    //MOVE
-                    showDialogFragment(5,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
+                } else if (!regionIsNotMine(id) && regionIsWithinPrevSelectedEmpire(id) && mModel.getCurrentplayer().getSelectedregionid()!= -1&&mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
+                    //MOVE INSIDE EMPIRE
+                    showDialogFragment(6,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
+                    //See fragDialog type 6 for more info
                 }
-            } else if (!regionIsNotMine(id) && regionIsWithinPrevSelectedEmpire(id) && mModel.getCurrentplayer().getSelectedregionid()!=-1&&mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
-                //MOVE INSIDE EMPIRE
-                showDialogFragment(6,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
-            }
 
-        } else {
-            if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
-                showDialogFragment(2, "Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
-                DeselectForCurrentPlayer();
-                firstclick=true;
             } else {
-                firstclick = false;
+                if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
+                    showDialogFragment(2, "Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
+                    DeselectForCurrentPlayer();
+                    firstclick=true;
+                } else {
+                    firstclick = false;
 
+                }
             }
         }
     }
 
+    private void attackRegion(int id, int previd){
+        Region r = mModel.getRegion(id);
+        //mountain, city, dense, rural, sea and light
+        int maxlimit =6;//base limit
+        int minlimit =1;
+        switch(r.getType()){
+            case "mountain":
+                attackLand(id, previd, 3, minlimit);
+                break;
+            case "city":
+                attackLand(id, previd, maxlimit, 2);
+                break;
+            case "sea":
+                attackSea(id, previd);
+                break;
+            default:
+                attackLand(id, previd, maxlimit, minlimit);
+                break;
+
+        }
+    }
+
+    private void attackLand(int id, int previd, int maxattack, int minattack){
+        if(mModel.getRegion(previd).getType().equals("sea")){
+            //Attack from the sea (2 guesses)
+            showDialogFragment(8, "Attacking from\n'"+mModel.getRegion(previd).getName()+"'\nTo\n'"+mModel.getRegion(id).getName()+"'\nSelect Pledge:",maxattack,minattack);
+        } else {
+            //Attack from the land, (1 guess)
+            showDialogFragment(7, "Attacking from\n'"+mModel.getRegion(previd).getName()+"'\nTo\n'"+mModel.getRegion(id).getName()+"'\nSelect Pledge:",maxattack,minattack);
+        }
+    }
+
+    private void attackSea(int id, int previd){
+        showDialogFragment(5,"Capture hostile Sea from:\n'"+mModel.getRegion(previd).getName()+"'\nTo\n'"+mModel.getRegion(id).getName()+"'\nSelect Pledge:",mModel.getRegion(previd).getArmy().getSize()-1,0);
+        abombfromregion=previd;//Automatically win 1 A Bomb
+    }
+
+    public void attackConfirmed(int pledge, int guesses){
+        int id=mModel.getCurrentplayer().getSelectedregionid();
+        int prev=mModel.getCurrentplayer().getPrevselectedregionid();
+        sendDefencePrompt(prev, id, pledge, guesses);
+        waitingfordefenceresponse=true;
+
+    }
     private boolean spaceForAtomBomb(int id){//Check region's empire for space for a potential atom bomb
         Empire e = mModel.getRegion(id).getEmpire();
         for (Region r : e.getRegions()){
@@ -1474,6 +1545,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
+    private void placeABombForRegion(int id){
+        Log.e("Tag", "bomb placed in "+mModel.getRegion(id).getName());
+        abombfromregion=-1;
+    }
+
     public void takeRegionForCurrentPlayer(int pledge){
         if(pledge>0) {
             Region source = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
@@ -1503,7 +1579,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } else {
             DeselectForCurrentPlayer();
         }
-
+        if(abombfromregion!=-1){
+            showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
+        }
     }
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
