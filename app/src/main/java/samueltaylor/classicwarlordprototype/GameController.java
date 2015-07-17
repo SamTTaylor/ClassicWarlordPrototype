@@ -920,6 +920,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 i= ByteToRegionID(b);//Allocated Forces
                 takeRegionForCurrentPlayer(i);
                 break;
+            case 'W'://Move army within empire sendRegionUpdate(3, pledge)
+                b = new byte[4];
+                System.arraycopy(buf, 1, b, 0, b.length);
+                int sel = ByteToRegionID(b);//Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 5, b, 0, b.length);
+                int prev = ByteToRegionID(b);//Prev Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 9, b, 0, b.length);
+                i= ByteToRegionID(b);//Pledged Forces
+                moveArmyInsideEmpire(sel,prev,i);
+                break;
         }
 
     }
@@ -1014,6 +1026,23 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = RegionIDToByte(mModel.getRegion(regionid).getArmy().getSize());//Converting int to ID using regionID method
                 System.arraycopy(b, 0, bytes, 1, b.length);//Package new army size
                 bytes[0] = 'T';//Label as new region
+                //send it
+                for(Participant p : mParticipants){
+                    if(mRoomId!=null) {
+                        Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+                    }
+                }
+                break;
+            case 3://Move army within empire
+                // Buffer ints as bytes
+                bytes = new byte[13];
+                b = RegionIDToByte(mModel.getCurrentplayer().getSelectedregionid());//Copy selected region id into bytes
+                System.arraycopy(b, 0, bytes, 1, b.length);//Package pledge size
+                b = RegionIDToByte(mModel.getCurrentplayer().getPrevselectedregionid());//Copy pre selected region id into bytes
+                System.arraycopy(b, 0, bytes, 5, b.length);//Package pledge size
+                b = RegionIDToByte(regionid);//Copy regionid into bytes ***NOTE***regionid is actually the amount of troops moving, its not a region id
+                System.arraycopy(b, 0, bytes, 9, b.length);//Package pledge size
+                bytes[0] = 'W';//W for Within empire, or, We're running out of labels
                 //send it
                 for(Participant p : mParticipants){
                     if(mRoomId!=null) {
@@ -1329,7 +1358,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void showMoveToReinforcementDialog() {
-        showDialogFragment(2, "More players than mountains remaining, rolling back most this round's selections and moving to reinforcement phase...",0,0);//Dialog 2 is basic dialog
+        showDialogFragment(2, "More players than mountains remaining, rolling back this round's selections and moving to reinforcement phase...",0,0);//Dialog 2 is basic dialog
     }
 
 
@@ -1363,14 +1392,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     //ATTACK PHASE
     private boolean firstclick = true;
     private void handleAttackMoveClick(int id){
-        if(mModel.getCurrentplayer().getSelectedregionid()!=-1 && mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getEmpire()!=null){
-            for(Region r : mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getEmpire().getRegions()){
-                Log.e("Tag", r.getName());
-            }
-        }
-
         if(prevSelectedIsMine()){
-            if(selectedIsNotMine(id) && selectedIsAdjacentToPrev(id)){
+            if(regionIsNotMine(id) && regionIsAdjacentToPrev(id)){
                 //Moving to adjacent region that is not mine
                 if(selectedIsHostile(id)){
                     //ATTACK
@@ -1381,16 +1404,19 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     //MOVE
                     showDialogFragment(5,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
                 }
-            } else {
+            } else if (!regionIsNotMine(id) && regionIsWithinPrevSelectedEmpire(id) && mModel.getCurrentplayer().getSelectedregionid()!=-1&&mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
                 //MOVE INSIDE EMPIRE
+                showDialogFragment(6,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
             }
 
         } else {
-            if(!firstclick){
-                showDialogFragment(2,"Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination",0,0);
+            if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
+                showDialogFragment(2, "Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
+                DeselectForCurrentPlayer();
                 firstclick=true;
             } else {
                 firstclick = false;
+
             }
         }
     }
@@ -1405,7 +1431,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;//No regions with space for new bomb or A bomb expansion
     }
 
-    private boolean selectedIsNotMine(int id){
+    private boolean regionIsNotMine(int id){
         if(mModel.getRegion(id).getArmy()==null || mModel.getRegion(id).getArmy().getPlayer() != mModel.getCurrentplayer()) {
             return true;
         }
@@ -1419,13 +1445,23 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
-    private boolean selectedIsAdjacentToPrev(int id){
+    private boolean regionIsAdjacentToPrev(int id){
         for(Region r : mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getAdjacentregions()) {
             if (r == mModel.getRegion(id)) {
                 return true;//Selected is adjacent to prev selected
             }
         }
         return false; //Not adjacent
+    }
+
+    private boolean regionIsWithinPrevSelectedEmpire(int id){
+        Region sel = mModel.getRegion(id);
+        Region prev = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
+
+        if(sel.getEmpire()!=null && prev.getEmpire()!=null && sel.getEmpire()==prev.getEmpire()){
+            return true;
+        }
+        return false;
     }
 
     private boolean prevSelectedIsMine(){
@@ -1464,7 +1500,24 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             addRegiontoEmpireinView(mModel.getCurrentplayer().getSelectedregionid());
 
             checkRegionForEmpireMerge(dest);
+        } else {
+            DeselectForCurrentPlayer();
         }
+
+    }
+
+    public void moveArmyInsideEmpire(int sel, int prev, int pledge){
+        if(sel==-1&&prev==-1){//If no regions are passed, assume it is current players selected regions
+            mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().incrementSize(-pledge);
+            mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getArmy().incrementSize(pledge);
+        } else {
+            mModel.getRegion(prev).getArmy().incrementSize(-pledge);
+            mModel.getRegion(sel).getArmy().incrementSize(pledge);
+        }
+        if(iAmCurrentPlayer()){
+            sendRegionUpdate(3, pledge);
+        }
+        DeselectForCurrentPlayer();
     }
 
     //Checks around a region for 2 empires belonging to the player, if there are 2 or more, it merges them to a single empire
@@ -1494,6 +1547,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Implement moveToAttackMovePhase on NextPlayer, create attack phase icon, implement onregionclick for attackmove phase
+    //TODO: Implement moving forces within own empire (MOVE INSIDE EMPIRE) and attacking other players (ATTACK)
 
 }

@@ -95,6 +95,9 @@ public class fragDialog extends Fragment {
             case 5:
                 inputMessage();
                 break;
+            case 6:
+                inputMessage();
+                break;
             default:
                 txtMessage.setText("Default dialog type");
                 break;
@@ -115,6 +118,10 @@ public class fragDialog extends Fragment {
                     break;
                 case 5://Move army to unoccupied region
                     ((GameController) getActivity()).takeRegionForCurrentPlayer(current);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+                case 6://Move army around within empire
+                    ((GameController) getActivity()).moveArmyInsideEmpire(-1,-1,current);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 default:
@@ -140,6 +147,7 @@ public class fragDialog extends Fragment {
 
         btnCancel.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             //Dismiss self
+            ((GameController) getActivity()).DeselectForCurrentPlayer();
             ((GameController) getActivity()).removeDialogFragment();
         }});
     }
