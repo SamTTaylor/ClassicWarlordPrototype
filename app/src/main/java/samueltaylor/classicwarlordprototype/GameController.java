@@ -1470,6 +1470,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     String name = p.getEmpires().get(p.getEmpires().size() - 1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
                     int id = mModel.getRegionIDByName(name);
                     wipeOutRegionInView(id);//Set outline back to black again
+                    mModel.getRegion(id).wipeOut();
                     p.getEmpires().remove(p.getEmpires().size() - 1);//Remove last empire
                 }
             }
@@ -1499,7 +1500,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void showMoveToReinforcementDialog() {
-        showDialogFragment(2, "More players than mountains remaining, rolling back this round's selections and moving to reinforcement phase...",0,0);//Dialog 2 is basic dialog
+        showDialogFragment(2, "Not enough mountains for remaining players, rolling back any surplus selections and moving to reinforcement phase...",0,0);//Dialog 2 is basic dialog
     }
 
 
@@ -1652,7 +1653,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void resolveAttack(boolean defenderwins){
         if(defenderwins){//Defender wins
-            resolveAttack(true);
             Log.e("Tag", "Defender wins");
             mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
             if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<0){//If attacker has lost all men
@@ -1661,7 +1661,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 sendRegionUpdate(4, defenceinfomation[1]);
             }
         } else {
-            resolveAttack(false);
             Log.e("Tag", "Attacker wins");
             mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
             if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
@@ -1808,7 +1807,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Bugfix sending deselection data, bugfix remaining reinforcements on end turn confirmation, bugfix wrong player colour strings
+    //TODO: Bugfix wrong player colour strings
     //TODO: Implement moving forces within own empire (MOVE INSIDE EMPIRE) and attacking other players (ATTACK)
 
 }
