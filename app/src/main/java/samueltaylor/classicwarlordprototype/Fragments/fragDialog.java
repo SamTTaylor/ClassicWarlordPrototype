@@ -104,6 +104,9 @@ public class fragDialog extends Fragment {
             case 8:
                 inputMessage();
                 break;
+            case 9:
+                inputMessage();
+                break;
             default:
                 txtMessage.setText("Default dialog type");
                 break;
@@ -165,7 +168,6 @@ public class fragDialog extends Fragment {
 
         btnCancel.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             //Dismiss self
-            ((GameController) getActivity()).DeselectForCurrentPlayer();
             ((GameController) getActivity()).removeDialogFragment();
         }});
     }
@@ -208,6 +210,7 @@ public class fragDialog extends Fragment {
         txtMessage.setText(message);
         if(min>0){
             txtInput.setText(String.valueOf(min));
+            current=min;
         }
     }
 

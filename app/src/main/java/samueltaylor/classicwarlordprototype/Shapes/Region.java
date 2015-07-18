@@ -220,13 +220,12 @@ public class Region {
                 prevMode = 0;
                 break;
             case 1://Colour Identification for pixel grab
-                mUseGradient = 0;
+                mUseGradient=0;
                 mFillColor = mColorID;
                 mOutlineColor = mColorID;
                 mDrawMode=prevMode;
                 break;
             case 2://Selected
-                mUseGradient = 0;
                 mFillColor = mSelectedColour;
                 mOutlineColor = cBlack;
                 prevMode = 2;

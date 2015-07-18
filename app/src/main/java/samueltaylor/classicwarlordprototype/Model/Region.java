@@ -43,9 +43,11 @@ public class Region extends Object{
     public void wipeOut(){
         if(army!=null){
             army.destroy();
+            army=null;
         }
         if(empire!=null){
             empire.removeRegion(this);
+            empire=null;
         }
     }
 

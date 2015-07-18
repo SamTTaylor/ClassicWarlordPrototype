@@ -4,6 +4,7 @@ package samueltaylor.classicwarlordprototype;
  * Created by Sam on 03/05/2015.
  */
         import android.app.Activity;
+        import android.app.Fragment;
         import android.app.FragmentManager;
         import android.app.FragmentTransaction;
         import android.content.Intent;
@@ -774,11 +775,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void showDialogFragment(int type, String s, int max, int min){
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        dialogfragment = new fragDialog();
-        if(dialogfragment.isVisible()){
-            transaction.remove(dialogfragment);
+        Fragment f = manager.findFragmentByTag("alert");
+        if(f!=null){
+            transaction.remove(f);
             transaction.commit();
         }
+        dialogfragment = new fragDialog();
         dialogfragment.setMessage(s);
         dialogfragment.setType(type);
         dialogfragment.setMax(max);
@@ -788,10 +790,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
     public void removeDialogFragment(){
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(dialogfragment);
-        transaction.commit();
+        if(dialogfragment.isVisible()){
+            FragmentManager manager = getFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            transaction.remove(dialogfragment);
+            transaction.commit();
+        }
     }
 
     private void showInspectFragment(int id){
@@ -938,12 +942,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 defenceinfomation[0] = ByteToRegionID(b);//Selected Region ID
+                Log.e("1", String.valueOf(defenceinfomation[0]));
                 b = new byte[4];
                 System.arraycopy(buf, 5, b, 0, b.length);
                 defenceinfomation[1] = ByteToRegionID(b);//Prev Selected Region ID
+                Log.e("2", String.valueOf(defenceinfomation[1]));
                 b = new byte[4];
                 System.arraycopy(buf, 9, b, 0, b.length);
                 defenceinfomation[2] = ByteToRegionID(b);//Pledged Forces
+                Log.e("3", String.valueOf(defenceinfomation[2]));
                 switch (buf[13]){//find number of guesses from byte
                     case '1':
                         defenceinfomation[3]=1;
@@ -951,12 +958,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     case '2':
                         defenceinfomation[3]=2;
                         break;
+                    default:
+                        defenceinfomation[3]=1;
+                        break;
                 }
+                Log.e("4", String.valueOf(defenceinfomation[3]));
                 defenceinfomation[4]=0;//Number of guesses so far
+                Log.e("5", String.valueOf(defenceinfomation[4]));
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
-            case 'O'://sendDefenceConclusion
+            case 'O'://sendDefenceConclusion, received by attacker
+                Log.e("Tag", "Defence conclusion received");
+                waitingfordefenceresponse=false;//Response received
                 if(buf[1]=='D'){//Defender wins
+                    resolveAttack(true);
+                    Log.e("Tag", "Defender wins");
                     mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
                     if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<0){//If attacker has lost all men
                         mModel.getRegion(defenceinfomation[1]).wipeOut();
@@ -964,6 +980,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                         sendRegionUpdate(4, defenceinfomation[1]);
                     }
                 } else {
+                    resolveAttack(false);
+                    Log.e("Tag", "Attacker wins");
                     mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
                     if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
                         takeRegionForCurrentPlayer(defenceinfomation[0]);
@@ -1172,6 +1190,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private void sendDefencePrompt(int prev, int id, int pledge, int guesses){
         // Buffer ints as bytes
         byte guesseschar;
+        defenceinfomation = new int[5];
         switch(guesses){
             case 2:
                 guesseschar='2';
@@ -1182,13 +1201,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         byte[] bytes = new byte[14];
         byte[] b = RegionIDToByte(id);//Copy selected region id into bytes
+        defenceinfomation[0]=id;
         System.arraycopy(b, 0, bytes, 1, b.length);//
         b = RegionIDToByte(prev);//Copy prev selected region id into bytes
+        defenceinfomation[1]=prev;
         System.arraycopy(b, 0, bytes, 5, b.length);//
         b = RegionIDToByte(pledge);//Copy pledge into bytes
+        defenceinfomation[2]=pledge;
         System.arraycopy(b, 0, bytes, 9, b.length);//Package pledge size
+        defenceinfomation[3]=guesses;
         bytes[0] = 'D';//Defence label
-        bytes[14]= guesseschar;
+        bytes[13]= guesseschar;
+        defenceinfomation[4]=0;
         //send it
         for(Participant p : mParticipants){
             if(mRoomId!=null) {
@@ -1404,12 +1428,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if(check){//Allowed mountain
             reduceMountainCountLocal(id);
             sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
-            if(checkRemainingMountains()){
-                mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
-                addRegiontoEmpireinView(id);
-                nextPlayer();//Mountain selection complete, move to next player
-                sendRegionUpdate(0, id);//This should only be reached by device owner
-            } else {//If there aren't enough mountains to go around after this selection
+            mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+            addRegiontoEmpireinView(id);
+            nextPlayer();//Mountain selection complete, move to next player
+            sendRegionUpdate(0, id);//This should only be reached by device owner
+            if(!checkRemainingMountains()){//If there aren't enough mountains to go around after this selection
                 moveToReinforcement(); //Rollback mountain selections and move to next phase (reinforcement)
                 sendMoveToReinforcementPrompt(); //Tell everyone else too aswell
             }
@@ -1430,25 +1453,32 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.setRemainingmountaincount(-x);
     }
     private boolean checkRemainingMountains(){
-        return mModel.getRemainingmountaincount() / mModel.getPlayers().size() >= 1;
+        int playedthisround=0;
+        for(Player p : mModel.getPlayers()){
+            if(p.getEmpires().size()==mModel.getCurrentplayer().getEmpires().size()){
+                playedthisround++;
+            }
+        }
+        return mModel.getRemainingmountaincount() != 0 && mModel.getRemainingmountaincount() >= mModel.getPlayers().size()-playedthisround;
     }
 
     private void moveToReinforcement(){//Roll back mountains and end mountain selection phase
         showMoveToReinforcementDialog();
-        for(Player p : mModel.getPlayers()){//Cycle through the players
-            if(p == mModel.getCurrentplayer()){//Don't take anyone's region that has not completed this round
-                break;
-            } else {
-                String name = p.getEmpires().get(p.getEmpires().size()-1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
-                int id = mModel.getRegionIDByName(name);
-                mapfragment.getRegion(id).setUseGradient(false, null);//Set outline back to black again
-                p.getEmpires().remove(p.getEmpires().size()-1);//Remove last empire
+        if(!evenlyDistributedMountains()){
+            for(Player p : mModel.getPlayers()){//Cycle through the players
+                if(mModel.getPlayers().indexOf(p)<=mModel.getPlayers().indexOf(mModel.getCurrentplayer())-1) {
+                    String name = p.getEmpires().get(p.getEmpires().size() - 1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
+                    int id = mModel.getRegionIDByName(name);
+                    wipeOutRegionInView(id);//Set outline back to black again
+                    p.getEmpires().remove(p.getEmpires().size() - 1);//Remove last empire
+                }
             }
+            mapfragment.reRender();
         }
-        mapfragment.reRender();
         mModel.nextPhase();
         infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
         infofragment.setPhase(mModel.getCurrentphase());
+
         if(iAmCurrentPlayer()){
             allocateReinforcementsToCurrentPlayer();
         }
@@ -1457,6 +1487,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } else {
             infofragment.setBtnEndTurnVisibility(false);
         }
+    }
+
+    private boolean evenlyDistributedMountains(){
+        for(Player p : mModel.getPlayers()){
+            if(p.getEmpires().size()!=mModel.getCurrentplayer().getEmpires().size()){
+                return false;
+            }
+        }
+        return true;
     }
 
     private void showMoveToReinforcementDialog() {
@@ -1599,12 +1638,35 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if(guess==defenceinfomation[2]){
             showDialogFragment(2,"Guess successful! Attacker loses "+defenceinfomation[2]+" pledged forces!",0,0);
             sendDefenceConclusion(true);
+            resolveAttack(true);
         } else {
             if(defenceinfomation[3]<defenceinfomation[4]){
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
             } else {
-                showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName(),0,0);
+                showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName()+"'",0,0);
                 sendDefenceConclusion(false);
+                resolveAttack(true);
+            }
+        }
+    }
+
+    private void resolveAttack(boolean defenderwins){
+        if(defenderwins){//Defender wins
+            resolveAttack(true);
+            Log.e("Tag", "Defender wins");
+            mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
+            if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<0){//If attacker has lost all men
+                mModel.getRegion(defenceinfomation[1]).wipeOut();
+                wipeOutRegionInView(defenceinfomation[1]);
+                sendRegionUpdate(4, defenceinfomation[1]);
+            }
+        } else {
+            resolveAttack(false);
+            Log.e("Tag", "Attacker wins");
+            mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
+            if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
+                takeRegionForCurrentPlayer(defenceinfomation[0]);
+                abombfromregion=defenceinfomation[1];//Attacker receives a bomb
             }
         }
     }
@@ -1612,7 +1674,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private boolean spaceForAtomBomb(int id){//Check region's empire for space for a potential atom bomb
         Empire e = mModel.getRegion(id).getEmpire();
         for (Region r : e.getRegions()){
-            if(r.getBomb()!=null || r.getBomb().getTypeString().equals("A")){
+            if(r.getBomb()==null ||  r.getBomb().getTypeString().equals("A")){
                 return true;
             }
         }
@@ -1746,7 +1808,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Bugfix sending deselection data, bugfix remaining reinforcements on end turn confirmation, bugfix spaceForAtomBomb, needs a null guard when checking for getstring
+    //TODO: Bugfix sending deselection data, bugfix remaining reinforcements on end turn confirmation, bugfix wrong player colour strings
     //TODO: Implement moving forces within own empire (MOVE INSIDE EMPIRE) and attacking other players (ATTACK)
 
 }

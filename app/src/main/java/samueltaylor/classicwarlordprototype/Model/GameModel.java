@@ -38,6 +38,7 @@ public class GameModel {
 
     //Counters
     int remainingmountaincount =0;
+    int totalmountaincount =0;
 
     public GameModel(List<SVGtoRegionParser.Region> r, List<String> pids){
         initialiseColours();
@@ -65,6 +66,7 @@ public class GameModel {
                 remainingmountaincount++;
             }
         }
+        totalmountaincount=remainingmountaincount;
         //Once world has been build add adjacencies
         for(SVGtoRegionParser.Region re : r){
             Region tmpRegion = getRegionByName(re.name);
@@ -188,6 +190,7 @@ public class GameModel {
     public void setRemainingmountaincount(int i){
         remainingmountaincount +=i;}
     public int getRemainingmountaincount(){ return remainingmountaincount;}
+    public int getTotalmountaincount(){ return totalmountaincount;}
 
     public List<Region> getWorld(){return world;}
 }
