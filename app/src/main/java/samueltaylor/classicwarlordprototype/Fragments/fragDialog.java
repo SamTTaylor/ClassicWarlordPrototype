@@ -126,7 +126,7 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 5://Move army to unoccupied region
-                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current);
+                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current,-1,-1);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 6://Move army around within empire

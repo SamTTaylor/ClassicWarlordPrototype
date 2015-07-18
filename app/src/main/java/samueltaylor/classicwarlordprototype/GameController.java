@@ -886,6 +886,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
                 addRegiontoEmpireinView(e);
                 nextPlayer();
+                if(!checkRemainingMountains() || mModel.getRemainingmountaincount() == 0) {//If there aren't enough mountains to go around after this selection
+                    moveToReinforcement(); //Rollback mountain selections and move to next phase (reinforcement)
+                }
                 break;
             case 'C'://Mountain count reduction sendMountainCountReduction()
                 b = new byte[4];
@@ -922,7 +925,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 i= ByteToRegionID(b);//Allocated Forces
-                takeRegionForCurrentPlayer(i);
+                takeRegionForCurrentPlayer(i,mModel.getCurrentplayer().getSelectedregionid(),mModel.getCurrentplayer().getPrevselectedregionid());
                 break;
             case 'W'://Move army within empire sendRegionUpdate(3, pledge)
                 b = new byte[4];
@@ -972,21 +975,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 waitingfordefenceresponse=false;//Response received
                 if(buf[1]=='D'){//Defender wins
                     resolveAttack(true);
-                    Log.e("Tag", "Defender wins");
-                    mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
-                    if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<0){//If attacker has lost all men
-                        mModel.getRegion(defenceinfomation[1]).wipeOut();
-                        wipeOutRegionInView(defenceinfomation[1]);
-                        sendRegionUpdate(4, defenceinfomation[1]);
-                    }
                 } else {
                     resolveAttack(false);
-                    Log.e("Tag", "Attacker wins");
-                    mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
-                    if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
-                        takeRegionForCurrentPlayer(defenceinfomation[0]);
-                        abombfromregion=defenceinfomation[1];//Attacker receives a bomb
-                    }
+                    abombfromregion=defenceinfomation[1];//Attacker receives a bomb
                 }
                 break;
             case 'I'://Region wiped out sendRegionUpdate(4, id)
@@ -1431,10 +1422,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
             addRegiontoEmpireinView(id);
             nextPlayer();//Mountain selection complete, move to next player
-            sendRegionUpdate(0, id);//This should only be reached by device owner
-            if(!checkRemainingMountains()){//If there aren't enough mountains to go around after this selection
+            sendRegionUpdate(0, id);
+            if(!checkRemainingMountains() || mModel.getRemainingmountaincount() == 0) {//If there aren't enough mountains to go around after this selection
                 moveToReinforcement(); //Rollback mountain selections and move to next phase (reinforcement)
-                sendMoveToReinforcementPrompt(); //Tell everyone else too aswell
             }
         }
     }
@@ -1455,18 +1445,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private boolean checkRemainingMountains(){
         int playedthisround=0;
         for(Player p : mModel.getPlayers()){
-            if(p.getEmpires().size()==mModel.getCurrentplayer().getEmpires().size()){
+            if(p.getEmpires().size()==mModel.getCurrentplayer().getEmpires().size()+1){//Nextplayer has already been called so everyone who has played this round has 1 more empire than the current player
                 playedthisround++;
             }
         }
-        return mModel.getRemainingmountaincount() != 0 && mModel.getRemainingmountaincount() >= mModel.getPlayers().size()-playedthisround;
+        return mModel.getRemainingmountaincount() >= mModel.getPlayers().size()-playedthisround;
     }
 
     private void moveToReinforcement(){//Roll back mountains and end mountain selection phase
         showMoveToReinforcementDialog();
-        if(!evenlyDistributedMountains()){
-            for(Player p : mModel.getPlayers()){//Cycle through the players
-                if(mModel.getPlayers().indexOf(p)<=mModel.getPlayers().indexOf(mModel.getCurrentplayer())-1) {
+        if(!evenlyDistributedMountains()) {
+            for (Player p : mModel.getPlayers()) {//Cycle through the players
+                if (mModel.getPlayers().indexOf(p) < mModel.getPlayers().indexOf(mModel.getCurrentplayer())) {
                     String name = p.getEmpires().get(p.getEmpires().size() - 1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
                     int id = mModel.getRegionIDByName(name);
                     wipeOutRegionInView(id);//Set outline back to black again
@@ -1652,10 +1642,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void resolveAttack(boolean defenderwins){
+        //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
         if(defenderwins){//Defender wins
             Log.e("Tag", "Defender wins");
             mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
-            if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<0){//If attacker has lost all men
+            if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<=0){//If attacker has lost all men
                 mModel.getRegion(defenceinfomation[1]).wipeOut();
                 wipeOutRegionInView(defenceinfomation[1]);
                 sendRegionUpdate(4, defenceinfomation[1]);
@@ -1664,8 +1655,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Log.e("Tag", "Attacker wins");
             mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
             if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
-                takeRegionForCurrentPlayer(defenceinfomation[0]);
+                takeRegionForCurrentPlayer(defenceinfomation[2], defenceinfomation[0], defenceinfomation[1]);
                 abombfromregion=defenceinfomation[1];//Attacker receives a bomb
+
             }
         }
     }
@@ -1728,10 +1720,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         abombfromregion=-1;
     }
 
-    public void takeRegionForCurrentPlayer(int pledge){
+    public void takeRegionForCurrentPlayer(int pledge, int targetregionid, int sourceregionid){
         if(pledge>0) {
-            Region source = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
-            Region dest = mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid());
+            if(targetregionid==-1 && sourceregionid==-1){
+                targetregionid=mModel.getCurrentplayer().getSelectedregionid();
+                sourceregionid=mModel.getCurrentplayer().getPrevselectedregionid();
+            }
+            Region source = mModel.getRegion(sourceregionid);
+            Region dest = mModel.getRegion(targetregionid);
 
             //Move army
             source.getArmy().incrementSize(-pledge);
@@ -1752,7 +1748,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
             //Apply in view
             addRegiontoEmpireinView(mModel.getCurrentplayer().getSelectedregionid());
-
             checkRegionForEmpireMerge(dest);
         } else {
             DeselectForCurrentPlayer();
@@ -1779,7 +1774,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     //Checks around a region for 2 empires belonging to the player, if there are 2 or more, it merges them to a single empire
     private void checkRegionForEmpireMerge(Region r){
         for(Region re : r.getAdjacentregions()){
-            if(re.getEmpire()!=null && re.getEmpire()!= r.getEmpire() && re.getArmy().getPlayer().getParticipantid().equals(mMyId)){//If new empire found that player owns
+            if(re.getEmpire()!=null && re.getEmpire()!= r.getEmpire() && re.getArmy().getPlayer() == r.getArmy().getPlayer()){//If new empire found that player owns
                 r.getEmpire().joinEmpire(re.getEmpire());//Join it to the source empire
             }
         }
