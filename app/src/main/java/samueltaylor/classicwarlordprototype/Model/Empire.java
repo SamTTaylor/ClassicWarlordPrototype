@@ -41,7 +41,7 @@ public class Empire extends Object{
         if(regions.contains(r)==true){
             regions.remove(r);
         } else {
-            Log.e("EMPIRE", "Region not in Empire");
+            Log.e("EMPIRE", "Region " + r.getName() +" not in Empire");
         }
     }
 

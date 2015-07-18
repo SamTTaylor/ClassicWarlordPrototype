@@ -925,7 +925,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 i= ByteToRegionID(b);//Allocated Forces
-                takeRegionForCurrentPlayer(i,mModel.getCurrentplayer().getSelectedregionid(),mModel.getCurrentplayer().getPrevselectedregionid());
+                takeRegionForCurrentPlayer(i,mModel.getCurrentplayer().getSelectedregionid(),mModel.getCurrentplayer().getPrevselectedregionid(), true);
                 break;
             case 'W'://Move army within empire sendRegionUpdate(3, pledge)
                 b = new byte[4];
@@ -945,15 +945,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 defenceinfomation[0] = ByteToRegionID(b);//Selected Region ID
-                Log.e("1", String.valueOf(defenceinfomation[0]));
                 b = new byte[4];
                 System.arraycopy(buf, 5, b, 0, b.length);
                 defenceinfomation[1] = ByteToRegionID(b);//Prev Selected Region ID
-                Log.e("2", String.valueOf(defenceinfomation[1]));
                 b = new byte[4];
                 System.arraycopy(buf, 9, b, 0, b.length);
                 defenceinfomation[2] = ByteToRegionID(b);//Pledged Forces
-                Log.e("3", String.valueOf(defenceinfomation[2]));
                 switch (buf[13]){//find number of guesses from byte
                     case '1':
                         defenceinfomation[3]=1;
@@ -970,24 +967,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 Log.e("5", String.valueOf(defenceinfomation[4]));
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
-            case 'O'://sendDefenceConclusion, received by attacker
-                Log.e("Tag", "Defence conclusion received");
-                waitingfordefenceresponse=false;//Response received
-                if(buf[1]=='D'){//Defender wins
-                    resolveAttack(true);
-                } else {
-                    resolveAttack(false);
-                    abombfromregion=defenceinfomation[1];//Attacker receives a bomb
-                }
-                break;
-            case 'I'://Region wiped out sendRegionUpdate(4, id)
+            case 'O'://sendDefenceConclusion, everyone receives the result of the attack
+                waitingfordefenceresponse=false;
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
-                i= ByteToRegionID(b);//Allocated Forces
-                mModel.getRegion(i).wipeOut();
-                wipeOutRegionInView(i);
+                sel = ByteToRegionID(b);//Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 5, b, 0, b.length);
+                prev = ByteToRegionID(b);//Prev Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 9, b, 0, b.length);
+                i = ByteToRegionID(b);//Pledged Forces
+                boolean defwins;
+                if(buf[13]=='D'){defwins=true;}else{defwins=false;}
+                resolveAttack(prev,sel,i,defwins);
                 break;
-
         }
 
     }
@@ -1106,19 +1100,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                 }
                 break;
-            case 4://Region wiped out
-                // Buffer ints as bytes
-                bytes = new byte[5];
-                b = RegionIDToByte(regionid);//Converting int to ID using regionID method
-                System.arraycopy(b, 0, bytes, 1, b.length);//Package new army size
-                bytes[0] = 'I';//Wiped out
-                //send it
-                for(Participant p : mParticipants){
-                    if(mRoomId!=null) {
-                        Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
-                    }
-                }
-                break;
             default://no type supplied
                 break;
         }
@@ -1192,18 +1173,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         byte[] bytes = new byte[14];
         byte[] b = RegionIDToByte(id);//Copy selected region id into bytes
-        defenceinfomation[0]=id;
         System.arraycopy(b, 0, bytes, 1, b.length);//
         b = RegionIDToByte(prev);//Copy prev selected region id into bytes
-        defenceinfomation[1]=prev;
         System.arraycopy(b, 0, bytes, 5, b.length);//
         b = RegionIDToByte(pledge);//Copy pledge into bytes
-        defenceinfomation[2]=pledge;
         System.arraycopy(b, 0, bytes, 9, b.length);//Package pledge size
-        defenceinfomation[3]=guesses;
         bytes[0] = 'D';//Defence label
         bytes[13]= guesseschar;
-        defenceinfomation[4]=0;
         //send it
         for(Participant p : mParticipants){
             if(mRoomId!=null) {
@@ -1214,16 +1190,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void sendDefenceConclusion(boolean victory){
-        byte[] bytes = new byte[2];
-        bytes[0] = 'O';//for cOnclusion
-        if(victory){
-            bytes[1]='D';//Defender is victorious
-        } else {
-            bytes[1]='A';//Attacker is victorious
-        }
-        if(mRoomId!=null) {
-            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, mModel.getRegion(defenceinfomation[1]).getArmy().getPlayer().getParticipantid());//Send result prompt to attacking player
+    private void sendDefenceConclusion(boolean defendervictory){//Tell everyone else about the how the defence went
+        byte[] bytes = new byte[14];
+        byte[] b = RegionIDToByte(defenceinfomation[0]);//Copy target region id into bytes
+        System.arraycopy(b, 0, bytes, 1, b.length);//
+        b = RegionIDToByte(defenceinfomation[1]);//Copy source region id into bytes
+        System.arraycopy(b, 0, bytes, 5, b.length);//
+        b = RegionIDToByte(defenceinfomation[2]);//Copy pledge into bytes
+        System.arraycopy(b, 0, bytes, 9, b.length);//Package pledge size
+        bytes[0] = 'O';//defencecOonclusion
+        if(defendervictory){bytes[13]='D';}else{bytes[13]='A';}
+        for(Participant p : mParticipants){
+            if(mRoomId!=null) {
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes, mRoomId, p.getParticipantId());
+            }
         }
     }
 
@@ -1627,37 +1607,42 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
         defenceinfomation[4]++;//Increment guess count
         if(guess==defenceinfomation[2]){
-            showDialogFragment(2,"Guess successful! Attacker loses "+defenceinfomation[2]+" pledged forces!",0,0);
+            showDialogFragment(2, "Guess successful! Attacker loses " + defenceinfomation[2] + " pledged forces!", 0, 0);
             sendDefenceConclusion(true);
-            resolveAttack(true);
+            resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], true);
         } else {
             if(defenceinfomation[3]<defenceinfomation[4]){
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
             } else {
                 showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName()+"'",0,0);
                 sendDefenceConclusion(false);
-                resolveAttack(true);
+                resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], false);
             }
         }
     }
 
-    private void resolveAttack(boolean defenderwins){
-        //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
-        if(defenderwins){//Defender wins
-            Log.e("Tag", "Defender wins");
-            mModel.getRegion(defenceinfomation[1]).getArmy().incrementSize(-defenceinfomation[2]);//Attacker loses pledged army
-            if(mModel.getRegion(defenceinfomation[1]).getArmy().getSize()<=0){//If attacker has lost all men
-                mModel.getRegion(defenceinfomation[1]).wipeOut();
-                wipeOutRegionInView(defenceinfomation[1]);
-                sendRegionUpdate(4, defenceinfomation[1]);
-            }
-        } else {
-            Log.e("Tag", "Attacker wins");
-            mModel.getRegion(defenceinfomation[0]).getArmy().incrementSize(-1);//Defender loses 1 man
-            if(mModel.getRegion(defenceinfomation[0]).getArmy().getSize()<0){
-                takeRegionForCurrentPlayer(defenceinfomation[2], defenceinfomation[0], defenceinfomation[1]);
-                abombfromregion=defenceinfomation[1];//Attacker receives a bomb
 
+    private void resolveAttack(int sourceid, int destid, int pledge, boolean defenderwins){
+        //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
+        Log.e("Resolve Attack", mModel.getRegion(sourceid).getName() + " : " + mModel.getRegion(destid).getName());
+        if(defenderwins){//Defender wins
+            mModel.getRegion(sourceid).getArmy().incrementSize(-pledge);//Attacker loses pledged army
+            if(mModel.getRegion(sourceid).getArmy().getSize()<=0){//If attacker has lost all men
+                mModel.getRegion(sourceid).wipeOut();
+                wipeOutRegionInView(sourceid);
+            }
+        } else {//Attacker wins
+            mModel.getRegion(destid).getArmy().incrementSize(-1);//Defender loses 1 man
+            if(mModel.getRegion(destid).getArmy().getSize()<=0){
+                if(iAmCurrentPlayer()){
+                    abombfromregion=defenceinfomation[1];//Attacker receives a bomb
+                }
+                mModel.getRegion(destid).wipeOut();
+                takeRegionForCurrentPlayer(pledge, destid, sourceid, false);
+                if(mModel.getRegion(sourceid).getArmy().getSize()<=0){
+                    mModel.getRegion(sourceid).wipeOut();
+                    wipeOutRegionInView(sourceid);
+                }
             }
         }
     }
@@ -1720,7 +1705,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         abombfromregion=-1;
     }
 
-    public void takeRegionForCurrentPlayer(int pledge, int targetregionid, int sourceregionid){
+    public void takeRegionForCurrentPlayer(int pledge, int targetregionid, int sourceregionid, boolean tellothers){
         if(pledge>0) {
             if(targetregionid==-1 && sourceregionid==-1){
                 targetregionid=mModel.getCurrentplayer().getSelectedregionid();
@@ -1742,19 +1727,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
             //Tell everyone else
-            if (iAmCurrentPlayer()) {
+            if (iAmCurrentPlayer() && tellothers) {
                 sendRegionUpdate(2, mModel.getCurrentplayer().getSelectedregionid());
             }
 
             //Apply in view
             addRegiontoEmpireinView(mModel.getCurrentplayer().getSelectedregionid());
             checkRegionForEmpireMerge(dest);
+
+            if(abombfromregion!=-1){
+                showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
+            }
         } else {
             DeselectForCurrentPlayer();
         }
-        if(abombfromregion!=-1){
-            showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
-        }
+
     }
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
