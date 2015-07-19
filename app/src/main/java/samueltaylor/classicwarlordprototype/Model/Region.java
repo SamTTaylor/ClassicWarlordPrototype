@@ -88,6 +88,21 @@ public class Region extends Object{
         return true;
     }
 
+    //Echos outward through all connected regions in the same empire and compiles
+    //them into a list
+    public List<Region> getAllLinkedRegions(Empire e, List<Region> lstRegions){
+        lstRegions.add(this);
+        for(Region r : getAdjacentregions()){
+            if(!lstRegions.contains(r)){
+                if(r.getEmpire()!=null && r.getEmpire()==e){
+                    r.getAllLinkedRegions(e, lstRegions);
+                }
+            }
+
+        }
+        return lstRegions;
+    }
+
     public String getName(){return name;}
     public String getType(){return type;}
     public boolean isOwned() {if(empire==null){return false;}else{return true;}}

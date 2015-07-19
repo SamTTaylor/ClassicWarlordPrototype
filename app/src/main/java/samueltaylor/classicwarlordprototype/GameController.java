@@ -962,9 +962,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                         defenceinfomation[3]=1;
                         break;
                 }
-                Log.e("4", String.valueOf(defenceinfomation[3]));
                 defenceinfomation[4]=0;//Number of guesses so far
-                Log.e("5", String.valueOf(defenceinfomation[4]));
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
             case 'O'://sendDefenceConclusion, everyone receives the result of the attack
@@ -1626,7 +1624,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void resolveAttack(int sourceid, int destid, int pledge, boolean defenderwins){
         //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
-        Log.e("Resolve Attack", mModel.getRegion(sourceid).getName() + " : " + mModel.getRegion(destid).getName());
         if(defenderwins){//Defender wins
             mModel.getRegion(sourceid).getArmy().incrementSize(-pledge);//Attacker loses pledged army
             if(mModel.getRegion(sourceid).getArmy().getSize()<=0){//If attacker has lost all men
@@ -1643,8 +1640,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' to place it.",0,0);
             }
             if(mModel.getRegion(destid).getArmy().getSize()<=0){
+                Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(destid).wipeOut();
                 takeRegionForCurrentPlayer(pledge, destid, sourceid, false);
+                e.checkSplitEmpire(mModel.getRegion(sourceid));
             }
         }
     }
@@ -1806,7 +1805,5 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Bugfix wrong player colour strings
-    //TODO: Implement moving forces within own empire (MOVE INSIDE EMPIRE) and attacking other players (ATTACK)
-
+    //TODO: Bugfix empire splitting
 }

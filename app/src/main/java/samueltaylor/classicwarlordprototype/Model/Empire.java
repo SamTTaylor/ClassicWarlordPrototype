@@ -3,6 +3,8 @@ package samueltaylor.classicwarlordprototype.Model;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -83,6 +85,43 @@ public class Empire extends Object{
         reinforcements+=dense/2;//1 army for 2 dense
         reinforcements+=rural/3;//1 army for 3 rural
         return reinforcements;
+    }
+
+    public void checkSplitEmpire(Region r){
+        //Checks if the empire has split into disconnected sections and if it has, creates new Empires for each of them
+        //loop through each region
+        boolean thisempireused=false;
+        Player p = regions.get(0).getArmy().getPlayer();
+        List<Region> lstAdj = new ArrayList<>(r.getAdjacentregions());
+
+        List<Region> regionsHandled = new ArrayList<>();
+        List<Region> linkedregions = new ArrayList<>();
+        for(Region reg : lstAdj){
+            if(!regionsHandled.contains(reg) && reg.getEmpire()!=null && reg.getEmpire()==this){
+                reg.getAllLinkedRegions(reg.getEmpire(), linkedregions);
+                regionsHandled.add(reg);
+                for(Region re : lstAdj){//Only check regions that haven't been handled yet
+                    if(!regionsHandled.contains(re) && linkedregions.contains(re)){
+                        regionsHandled.add(re);
+                    }
+                }
+                if(thisempireused){//For first iteration just leave them in current empire
+                    Empire e = new Empire(reg);//Otherwise, create new empire and put all those regions in it
+                    for(Region regi : linkedregions){
+                        if(regi!=r){
+                            e.addRegion(regi);
+                            regi.setEmpire(e);
+                            p.addEmpire(e);
+                        }
+                    }
+                }
+                thisempireused=true;
+            }
+        }
+
+
+
+
     }
 
     public void Reinforce(){

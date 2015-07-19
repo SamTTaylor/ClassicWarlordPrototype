@@ -69,6 +69,7 @@ public class Player extends Object{
     public List<Empire> getEmpires(){
         return empires;
     }
+    public void addEmpire(Empire e) {empires.add(e);}
 
     public String getParticipantid(){
         return participantid;
