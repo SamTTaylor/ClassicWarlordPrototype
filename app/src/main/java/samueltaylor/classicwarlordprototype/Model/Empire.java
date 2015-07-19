@@ -29,11 +29,11 @@ public class Empire extends Object{
     }
 
     public void addRegion(Region r){
-        if(regions.contains(r)==false){
+        if(!regions.contains(r)){
             regions.add(r);
             r.setEmpire(this);
         } else {
-            Log.e("EMPIRE", "Region already in Empire");
+            Log.e("EMPIRE", "Region " + r.getName() + " already in Empire of " + regions.get(0).getName());
         }
     }
 

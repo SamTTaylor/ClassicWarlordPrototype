@@ -1509,12 +1509,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void handleAttackMoveClick(int id){
         if(abombfromregion!=-1){//All A bombs must be placed immediately
+            //Bombs must be placed in the same empire as the region that was attacked from, bear in mind that that region may now be empty due to all forces moving from it
+            //Also the bomb CANNOT be placed on the target region of hte attack that generated the bomb
             placeABombForRegion(id);
         } else if (waitingfordefenceresponse) {
             showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
         } else{
             if(prevSelectedIsMine()){
-                if(regionIsNotMine(id) && regionIsAdjacentToPrev(id)){
+                if(regionIsNotMine(id) && regionIsAdjacentToPrev(id) && prevSelectedHasMoreThan1Army()){
                     //Moving to adjacent region that is not mine
                     if(selectedIsHostile(id)){
                         //ATTACK
@@ -1534,7 +1536,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
             } else {
                 if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
-                    showDialogFragment(2, "Select one of your regions as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
+                    showDialogFragment(2, "Select one of your regions with more than 1 army as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
                     DeselectForCurrentPlayer();
                     firstclick=true;
                 } else {
@@ -1546,7 +1548,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void attackRegion(int id, int previd){
-        if(mModel.getRegion(id).getType().equals("sea")){
+        if(mModel.getRegion(id).getType().equals("sea")) {
             attackSea(id, previd);
         } else {
             int[] attacklimitations = getAttackLimitations(id, previd);//Max is 0 min is 1
@@ -1563,7 +1565,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         int minlimit=1;
         switch(r.getType()){
             case "mountain":
-                attacklimitations[0]=0;
+                attacklimitations[0]=3;
                 attacklimitations[1]=minlimit;
                 break;
             case "city":
@@ -1592,7 +1594,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void attackSea(int id, int previd){
-        showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize() - 1, 0);
+        showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize(), 0);
         abombfromregion=previd;//Automatically win 1 A Bomb
     }
 
@@ -1604,14 +1606,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     public void defenceConfirmed(int guess){
-        //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
+        //defenceinformation: 0: sel    1: prev     2: pledge     3: guesses    4: guesses made
         defenceinfomation[4]++;//Increment guess count
         if(guess==defenceinfomation[2]){
             showDialogFragment(2, "Guess successful! Attacker loses " + defenceinfomation[2] + " pledged forces!", 0, 0);
             sendDefenceConclusion(true);
             resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], true);
         } else {
-            if(defenceinfomation[3]<defenceinfomation[4]){
+            if(defenceinfomation[3]>defenceinfomation[4]){
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
             } else {
                 showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName()+"'",0,0);
@@ -1631,18 +1633,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 mModel.getRegion(sourceid).wipeOut();
                 wipeOutRegionInView(sourceid);
             }
+            if(iAmCurrentPlayer()){
+                showDialogFragment(2,"Defender guessed correctly, you lose "+String.valueOf(pledge)+" from \n'"+mModel.getRegion(sourceid).getName()+"'",0,0);
+            }
         } else {//Attacker wins
             mModel.getRegion(destid).getArmy().incrementSize(-1);//Defender loses 1 man
+            if(iAmCurrentPlayer()){
+                abombfromregion=sourceid;//Attacker receives a bomb
+                showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' to place it.",0,0);
+            }
             if(mModel.getRegion(destid).getArmy().getSize()<=0){
-                if(iAmCurrentPlayer()){
-                    abombfromregion=defenceinfomation[1];//Attacker receives a bomb
-                }
                 mModel.getRegion(destid).wipeOut();
                 takeRegionForCurrentPlayer(pledge, destid, sourceid, false);
-                if(mModel.getRegion(sourceid).getArmy().getSize()<=0){
-                    mModel.getRegion(sourceid).wipeOut();
-                    wipeOutRegionInView(sourceid);
-                }
             }
         }
     }
@@ -1700,6 +1702,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
+    private boolean prevSelectedHasMoreThan1Army(){
+        if(mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()>1){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     private void placeABombForRegion(int id){
         Log.e("Tag", "bomb placed in "+mModel.getRegion(id).getName());
         abombfromregion=-1;
@@ -1716,30 +1727,36 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
             //Move army
             source.getArmy().incrementSize(-pledge);
+
             if (dest.getArmy() != null) {
-                dest.getArmy().destroy();
-            } else {
-                Army a = new Army(mModel.getCurrentplayer(), pledge);
-                dest.allocateArmy(a);
+                dest.wipeOut();
             }
+            Army a = new Army(mModel.getCurrentplayer(), pledge);
+            dest.allocateArmy(a);
+
             //Add dest to source empire
             source.getEmpire().addRegion(dest);
 
+            if(mModel.getRegion(sourceregionid).getArmy().getSize()<=0){//If previous region's army was wiped out then target needs to be a new empire
+                mModel.getRegion(sourceregionid).wipeOut();
+                wipeOutRegionInView(sourceregionid);
+                mModel.getCurrentplayer().newEmpire(mModel.getRegion(targetregionid));
+                addRegiontoEmpireinView(targetregionid);
+            }
 
             //Tell everyone else
             if (iAmCurrentPlayer() && tellothers) {
-                sendRegionUpdate(2, mModel.getCurrentplayer().getSelectedregionid());
+                sendRegionUpdate(2, targetregionid);
             }
 
             //Apply in view
-            addRegiontoEmpireinView(mModel.getCurrentplayer().getSelectedregionid());
+            addRegiontoEmpireinView(targetregionid);
             checkRegionForEmpireMerge(dest);
-
-            if(abombfromregion!=-1){
-                showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
-            }
         } else {
             DeselectForCurrentPlayer();
+        }
+        if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){
+            showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
         }
 
     }
