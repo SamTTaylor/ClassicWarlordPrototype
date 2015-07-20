@@ -54,22 +54,24 @@ public class Player extends Object{
 
     }
 
-    void allocateArmy(Region r, int amount){
+    public void allocateArmy(Region r, int amount){
         Army a = new Army(this, amount);
-        r.allocateArmy(a);
+        r.getEmpire().allocateArmy(r,a);
     }
 
-    public void newEmpire(Region r){//Creates a new empire starting at specified region
+    public void newEmpire(Region r, int armysize){//Creates a new empire starting at specified region
         Empire empire = new Empire(r);
         empires.add(empire);
         r.setEmpire(empire);
-        allocateArmy(r,1);
+        allocateArmy(r,armysize);
+        empire.setPlayer(this);
     }
 
     public List<Empire> getEmpires(){
         return empires;
     }
     public void addEmpire(Empire e) {empires.add(e);}
+    public void removeEmpire(Empire e){empires.remove(e);}
 
     public String getParticipantid(){
         return participantid;

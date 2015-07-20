@@ -883,7 +883,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 int e = ByteToRegionID(b);
-                mModel.getCurrentplayer().newEmpire(mModel.getRegion(e));
+                mModel.getCurrentplayer().newEmpire(mModel.getRegion(e),1);
                 addRegiontoEmpireinView(e);
                 nextPlayer();
                 if(!checkRemainingMountains() || mModel.getRemainingmountaincount() == 0) {//If there aren't enough mountains to go around after this selection
@@ -1397,7 +1397,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if(check){//Allowed mountain
             reduceMountainCountLocal(id);
             sendMountainCountReduction(id);//Dont add this to reducemountaincount or there will be a send/receive loop
-            mModel.getCurrentplayer().newEmpire(mModel.getRegion(id));
+            mModel.getCurrentplayer().newEmpire(mModel.getRegion(id),1);
             addRegiontoEmpireinView(id);
             nextPlayer();//Mountain selection complete, move to next player
             sendRegionUpdate(0, id);
@@ -1627,8 +1627,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if(defenderwins){//Defender wins
             mModel.getRegion(sourceid).getArmy().incrementSize(-pledge);//Attacker loses pledged army
             if(mModel.getRegion(sourceid).getArmy().getSize()<=0){//If attacker has lost all men
+                Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(sourceid).wipeOut();
                 wipeOutRegionInView(sourceid);
+                e.checkSplitEmpire(mModel.getRegion(sourceid));
             }
             if(iAmCurrentPlayer()){
                 showDialogFragment(2,"Defender guessed correctly, you lose "+String.valueOf(pledge)+" from \n'"+mModel.getRegion(sourceid).getName()+"'",0,0);
@@ -1730,17 +1732,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if (dest.getArmy() != null) {
                 dest.wipeOut();
             }
-            Army a = new Army(mModel.getCurrentplayer(), pledge);
-            dest.allocateArmy(a);
+            //Add dest to a new empire (it will be joined later if it is still with the current empire)
+            source.getArmy().getPlayer().newEmpire(dest,pledge);
 
-            //Add dest to source empire
-            source.getEmpire().addRegion(dest);
 
-            if(mModel.getRegion(sourceregionid).getArmy().getSize()<=0){//If previous region's army was wiped out then target needs to be a new empire
+            if(mModel.getRegion(sourceregionid).getArmy().getSize()<=0){//If previous region's army was wiped out, wipe out the region
                 mModel.getRegion(sourceregionid).wipeOut();
                 wipeOutRegionInView(sourceregionid);
-                mModel.getCurrentplayer().newEmpire(mModel.getRegion(targetregionid));
-                addRegiontoEmpireinView(targetregionid);
             }
 
             //Tell everyone else
@@ -1754,7 +1752,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } else {
             DeselectForCurrentPlayer();
         }
-        if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){
+        if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){//Assign bomb to player outside of usual attack protocol
             showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
         }
 

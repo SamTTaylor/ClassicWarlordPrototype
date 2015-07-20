@@ -30,16 +30,6 @@ public class Region extends Object{
         scorched=false;
     }
 
-    public boolean allocateArmy(Army a){
-        if (army==null){
-            army = a;
-            return true;
-        } else {
-            Log.e("REGION", "CANNOT ALLOCATE MORE THAN 1 ARMY");
-            return false;
-        }
-    }
-
     public void wipeOut(){
         if(army!=null){
             army.destroy();
@@ -47,6 +37,9 @@ public class Region extends Object{
         }
         if(empire!=null){
             empire.removeRegion(this);
+            if(empire.getRegions().size()<=0){
+                empire.getPlayer().removeEmpire(empire);
+            }
             empire=null;
         }
     }
@@ -115,6 +108,7 @@ public class Region extends Object{
 
     public Bomb getBomb(){return bomb;}
     public Army getArmy(){return army;}
+    public void setArmy(Army a){army = a;}
 
     public int getAllocatedforces(){return allocatedforces;}
     public void adjustAllocatedforces(int i){allocatedforces+=i;}

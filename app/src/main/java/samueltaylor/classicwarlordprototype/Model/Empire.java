@@ -13,12 +13,24 @@ import java.util.List;
 public class Empire extends Object{
 
     private List<Region> regions;
+    private Player player;
     private int unallocatedforces=0;
     private int unallocatedbombs=0;
 
     public Empire(Region r){
         regions = new ArrayList<>();
         regions.add(r);
+        r.setEmpire(this);
+    }
+
+    public boolean allocateArmy(Region r, Army a){
+        if (r.getArmy()==null){
+            r.setArmy(a);
+            return true;
+        } else {
+            Log.e("EMPIRE", "CANNOT ALLOCATE MORE THAN 1 ARMY TO "+r.getName());
+            return false;
+        }
     }
 
     public Region getRegion(String name){
@@ -55,11 +67,8 @@ public class Empire extends Object{
         for(Region r : e.getRegions()){//Take all regions from target empire
             addRegion(r);
         }
-        try {
-            e.finalize();//Attempt to destroy target empire
-        } catch (Throwable throwable) {
-            Log.e("EMPIRE", "Failed to finalize empire: "+throwable.toString());
-        }
+        player.removeEmpire(e);
+        e=null;
     }
 
     public int countReinforcements(){
@@ -93,11 +102,11 @@ public class Empire extends Object{
         boolean thisempireused=false;
         Player p = regions.get(0).getArmy().getPlayer();
         List<Region> lstAdj = new ArrayList<>(r.getAdjacentregions());
-
         List<Region> regionsHandled = new ArrayList<>();
-        List<Region> linkedregions = new ArrayList<>();
+
         for(Region reg : lstAdj){
             if(!regionsHandled.contains(reg) && reg.getEmpire()!=null && reg.getEmpire()==this){
+                List<Region> linkedregions = new ArrayList<>();
                 reg.getAllLinkedRegions(reg.getEmpire(), linkedregions);
                 regionsHandled.add(reg);
                 for(Region re : lstAdj){//Only check regions that haven't been handled yet
@@ -108,12 +117,13 @@ public class Empire extends Object{
                 if(thisempireused){//For first iteration just leave them in current empire
                     Empire e = new Empire(reg);//Otherwise, create new empire and put all those regions in it
                     for(Region regi : linkedregions){
-                        if(regi!=r){
+                        regions.remove(regi);
+                        if(regi!=reg){
                             e.addRegion(regi);
                             regi.setEmpire(e);
-                            p.addEmpire(e);
                         }
                     }
+                    p.addEmpire(e);
                 }
                 thisempireused=true;
             }
@@ -124,9 +134,10 @@ public class Empire extends Object{
 
     }
 
-    public void Reinforce(){
-        unallocatedforces+=countReinforcements();
-    }
+    public Player getPlayer(){return player;}
+    public void setPlayer(Player p){player=p;}
+
+    public void Reinforce(){unallocatedforces+=countReinforcements();}
     public int getUnallocatedforces(){return unallocatedforces;}
     public void adjustUnallocatedforces(int i){unallocatedforces+=i;}
     public void resetUnallocatedforces(){
