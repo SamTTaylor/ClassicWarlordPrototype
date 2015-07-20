@@ -56,7 +56,6 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
-        import samueltaylor.classicwarlordprototype.Model.Army;
         import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
         import samueltaylor.classicwarlordprototype.Model.Player;
@@ -1545,8 +1544,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void attackRegion(int id, int previd){
-        if(mModel.getRegion(id).getType().equals("sea")) {
-            attackSea(id, previd);
+        if(mModel.getRegion(id).getType().equals("sea") && !mModel.getRegion(previd).getType().equals("sea")) {//Land to sea attacks are instant win
+            dominateSea(id, previd);
         } else {
             int[] attacklimitations = getAttackLimitations(id, previd);//Max is 0 min is 1
             attackLand(id, previd, attacklimitations[0], attacklimitations[1]);
@@ -1590,7 +1589,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void attackSea(int id, int previd){
+    private void dominateSea(int id, int previd){
         showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize(), 0);
         abombfromregion=previd;//Automatically win 1 A Bomb
     }
