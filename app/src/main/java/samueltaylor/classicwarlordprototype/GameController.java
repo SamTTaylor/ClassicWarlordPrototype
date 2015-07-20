@@ -1327,6 +1327,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
+        Log.e("Empirecount", String.valueOf(mModel.getCurrentplayer().getEmpires().size()));
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
@@ -1439,7 +1440,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     int id = mModel.getRegionIDByName(name);
                     wipeOutRegionInView(id);//Set outline back to black again
                     mModel.getRegion(id).wipeOut();
-                    p.getEmpires().remove(p.getEmpires().size() - 1);//Remove last empire
                 }
             }
             mapfragment.reRender();
