@@ -1744,6 +1744,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if(mModel.getRegion(sourceregionid).getArmy().getSize()<=0){//If previous region's army was wiped out, wipe out the region
                source.wipeOut();
                wipeOutRegionInView(sourceregionid);
+                wipedout=true;
             }
 
             //Tell everyone else
@@ -1813,5 +1814,5 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Test taking a sea region from a land region that splits an empire in 2
+    //TODO:
 }
