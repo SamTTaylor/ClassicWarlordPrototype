@@ -1327,7 +1327,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //CLICK INTERPRETATION, BIG PART OF CONTROLLER
     public void regionClicked(int id) {
-        Log.e("Empirecount", String.valueOf(mModel.getCurrentplayer().getEmpires().size()));
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
