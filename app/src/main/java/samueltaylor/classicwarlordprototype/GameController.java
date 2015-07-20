@@ -1507,7 +1507,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private void handleAttackMoveClick(int id){
         if(abombfromregion!=-1){//All A bombs must be placed immediately
             //Bombs must be placed in the same empire as the region that was attacked from, bear in mind that that region may now be empty due to all forces moving from it
-            //Also the bomb CANNOT be placed on the target region of hte attack that generated the bomb
+            //Also the bomb CANNOT be placed on the target region of the attack that generated the bomb
             placeABombForRegion(id);
         } else if (waitingfordefenceresponse) {
             showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
@@ -1629,7 +1629,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(sourceid).wipeOut();
                 wipeOutRegionInView(sourceid);
-                e.checkSplitEmpire(mModel.getRegion(sourceid));
+                if(e.getRegions().size()>0){
+                    e.checkSplitEmpire(mModel.getRegion(sourceid));
+                }
             }
             if(iAmCurrentPlayer()){
                 showDialogFragment(2,"Defender guessed correctly, you lose "+String.valueOf(pledge)+" from \n'"+mModel.getRegion(sourceid).getName()+"'",0,0);
@@ -1644,7 +1646,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(destid).wipeOut();
                 takeRegionForCurrentPlayer(pledge, destid, sourceid, false);
-                e.checkSplitEmpire(mModel.getRegion(sourceid));
+                if(e.getRegions().size()>0){
+                    e.checkSplitEmpire(mModel.getRegion(sourceid));
+                }
             }
         }
     }
@@ -1717,11 +1721,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     public void takeRegionForCurrentPlayer(int pledge, int targetregionid, int sourceregionid, boolean tellothers){
+        boolean wipedout=false;
+        if(targetregionid==-1 && sourceregionid==-1){
+            targetregionid=mModel.getCurrentplayer().getSelectedregionid();
+            sourceregionid=mModel.getCurrentplayer().getPrevselectedregionid();
+        }
+        Empire e = mModel.getRegion(sourceregionid).getEmpire();
         if(pledge>0) {
-            if(targetregionid==-1 && sourceregionid==-1){
-                targetregionid=mModel.getCurrentplayer().getSelectedregionid();
-                sourceregionid=mModel.getCurrentplayer().getPrevselectedregionid();
-            }
             Region source = mModel.getRegion(sourceregionid);
             Region dest = mModel.getRegion(targetregionid);
 
@@ -1736,8 +1742,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
             if(mModel.getRegion(sourceregionid).getArmy().getSize()<=0){//If previous region's army was wiped out, wipe out the region
-                mModel.getRegion(sourceregionid).wipeOut();
-                wipeOutRegionInView(sourceregionid);
+               source.wipeOut();
+               wipeOutRegionInView(sourceregionid);
             }
 
             //Tell everyone else
@@ -1752,6 +1758,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             DeselectForCurrentPlayer();
         }
         if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){//Assign bomb to player outside of usual attack protocol
+            if(wipedout){
+                if(e.getRegions().size()>0){
+                    e.checkSplitEmpire(mModel.getRegion(sourceregionid));
+                }
+            }
             showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
         }
 
@@ -1802,5 +1813,5 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO: Bugfix empire splitting
+    //TODO: Test taking a sea region from a land region that splits an empire in 2
 }
