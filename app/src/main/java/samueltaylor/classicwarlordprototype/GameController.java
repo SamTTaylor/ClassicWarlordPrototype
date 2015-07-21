@@ -1769,11 +1769,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(10, "A-Bomb detected in\n'"+sel.getName()+"'\nAre you sure you wish to increase A-Bomb size by 1?", 0, 0);
             }
         }
-
+        dialogfragment.setRegionid(id);
     }
 
-    public void confirmBombPlacement(){
-        Region sel = mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid());
+    public void confirmBombPlacement(int id){
+        Region sel = mModel.getRegion(id);
         int type=0;
         switch (mModel.getCurrentphase()){
             case 1://bombing phase, must be Hbomb
@@ -1790,7 +1790,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } else {
             updateChat("Increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to "+String.valueOf(sel.getBomb().getSize())+"!");
         }
-        sendBombPlacement(mModel.getCurrentplayer().getSelectedregionid(), type);
+        sendBombPlacement(id, type);
         abombfromregion=-1;
         infofragment.setBtnEndTurnVisibility(true);
     }
@@ -1846,8 +1846,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
         if(sel==-1&&prev==-1){//If no regions are passed, assume it is current players selected regions
-            mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().incrementSize(-pledge);
-            mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getArmy().incrementSize(pledge);
+            mModel.getRegion(prev).getArmy().incrementSize(-pledge);
+            mModel.getRegion(sel).getArmy().incrementSize(pledge);
         } else {
             mModel.getRegion(prev).getArmy().incrementSize(-pledge);
             mModel.getRegion(sel).getArmy().incrementSize(pledge);
@@ -1889,9 +1889,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                             }
                         } else {
                             showDialogFragment(2,"The resulting explosion of an A-Bomb cannot destroy the source empire.",0,0);
-                            mModel.getCurrentplayer().setSelectedregionid(-1);
-                            sendMySelectionData();
-                            updateClickedRegions();
+                            DeselectForCurrentPlayer();
                         }
                         break;
                     case 1:
@@ -1899,41 +1897,52 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                             showDialogFragment(11,"Are you sure you wish to fire at\n'"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                         } else {
                             showDialogFragment(2,"You can no longer fire H-Bombs this turn.",0,0);
-                            mModel.getCurrentplayer().setSelectedregionid(-1);
-                            sendMySelectionData();
-                            updateClickedRegions();
+                            DeselectForCurrentPlayer();
                         }
                         break;
                     default:
                         showDialogFragment(11,"Are you sure you wish to fire at\n'"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                         break;
                 }
+                dialogfragment.setRegionid(id);
+            } else {
+                showDialogFragment(2,"Not in range.",0,0);
             }
         } else {
             if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
                 showDialogFragment(2, "Select one of your regions with a bomb as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
+                firstclick = true;
                 DeselectForCurrentPlayer();
-                firstclick=true;
             } else {
                 firstclick = false;
 
             }
         }
+
     }
 
-    public void confirmFireBomb(){
-        Bomb b = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb();
+    public void confirmFireBomb(int sel){
+        List<Region> affectedRegions = new ArrayList<>();
+        List<Empire> affectedEmpires = new ArrayList<>();
+        Bomb b = mModel.getRegion(sel).getBomb();
         if(b.getBombtype()==0&&subphase==0){//End H-Bomb firing subphase
             subphase++;
         }
-        List<Empire> affectedEmpires = new ArrayList<>();
-        b.fireBomb(mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()), affectedEmpires);
-
+        b.fireBomb(mModel.getRegion(sel), affectedEmpires, affectedRegions);
+        for(Region r : affectedRegions){
+            int id = mModel.getRegionIDByName(r.getName());
+            wipeOutRegionInView(id);
+            if(r.getScorched()){
+                scorchRegionInView(id);
+            }
+        }
         for(Empire e : affectedEmpires){
             if(e.getRegions()!=null && e.getRegions().size()>0){
                 e.checkShatteredEmpire();
             }
         }
+        DeselectForCurrentPlayer();
+        updateChat("Fired an A-Bomb at " +mModel.getRegion(sel).getName()+"!");
     }
 
     private boolean prevSelectedHasABomb(){
@@ -1989,15 +1998,26 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mapfragment.reRender();
     }
 
-    public void DeselectForCurrentPlayer(){
-        mapfragment.deselectRegion(mModel.getCurrentplayer().getSelectedregionid());
-        mModel.getCurrentplayer().setSelectedregionid(-1);
-        mModel.getCurrentplayer().setPrevselectedregionid(-1);
+    private void scorchRegionInView(int id){
+        mapfragment.getRegion(id).setScorched(true);
+        mapfragment.reRender();
     }
+
+    public void DeselectForCurrentPlayer(){
+        mModel.getCurrentplayer().setSelectedregionid(-1);
+        sendMySelectionData();
+        updateClickedRegions();
+    }
+
+
 
     public List<Region> getRegionAdjacentRegions(int id){
         return mModel.getRegion(id).getAdjacentregions();
     }
 
-    //TODO:
+    //TODO: Send bomb firing data to other players (Remember to pass IDs explicitly, make FireBomb method & move all firing bomb data to there like with attacking)
+    //TODO: Allocate Hydrogen bomb in the same way as Atom Bombs, once an A-Bomb is fired
+    //TODO: Test firing of H-Bombs & bombs in general
+    //TODO: enforce scorched regions & make sure that the game doesn't think they are all Paris
+    //TODO: Victory Check
 }

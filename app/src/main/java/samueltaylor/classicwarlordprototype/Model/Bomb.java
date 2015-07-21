@@ -38,9 +38,14 @@ public class Bomb extends Object{
         threatzone.add(regionList);
     }
 
-    public void fireBomb(Region r, List<Empire> affectedEmpires){
-        location=r;
-        location.detonateBomb(affectedEmpires);
+    public void fireBomb(Region r, List<Empire> affectedEmpires, List<Region> affectedRegions){
+        location.setBomb(null);//Take bomb from this location
+        location=r;//Move bomb to location
+        if(r.getBomb()!=null){
+            this.bombtype=location.getBomb().getBombtype();//Ensure resulting explosion reflects any present bomb
+        }
+        location.setBomb(this);//I am the bomb now
+        location.detonateBomb(affectedEmpires, affectedRegions);//Whatssappanin
     }
 
     public boolean checkRange(Region r){
@@ -55,64 +60,55 @@ public class Bomb extends Object{
         return inrange;
     }
 
-    public void detonate(List<Empire> affectedEmpires){
+    public void detonate(List<Empire> affectedEmpires, List<Region> affectedRegions){
         detonated=true;
+        if(!affectedRegions.contains(location)){
+            affectedRegions.add(location);
+        }
         switch (bombtype){
             case 0://ATOM
                 for(Region r : location.getAdjacentregions()){
-                    if(r.getEmpire()!=null && !affectedEmpires.contains(r.getEmpire())){
-                        affectedEmpires.add(r.getEmpire());
-                    }
-                    r.wipeOut();
-                    if(r.getBomb()!=null && !r.getBomb().detonated){
-                        r.detonateBomb(affectedEmpires);
-                    }
+                    extendExplosion(r, affectedEmpires, affectedRegions);
                 }
                 location.Scorch();
                 break;
 
             case 1://HYDROGEN
                 for(Region r : location.getAdjacentregions()){
-                    r.wipeOut();
-                    if(r.getEmpire()!=null && !affectedEmpires.contains(r.getEmpire())){
-                        affectedEmpires.add(r.getEmpire());
-                    }
-                    if(r.getBomb()!=null && !r.getBomb().detonated){
-                        r.detonateBomb(affectedEmpires);
-                    }
+                    extendExplosion(r, affectedEmpires, affectedRegions);
                     r.Scorch();
                     for (Region re : r.getAdjacentregions()){
-                        re.wipeOut();
-                        if(re.getEmpire()!=null && !affectedEmpires.contains(re.getEmpire())){
-                            affectedEmpires.add(r.getEmpire());
-                        }
-                        if(re.getBomb()!=null && !re.getBomb().detonated){
-                            re.detonateBomb(affectedEmpires);
-                        }
+                        extendExplosion(re, affectedEmpires, affectedRegions);
                     }
                 }
                 location.Scorch();
                 break;
         }
+    }
 
+    private void extendExplosion(Region r, List<Empire> affectedEmpires, List<Region> affectedRegions){
+        if(r.getEmpire()!=null && !affectedEmpires.contains(r.getEmpire())){
+            affectedEmpires.add(r.getEmpire());
+        }
+        if(!affectedRegions.contains(r)){
+            affectedRegions.add(r);
+        }
+        if(r.getBomb()!=null && !r.getBomb().detonated){
+            r.detonateBomb(affectedEmpires, affectedRegions);
+        }
+        r.wipeOut();
     }
 
     public boolean willDestroyRegions(List<Region> checkregions, Region target, Region source){
         int affectedamount=0;
         List<Region> affectedRegions = new ArrayList<>();
 
-
         projectDetonationRecursively(affectedRegions, checkregions, target, source);
-
 
         for(Region r : checkregions){
             if(affectedRegions.contains(r)){
-                Log.e("checkregions", r.getName());
                 affectedamount++;
             }
-        }
-        for(Region re : affectedRegions){
-            Log.e("affectedRegions", re.getName());
         }
         if(affectedamount==checkregions.size()){
             return true;

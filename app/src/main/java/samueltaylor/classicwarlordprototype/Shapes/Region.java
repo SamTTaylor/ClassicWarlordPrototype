@@ -94,6 +94,7 @@ public class Region {
 
     private int mDrawMode = 0;
     int prevMode=0;
+    private boolean scorched=false;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -213,29 +214,37 @@ public class Region {
         } else {
             mUseGradient=0;
         }
-        switch (mDrawMode){
-            case 0://Initial
-                mFillColor = mColor;
-                mOutlineColor = cBlack;
-                prevMode = 0;
-                break;
-            case 1://Colour Identification for pixel grab
-                mUseGradient=0;
-                mFillColor = mColorID;
-                mOutlineColor = mColorID;
-                mDrawMode=prevMode;
-                break;
-            case 2://Selected
-                mFillColor = mSelectedColour;
-                mOutlineColor = cBlack;
-                prevMode = 2;
-                break;
-            default://default
-                mFillColor = mColor;
-                mOutlineColor = cBlack;
-                prevMode = 0;
-                break;
-       }
+        if(!scorched){//If a region is scorched it is blackened permanently
+            switch (mDrawMode){
+                case 0://Initial
+                    mFillColor = mColor;
+                    mOutlineColor = cBlack;
+                    prevMode = 0;
+                    break;
+                case 1://Colour Identification for pixel grab
+                    mUseGradient=0;
+                    mFillColor = mColorID;
+                    mOutlineColor = mColorID;
+                    mDrawMode=prevMode;
+                    break;
+                case 2://Selected
+                    mFillColor = mSelectedColour;
+                    mOutlineColor = cBlack;
+                    prevMode = 2;
+                    break;
+                default://default
+                    mFillColor = mColor;
+                    mOutlineColor = cBlack;
+                    prevMode = 0;
+                    break;
+            }
+        } else {
+            mUseGradient=0;
+            mFillColor = cBlack;
+            mOutlineColor = cBlack;
+            mDrawMode=0;
+        }
+
 
 
 
@@ -266,6 +275,7 @@ public class Region {
             mPlayerColor = cBlack;
         }
     }
+    public void setScorched(boolean b){scorched=b;}
 
     public float[] getmOutlineCoords(){
         return mOutlineCoords;

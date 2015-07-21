@@ -45,9 +45,9 @@ public class Region extends Object{
         }
     }
 
-    public void detonateBomb(List<Empire> e){
+    public void detonateBomb(List<Empire> affectedEmpires, List<Region> affectedRegions){
         if(bomb!=null){
-            bomb.detonate(e);
+            bomb.detonate(affectedEmpires, affectedRegions);
             bomb=null;
         }
     }
@@ -108,8 +108,12 @@ public class Region extends Object{
     public boolean getCounted(){return counted;}
 
     public Bomb getBomb(){return bomb;}
+    public void setBomb(Bomb b){bomb=b;}
+
     public Army getArmy(){return army;}
     public void setArmy(Army a){army = a;}
+
+    public boolean getScorched(){return scorched;}
 
     public int getAllocatedforces(){return allocatedforces;}
     public void adjustAllocatedforces(int i){allocatedforces+=i;}

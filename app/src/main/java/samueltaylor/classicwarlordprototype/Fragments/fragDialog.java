@@ -153,11 +153,11 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 10://Bomb Placement
-                    ((GameController) getActivity()).confirmBombPlacement();
+                    ((GameController) getActivity()).confirmBombPlacement(regionid);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 11://Bomb Firing
-                    ((GameController) getActivity()).confirmFireBomb();
+                    ((GameController) getActivity()).confirmFireBomb(regionid);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
 
