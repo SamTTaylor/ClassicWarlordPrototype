@@ -71,8 +71,11 @@ public class fragInspect extends Fragment {
         } else {
             txtBomb.setText("-");
         }
-        txtReinforcements.setText(String.valueOf(region.getEmpire().countReinforcements()));
-
+        if(region.getEmpire()!=null){
+            txtReinforcements.setText(String.valueOf(region.getEmpire().countReinforcements()));
+        } else {
+            txtReinforcements.setText("-");
+        }
 
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override

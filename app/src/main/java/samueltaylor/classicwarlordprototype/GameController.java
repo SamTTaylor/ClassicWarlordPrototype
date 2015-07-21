@@ -1375,9 +1375,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
-        if(mModel.getRegion(id).getEmpire()!=null){
-            showInspectFragment(id);
-        }
+        showInspectFragment(id);
     }
 
     private void updateClickedRegions(){
