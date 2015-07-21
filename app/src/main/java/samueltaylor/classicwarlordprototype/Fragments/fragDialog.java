@@ -111,6 +111,9 @@ public class fragDialog extends Fragment {
             case 10:
                 confirmationMessage();
                 break;
+            case 11:
+                confirmationMessage();
+                break;
             default:
                 txtMessage.setText("Default dialog type");
                 break;
@@ -153,6 +156,11 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).confirmBombPlacement();
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
+                case 11://Bomb Firing
+                    ((GameController) getActivity()).confirmFireBomb();
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
                     break;

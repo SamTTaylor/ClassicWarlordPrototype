@@ -34,9 +34,9 @@ public class Bomb extends Object{
         threatzone.add(regionList);
     }
 
-    public void fireBomb(Region r){
+    public void fireBomb(Region r, List<Empire> affectedEmpires){
         location=r;
-        detonate();
+        detonate(affectedEmpires);
     }
 
     public boolean checkRange(Region r){
@@ -51,28 +51,31 @@ public class Bomb extends Object{
         return inrange;
     }
 
-    public void detonate(){
+    public void detonate(List<Empire> affectedEmpires){
         switch (bombtype){
             case 0://ATOM
                 for(Region r : location.getAdjacentregions()){
+                    if(r.getEmpire()!=null && !affectedEmpires.contains(r.getEmpire())){
+                        affectedEmpires.add(r.getEmpire());
+                    }
                     r.wipeOut();
-                    r.detonateBomb();
+                    r.detonateBomb(affectedEmpires);
                 }
-                location.detonateBomb();
+                location.detonateBomb(affectedEmpires);
                 location.Scorch();
                 break;
 
             case 1://HYDROGEN
                 for(Region r : location.getAdjacentregions()){
                     r.wipeOut();
-                    r.detonateBomb();
+                    r.detonateBomb(affectedEmpires);
                     r.Scorch();
                     for (Region re : r.getAdjacentregions()){
                         r.wipeOut();
-                        r.detonateBomb();
+                        r.detonateBomb(affectedEmpires);
                     }
                 }
-                location.detonateBomb();
+                location.detonateBomb(affectedEmpires);
                 location.Scorch();
                 break;
         }

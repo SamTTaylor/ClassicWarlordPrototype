@@ -57,6 +57,7 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+        import samueltaylor.classicwarlordprototype.Model.Bomb;
         import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
         import samueltaylor.classicwarlordprototype.Model.Player;
@@ -1777,9 +1778,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 type=0;
                 break;
         }
+        if(sel.getBomb()==null){
+            updateChat("Placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
+        } else {
+            updateChat("Increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to "+String.valueOf(sel.getBomb().getSize())+"!");
+        }
         mModel.getCurrentplayer().allocateBomb(sel, type);
         sendBombPlacement(mModel.getCurrentplayer().getSelectedregionid(), type);
-        updateChat("Placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
         abombfromregion=-1;
         infofragment.setBtnEndTurnVisibility(true);
     }
@@ -1828,7 +1833,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     e.checkSplitEmpire(mModel.getRegion(sourceregionid));
                 }
             }
-            showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName()+"' to place it.",0,0);
+            showDialogFragment(2, "You have earned an atom bomb, select a region within the same empire as '" + mModel.getRegion(abombfromregion).getName() + "' to place it.", 0, 0);
         }
 
     }
@@ -1856,38 +1861,110 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+
+
+
+
+
+
     //BOMBING PHASE
+    private int subphase=0;
     private void handleBombingClick(int id){
-//        if(prevSelectedIsMine()){
-//            if(regionIsNotMine(id) && regionIsAdjacentToPrev(id) && prevSelectedHasMoreThan1Army()){
-//                //Moving to adjacent region that is not mine
-//                if(selectedIsHostile(id)){
-//                    //ATTACK
-//                    if(!spaceForAtomBomb(id)){showDialogFragment(2,"No space for atom bomb in this empire, therefore you cannot attack from it",0,0);} else {
-//                        attackRegion(id, mModel.getCurrentplayer().getPrevselectedregionid());
-//                    }
-//                } else {
-//                    //MOVE
-//                    showDialogFragment(5,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
-//                    //See fragDialog type 5for more info
-//                }
-//            } else if (!regionIsNotMine(id) && regionIsWithinPrevSelectedEmpire(id) && mModel.getCurrentplayer().getSelectedregionid()!= -1&&mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
-//                //MOVE INSIDE EMPIRE
-//                showDialogFragment(6,"Move\nFrom: '"+mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getName()+"'\nTo: '"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'\nSelect amount:",mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().getSize()-1,0);
-//                //See fragDialog type 6 for more info
-//            }
-//
-//        } else {
-//            if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
-//                showDialogFragment(2, "Select one of your regions with more than 1 army as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
-//                DeselectForCurrentPlayer();
-//                firstclick=true;
-//            } else {
-//                firstclick = false;
-//
-//            }
-//        }
+        if(prevSelectedIsMine() && prevSelectedHasABomb()){
+            Bomb b = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb();
+            if(targetIsInRange(b)){
+                switch(b.getBombtype()){
+                    case 0:
+                        if(!detonationWillDestroySourceEmpire(b)){
+                            if(subphase==0 && playerHasHydrogenBombs()){
+                                showDialogFragment(11,"This will stop you firing any more H-Bombs this turn, are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                            } else {
+                                showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                            }
+                        } else {
+                            showDialogFragment(2,"The resulting explosion of the detonation at the target cannot destroy the source empire.",0,0);
+                        }
+                        break;
+                    case 1:
+                        if(subphase==0){
+                            showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                        } else {
+                            showDialogFragment(2,"You can no longer fire H-Bombs this turn.",0,0);
+                        }
+                        break;
+                    default:
+                        showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                        break;
+                }
+            }
+        } else {
+            if(!firstclick && mModel.getCurrentplayer().getPrevselectedregionid()!=-1){
+                showDialogFragment(2, "Select one of your regions with a bomb as a source, then another region in the same empire, or any adjacent region as a destination", 0, 0);
+                DeselectForCurrentPlayer();
+                firstclick=true;
+            } else {
+                firstclick = false;
+
+            }
+        }
     }
+
+    public void confirmFireBomb(){
+        Bomb b = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb();
+        if(b.getBombtype()==0&&subphase==0){//End H-Bomb firing subphase
+            subphase++;
+        }
+        List<Empire> affectedEmpires = new ArrayList<>();
+        b.fireBomb(mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()), affectedEmpires);
+
+        for(Empire e : affectedEmpires){
+            if(e.getRegions()!=null && e.getRegions().size()>0){
+                e.checkShatteredEmpire();
+            }
+        }
+    }
+
+    private boolean prevSelectedHasABomb(){
+        if(mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb()!=null){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean detonationWillDestroySourceEmpire(Bomb b){
+        Region source = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
+        Region target = mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid());
+        return true;//TODO asd
+    }
+
+    private boolean targetIsInRange(Bomb b){
+       return b.checkRange(mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()));
+    }
+
+    private boolean playerHasHydrogenBombs(){
+        for(Empire e : mModel.getCurrentplayer().getEmpires()){
+            for(Region r : e.getRegions()){
+                if(r.getBomb()!=null && r.getBomb().getBombtype()>0){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //GENERAL VIEW MANIPULATION
     private void addRegiontoEmpireinView(int id) {

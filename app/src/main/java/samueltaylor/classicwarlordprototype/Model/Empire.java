@@ -97,19 +97,34 @@ public class Empire extends Object{
     }
 
     public void checkSplitEmpire(Region r){
-        //Checks if the empire has split into disconnected sections and if it has, creates new Empires for each of them
-
-        boolean thisempireused=false;
+        //Checks for a split from a specific source region
         List<Region> lstAdj = new ArrayList<>(r.getAdjacentregions());
+        splitEmpire(lstAdj);
+    }
+
+    public void checkShatteredEmpire(){
+        //Checks for a split from any regions still active in the empire
+        List<Region> lstStillInTact = new ArrayList<>();
+        for(Region oldRegion : regions){
+            if(oldRegion.getArmy()!=null && oldRegion.getArmy().getSize()>0){
+                lstStillInTact.add(oldRegion);
+            }
+        }
+        splitEmpire(lstStillInTact);
+    }
+
+    private void splitEmpire(List<Region> lstRegions){
+        //Checks if the regions of an empire have split into disconnected sections and if it has, creates new Empires for each of them
+        boolean thisempireused=false;
         List<Region> regionsHandled = new ArrayList<>();
-        //loop through each region adjacent to the source region
-        for(Region reg : lstAdj){
+        //loop through each region
+        for(Region reg : lstRegions){
             if(!regionsHandled.contains(reg) && reg.getEmpire()!=null && reg.getEmpire()==this){
                 List<Region> linkedregions = new ArrayList<>();
                 reg.getAllLinkedRegions(reg.getEmpire(), linkedregions);
 
                 regionsHandled.add(reg);
-                for(Region re : lstAdj){//Only check regions that haven't been handled yet
+                for(Region re : lstRegions){//Only check regions that haven't been handled yet
                     if(!regionsHandled.contains(re) && linkedregions.contains(re)){
                         regionsHandled.add(re);
                     }
@@ -129,10 +144,6 @@ public class Empire extends Object{
                 thisempireused=true;
             }
         }
-
-
-
-
     }
 
     public Player getPlayer(){return player;}
