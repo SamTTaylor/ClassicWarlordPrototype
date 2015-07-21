@@ -32,6 +32,7 @@ public class Region extends Object{
 
     public void wipeOut(){
         if(army!=null){
+            army.getPlayer().removeArmy(army);
             army.destroy();
             army=null;
         }
@@ -71,7 +72,7 @@ public class Region extends Object{
     }
 
     public boolean allocateBomb(int type){
-        if(bomb!=null){
+        if(bomb==null){
             bomb = new Bomb(this, type);
         } else if(bomb.getBombtype()==type){
             bomb.increaseSize();
@@ -91,7 +92,6 @@ public class Region extends Object{
                     r.getAllLinkedRegions(e, lstRegions);
                 }
             }
-
         }
         return lstRegions;
     }

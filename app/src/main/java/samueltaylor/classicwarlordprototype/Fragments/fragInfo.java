@@ -188,7 +188,7 @@ public class fragInfo extends Fragment {
             case 0:
                 return "Choosing Mountain";
             case 1:
-                return "Firing Bombs";
+                return "Bombing";
             case 2:
                 return "Reinforcement";
             case 3:

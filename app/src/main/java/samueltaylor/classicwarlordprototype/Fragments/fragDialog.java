@@ -106,6 +106,10 @@ public class fragDialog extends Fragment {
                 break;
             case 9:
                 inputMessage();
+                btnCancel.setVisibility(View.GONE);
+                break;
+            case 10:
+                confirmationMessage();
                 break;
             default:
                 txtMessage.setText("Default dialog type");
@@ -113,7 +117,7 @@ public class fragDialog extends Fragment {
         }
 
         btnConfirm.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            //Confirm based on dialog type
+            //Confirm based on dialog type... This should probably be sent to the controller to decide but I'm in too deep now
             switch (type){
                 case 1: //Confirmation
                     ((GameController) getActivity()).mountainSelected(regionid);
@@ -126,23 +130,27 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 5://Move army to unoccupied region
-                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current,-1,-1, true);
+                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current, -1, -1, true);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 case 6://Move army around within empire
                     ((GameController) getActivity()).moveArmyInsideEmpire(-1, -1, current);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
-                case 7://Move army around within empire
-                    ((GameController) getActivity()).attackConfirmed(current, 1);//Attack from land, 1 guess
+                case 7://Attack from land, 1 guess
+                    ((GameController) getActivity()).attackConfirmed(current, 1);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
-                case 8://Move army around within empire
-                    ((GameController) getActivity()).attackConfirmed(current, 2);//Attack from sea, 2 guesses
+                case 8://Attack from sea, 2 guesses
+                    ((GameController) getActivity()).attackConfirmed(current, 2);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
-                case 9://Move army around within empire
-                    ((GameController) getActivity()).defenceConfirmed(current);//Defence number has been guessed
+                case 9://Defence number has been guessed
+                    ((GameController) getActivity()).defenceConfirmed(current);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
+                case 10://Bomb Placement
+                    ((GameController) getActivity()).confirmBombPlacement();
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
                 default:

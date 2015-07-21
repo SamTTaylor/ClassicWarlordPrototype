@@ -24,7 +24,7 @@ public class Bomb extends Object{
     public void increaseSize(){
         size++;
         List<Region> regionList = new ArrayList<>();
-        for(Region r : threatzone.get(size-1)){
+        for(Region r : threatzone.get(threatzone.size()-1)){
             for(Region re : r.getAdjacentregions()){
                 if(regionList.contains(re)==false){
                     regionList.add(re);
@@ -34,14 +34,16 @@ public class Bomb extends Object{
         threatzone.add(regionList);
     }
 
-    public boolean fireBomb(Region r){
-        List<Region> regionList;
+    public void fireBomb(Region r){
+        location=r;
+        detonate();
+    }
+
+    public boolean checkRange(Region r){
         boolean inrange = false;
         if(location!=null){
             for(int i=0;i<threatzone.size();i++){
                 if(threatzone.get(i).contains(r)){
-                    location=r;
-                    detonate();
                     inrange = true;
                 }
             }
@@ -54,7 +56,9 @@ public class Bomb extends Object{
             case 0://ATOM
                 for(Region r : location.getAdjacentregions()){
                     r.wipeOut();
+                    r.detonateBomb();
                 }
+                location.detonateBomb();
                 location.Scorch();
                 break;
 
@@ -68,6 +72,7 @@ public class Bomb extends Object{
                         r.detonateBomb();
                     }
                 }
+                location.detonateBomb();
                 location.Scorch();
                 break;
         }

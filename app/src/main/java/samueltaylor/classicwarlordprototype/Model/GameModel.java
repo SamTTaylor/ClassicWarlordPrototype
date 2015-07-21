@@ -54,6 +54,7 @@ public class GameModel {
             cTemp = new float[]{colours.get(i)[0],colours.get(i)[1],colours.get(i)[2],1.0f};
             Player p = new Player(cTemp, colournames.get(i), s);//Pick that colour
             colours.remove(colours.get(i));
+            colournames.remove(colournames.get(i));
             players.add(p);
         }
 
@@ -87,6 +88,7 @@ public class GameModel {
             }
         }
         currentplayer = players.get(currentplayerindex);
+        currentPlayerCanPlayThisPhaseCheck();
     }
 
     public void nextPhase(){
@@ -121,7 +123,46 @@ public class GameModel {
             nextPhase();
         }
         setCurrentplayer(0);//Reset back to first player
+        currentPlayerCanPlayThisPhaseCheck();
         nextphase=false;
+    }
+
+    private void currentPlayerCanPlayThisPhaseCheck(){
+        boolean check=false;
+        switch (currentphase){
+            case 0://Mountain
+                check=true;
+                break;
+            case 1://Bombs
+                //Check if player has any bombs
+                for(Empire e : getCurrentplayer().getEmpires()){
+                    for(Region r : e.getRegions()){
+                        if(r.getBomb()!=null){
+                            check=true;
+                        }
+                    }
+                }
+                break;
+            case 2://Reinforcement
+                //Check if player has any empires
+                if(getCurrentplayer().getEmpires()!=null && getCurrentplayer().countRegions()>0){
+                    check=true;
+                }
+                break;
+            case 3://Attack/defence
+                //Check if player has any armies capable of moving
+                for(Empire e : getCurrentplayer().getEmpires()){
+                    for(Region r : e.getRegions()){
+                        if(r.getArmy()!=null && r.getArmy().getSize()>1){
+                            check=true;
+                        }
+                    }
+                }
+                break;
+        }
+        if(check==false){
+            nextPlayer();//Player cannot act this phase, skip player
+        }
     }
 
     private void initialiseColours(){

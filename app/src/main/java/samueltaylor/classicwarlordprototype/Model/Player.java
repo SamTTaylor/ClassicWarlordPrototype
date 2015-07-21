@@ -32,37 +32,27 @@ public class Player extends Object{
 
     int countRegions(){
         int regions=0;
+        for(Empire e : empires){
+            for (Region r : e.getRegions()){
+                regions++;
+            }
+        }
         return regions;
     }
 
-
-
-    void moveArmy(Region src, Region dst){
-
-    }
-
-    void attackRegion(Region src, Region dst, int pledge){
-
-    }
-
-    int defendRegion(Region r){
-        int guess=0;
-        return guess;
-    }
-
-    void allocateBomb(Region r){
-
+    public void allocateBomb(Region r, int type){
+        r.allocateBomb(type);
     }
 
     public void allocateArmy(Region r, int amount){
         Army a = new Army(this, amount);
         r.getEmpire().allocateArmy(r,a);
+        armies.add(a);
     }
 
     public void newEmpire(Region r, int armysize){//Creates a new empire starting at specified region
         Empire empire = new Empire(r);
         empires.add(empire);
-        r.setEmpire(empire);
         allocateArmy(r,armysize);
         empire.setPlayer(this);
     }
@@ -99,4 +89,6 @@ public class Player extends Object{
     public void resetPrevselectedregionid(){prevselectedregionid=-1;}
 
     public void deselectall(){selectedregionid=-1;prevselectedregionid=-1;}
+
+    public void removeArmy(Army a){armies.remove(a);}
 }
