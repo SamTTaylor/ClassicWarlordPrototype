@@ -1,5 +1,7 @@
 package samueltaylor.classicwarlordprototype.Model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +14,10 @@ public class Bomb extends Object{
     private int size;
     private Region location;
     private List<List<Region>> threatzone;
+    private boolean detonated;
 
     public Bomb(Region r, int type){
+        detonated=false;
         threatzone = new ArrayList<>();
         size = 1;
         location = r;
@@ -36,7 +40,7 @@ public class Bomb extends Object{
 
     public void fireBomb(Region r, List<Empire> affectedEmpires){
         location=r;
-        detonate(affectedEmpires);
+        location.detonateBomb(affectedEmpires);
     }
 
     public boolean checkRange(Region r){
@@ -52,6 +56,7 @@ public class Bomb extends Object{
     }
 
     public void detonate(List<Empire> affectedEmpires){
+        detonated=true;
         switch (bombtype){
             case 0://ATOM
                 for(Region r : location.getAdjacentregions()){
@@ -59,24 +64,102 @@ public class Bomb extends Object{
                         affectedEmpires.add(r.getEmpire());
                     }
                     r.wipeOut();
-                    r.detonateBomb(affectedEmpires);
+                    if(r.getBomb()!=null && !r.getBomb().detonated){
+                        r.detonateBomb(affectedEmpires);
+                    }
                 }
-                location.detonateBomb(affectedEmpires);
                 location.Scorch();
                 break;
 
             case 1://HYDROGEN
                 for(Region r : location.getAdjacentregions()){
                     r.wipeOut();
-                    r.detonateBomb(affectedEmpires);
-                    r.Scorch();
-                    for (Region re : r.getAdjacentregions()){
-                        r.wipeOut();
+                    if(r.getEmpire()!=null && !affectedEmpires.contains(r.getEmpire())){
+                        affectedEmpires.add(r.getEmpire());
+                    }
+                    if(r.getBomb()!=null && !r.getBomb().detonated){
                         r.detonateBomb(affectedEmpires);
                     }
+                    r.Scorch();
+                    for (Region re : r.getAdjacentregions()){
+                        re.wipeOut();
+                        if(re.getEmpire()!=null && !affectedEmpires.contains(re.getEmpire())){
+                            affectedEmpires.add(r.getEmpire());
+                        }
+                        if(re.getBomb()!=null && !re.getBomb().detonated){
+                            re.detonateBomb(affectedEmpires);
+                        }
+                    }
                 }
-                location.detonateBomb(affectedEmpires);
                 location.Scorch();
+                break;
+        }
+
+    }
+
+    public boolean willDestroyRegions(List<Region> checkregions, Region target, Region source){
+        int affectedamount=0;
+        List<Region> affectedRegions = new ArrayList<>();
+
+
+        projectDetonationRecursively(affectedRegions, checkregions, target, source);
+
+
+        for(Region r : checkregions){
+            if(affectedRegions.contains(r)){
+                Log.e("checkregions", r.getName());
+                affectedamount++;
+            }
+        }
+        for(Region re : affectedRegions){
+            Log.e("affectedRegions", re.getName());
+        }
+        if(affectedamount==checkregions.size()){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void projectDetonationRecursively(List<Region> affectedRegions, List<Region> checkregions, Region target, Region source){
+        if(!affectedRegions.contains(target)){
+            affectedRegions.add(target);
+        }
+        switch (bombtype){
+            case 0://ATOM
+                for(Region r : target.getAdjacentregions()){
+                    if(!affectedRegions.contains(r)){
+                        if(checkregions.contains(r)){
+                            affectedRegions.add(r);
+                        }
+                        if(r.getBomb()!=null && r!=source){
+                            r.getBomb().projectDetonationRecursively(affectedRegions, checkregions,r, source);
+                        }
+                    }
+                }
+                break;
+
+            case 1://HYDROGEN
+                for(Region r : target.getAdjacentregions()){
+                    if(!affectedRegions.contains(r)){
+                        if(checkregions.contains(r)){
+                            affectedRegions.add(r);
+                        }
+                        if(r.getBomb()!=null && r!=source){
+                            r.getBomb().projectDetonationRecursively(affectedRegions, checkregions,r, source);
+                        }
+                    }
+                    for (Region re : r.getAdjacentregions()){
+                        if(!affectedRegions.contains(r)){
+                            if(checkregions.contains(r)){
+                                affectedRegions.add(r);
+                            }
+                            if(r.getBomb()!=null && r!=source){
+                                r.getBomb().projectDetonationRecursively(affectedRegions, checkregions,r, source);
+                            }
+                        }
+                    }
+                }
                 break;
         }
     }
@@ -95,5 +178,8 @@ public class Bomb extends Object{
         }
     }
     public int getSize(){return size;}
+
+    public boolean getDetonated(){return detonated;}
+    public void setDetonated(boolean b){detonated=b;}
 
 }

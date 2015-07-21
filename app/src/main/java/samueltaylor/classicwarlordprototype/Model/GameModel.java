@@ -88,7 +88,7 @@ public class GameModel {
             }
         }
         currentplayer = players.get(currentplayerindex);
-        currentPlayerCanPlayThisPhaseCheck();
+
     }
 
     public void nextPhase(){
@@ -123,11 +123,10 @@ public class GameModel {
             nextPhase();
         }
         setCurrentplayer(0);//Reset back to first player
-        currentPlayerCanPlayThisPhaseCheck();
         nextphase=false;
     }
 
-    private void currentPlayerCanPlayThisPhaseCheck(){
+    public boolean currentPlayerCanPlayThisPhaseCheck(){
         boolean check=false;
         switch (currentphase){
             case 0://Mountain
@@ -135,10 +134,12 @@ public class GameModel {
                 break;
             case 1://Bombs
                 //Check if player has any bombs
-                for(Empire e : getCurrentplayer().getEmpires()){
-                    for(Region r : e.getRegions()){
-                        if(r.getBomb()!=null){
-                            check=true;
+                if(getCurrentplayer().getEmpires()!=null && getCurrentplayer().getEmpires().size()>0){
+                    for(Empire e : getCurrentplayer().getEmpires()){
+                        for(Region r : e.getRegions()){
+                            if(r.getBomb()!=null){
+                                check=true;
+                            }
                         }
                     }
                 }
@@ -151,18 +152,18 @@ public class GameModel {
                 break;
             case 3://Attack/defence
                 //Check if player has any armies capable of moving
-                for(Empire e : getCurrentplayer().getEmpires()){
-                    for(Region r : e.getRegions()){
-                        if(r.getArmy()!=null && r.getArmy().getSize()>1){
-                            check=true;
+                if(getCurrentplayer().getEmpires()!=null && getCurrentplayer().getEmpires().size()>0){
+                    for(Empire e : getCurrentplayer().getEmpires()){
+                        for(Region r : e.getRegions()){
+                            if(r.getArmy()!=null && r.getArmy().getSize()>1){
+                                check=true;
+                            }
                         }
                     }
                 }
                 break;
         }
-        if(check==false){
-            nextPlayer();//Player cannot act this phase, skip player
-        }
+        return check;
     }
 
     private void initialiseColours(){

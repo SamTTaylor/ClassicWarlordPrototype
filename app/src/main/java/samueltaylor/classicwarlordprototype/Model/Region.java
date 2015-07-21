@@ -48,6 +48,7 @@ public class Region extends Object{
     public void detonateBomb(List<Empire> e){
         if(bomb!=null){
             bomb.detonate(e);
+            bomb=null;
         }
     }
 

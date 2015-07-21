@@ -1293,28 +1293,33 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             mModel.nextPhase();
             infofragment.setPhase(mModel.getCurrentphase());
         }
-        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
-
-        if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
-            infofragment.setBtnEndTurnVisibility(true);
+        if(!mModel.currentPlayerCanPlayThisPhaseCheck()){
+            nextPlayer();
         } else {
-            infofragment.setBtnEndTurnVisibility(false);
+            infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
+
+            if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+                infofragment.setBtnEndTurnVisibility(true);
+            } else {
+                infofragment.setBtnEndTurnVisibility(false);
+            }
+
+            switch (mModel.getCurrentphase()){
+                case 0://Mountain
+                    break;
+                case 1://Bombing
+                    break;
+                case 2://Reinforcement
+                    if(iAmCurrentPlayer()){
+                        allocateReinforcementsToCurrentPlayer();
+                    }
+                    break;
+                case 3://Attack/move
+                    break;
+
+            }
         }
 
-        switch (mModel.getCurrentphase()){
-            case 0://Mountain
-                break;
-            case 1://Bombing
-                break;
-            case 2://Reinforcement
-                if(iAmCurrentPlayer()){
-                    allocateReinforcementsToCurrentPlayer();
-                }
-                break;
-            case 3://Attack/move
-                break;
-
-        }
     }
 
     //End Turn
@@ -1778,12 +1783,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 type=0;
                 break;
         }
-        if(sel.getBomb()==null){
+
+        mModel.getCurrentplayer().allocateBomb(sel, type);
+        if(sel.getBomb().getSize()==1){
             updateChat("Placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
         } else {
             updateChat("Increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to "+String.valueOf(sel.getBomb().getSize())+"!");
         }
-        mModel.getCurrentplayer().allocateBomb(sel, type);
         sendBombPlacement(mModel.getCurrentplayer().getSelectedregionid(), type);
         abombfromregion=-1;
         infofragment.setBtnEndTurnVisibility(true);
@@ -1877,23 +1883,29 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     case 0:
                         if(!detonationWillDestroySourceEmpire(b)){
                             if(subphase==0 && playerHasHydrogenBombs()){
-                                showDialogFragment(11,"This will stop you firing any more H-Bombs this turn, are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                                showDialogFragment(11,"This will stop you firing any more H-Bombs this turn, are you sure you wish to fire at\n'"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                             } else {
                                 showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                             }
                         } else {
-                            showDialogFragment(2,"The resulting explosion of the detonation at the target cannot destroy the source empire.",0,0);
+                            showDialogFragment(2,"The resulting explosion of an A-Bomb cannot destroy the source empire.",0,0);
+                            mModel.getCurrentplayer().setSelectedregionid(-1);
+                            sendMySelectionData();
+                            updateClickedRegions();
                         }
                         break;
                     case 1:
                         if(subphase==0){
-                            showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                            showDialogFragment(11,"Are you sure you wish to fire at\n'"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                         } else {
                             showDialogFragment(2,"You can no longer fire H-Bombs this turn.",0,0);
+                            mModel.getCurrentplayer().setSelectedregionid(-1);
+                            sendMySelectionData();
+                            updateClickedRegions();
                         }
                         break;
                     default:
-                        showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
+                        showDialogFragment(11,"Are you sure you wish to fire at\n'"+mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getName()+"'?",0,0);
                         break;
                 }
             }
@@ -1935,7 +1947,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private boolean detonationWillDestroySourceEmpire(Bomb b){
         Region source = mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid());
         Region target = mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid());
-        return true;//TODO asd
+        return b.willDestroyRegions(source.getEmpire().getRegions(), target, source);
     }
 
     private boolean targetIsInRange(Bomb b){
