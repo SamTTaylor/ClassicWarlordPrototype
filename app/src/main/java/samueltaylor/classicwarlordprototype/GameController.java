@@ -12,6 +12,7 @@ package samueltaylor.classicwarlordprototype;
         import android.net.Uri;
         import android.os.Bundle;
         import android.os.Handler;
+        import android.os.PowerManager;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
@@ -409,6 +410,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Leave the room.
     void leaveRoom() {
         if (mRoomId != null) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+            wl.release();
             Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
         }
@@ -663,25 +667,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mMultiplayer = multiplayer;
         //Show game related fragments
         loadGame();
-        // run the gameTick() method every second to update the game.
-        final Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mSecondsLeft <= 0)
-                    return;
-                gameTick();
-                h.postDelayed(this, 1000);
-            }
-        }, 1000);
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        wl.acquire();
 
 
         // update the names on screen from room
         updatePlayers();
     }
-
-    // Game tick -- update countdown, check if game ended.
-    void gameTick() {}
 
 
 
@@ -2152,7 +2145,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //TODO: Stop device from sleeping, set timer on response for defender
-    //TODO: Look into whether the running of the main game cycle needs to be swapped round
+    //TODO: Swap game cycle to go P1 Ph1, Ph2, Ph3 P2 Ph1, Ph2, Ph3
     //TODO: Look into catching up players if they were supposed to receive defence notifications in onResume
-    //TODO: Change reinfocement icon to a soldier with a plus
 }
