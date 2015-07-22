@@ -120,9 +120,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // invitation listener
     String mIncomingInvitationId = null;
 
-    // Message buffer for sending messages
-//    byte[] mMsgBuf = new byte[2];
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -182,7 +179,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void signout(){
         // user wants to sign out
         // sign out.
-        Log.d(TAG, "Sign-out button clicked");
+        Log.e(TAG, "Sign-out button clicked");
         mSignInClicked = false;
         Games.signOut(mGoogleApiClient);
         mGoogleApiClient.disconnect();
@@ -195,11 +192,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // NOTE: this check is here only because this is a sample! Don't include this
         // check in your actual production app.
         if (!BaseGameUtils.verifySampleSetup(this, samueltaylor.classicwarlordprototype.R.string.app_id)) {
-            Log.w(TAG, "*** Warning: setup problems detected. Sign in may not work!");
+            Log.e(TAG, "*** Warning: setup problems detected. Sign in may not work!");
         }
 
         // start the sign-in flow
-        Log.d(TAG, "Sign-in button clicked");
+        Log.e(TAG, "Sign-in button clicked");
         mSignInClicked = true;
         mGoogleApiClient.connect();
         signedin = true;
@@ -245,7 +242,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 // we got the result from the "waiting room" UI.
                 if (responseCode == Activity.RESULT_OK) {
                     // ready to start playing
-                    Log.d(TAG, "Starting game (waiting room returned OK).");
+                    Log.e(TAG, "Starting game (waiting room returned OK).");
                     try {
                         startGame(true);
                     } catch (InterruptedException e) {
@@ -262,7 +259,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 }
                 break;
             case RC_SIGN_IN:
-                Log.d(TAG, "onActivityResult with requestCode == RC_SIGN_IN, responseCode="
+                Log.e(TAG, "onActivityResult with requestCode == RC_SIGN_IN, responseCode="
                         + responseCode + ", intent=" + intent);
                 mSignInClicked = false;
                 mResolvingConnectionFailure = false;
@@ -280,16 +277,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // "Invite friends" button. We react by creating a room with those players.
     private void handleSelectPlayersResult(int response, Intent data) {
         if (response != Activity.RESULT_OK) {
-            Log.w(TAG, "*** select players UI cancelled, " + response);
+            Log.e(TAG, "*** select players UI cancelled, " + response);
             loadMainMenu();
             return;
         }
 
-        Log.d(TAG, "Select players UI succeeded.");
+        Log.e(TAG, "Select players UI succeeded.");
 
         // get the invitee list
         final ArrayList<String> invitees = data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-        Log.d(TAG, "Invitee count: " + invitees.size());
+        Log.e(TAG, "Invitee count: " + invitees.size());
 
         // get the automatch criteria
         Bundle autoMatchCriteria = null;
@@ -298,11 +295,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
             autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
                     minAutoMatchPlayers, maxAutoMatchPlayers, 0);
-            Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
+            Log.e(TAG, "Automatch criteria: " + autoMatchCriteria);
         }
 
         // create the room
-        Log.d(TAG, "Creating room...");
+        Log.e(TAG, "Creating room...");
         RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
         rtmConfigBuilder.addPlayersToInvite(invitees);
         rtmConfigBuilder.setMessageReceivedListener(this);
@@ -314,19 +311,19 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         showLoadingFragment(null);
         resetGameVars();
         Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
-        Log.d(TAG, "Room created, waiting for it to be ready...");
+        Log.e(TAG, "Room created, waiting for it to be ready...");
     }
 
     // Handle the result of the invitation inbox UI, where the player can pick an invitation
     // to accept. We react by accepting the selected invitation, if any.
     private void handleInvitationInboxResult(int response, Intent data) {
         if (response != Activity.RESULT_OK) {
-            Log.w(TAG, "*** invitation inbox UI cancelled, " + response);
+            Log.e(TAG, "*** invitation inbox UI cancelled, " + response);
             loadMainMenu();
             return;
         }
 
-        Log.d(TAG, "Invitation inbox UI succeeded.");
+        Log.e(TAG, "Invitation inbox UI succeeded.");
         Invitation inv = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
 
         // accept invitation
@@ -336,7 +333,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Accept the given invitation.
     void acceptInviteToRoom(String invId) {
         // accept the invitation
-        Log.d(TAG, "Accepting invitation: " + invId);
+        Log.e(TAG, "Accepting invitation: " + invId);
         RoomConfig.Builder roomConfigBuilder = RoomConfig.builder(this);
         roomConfigBuilder.setInvitationIdToAccept(invId)
                 .setMessageReceivedListener(this)
@@ -347,14 +344,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
     }
 
-    // Activity is going to the background. We have to leave the current room.
+    // Activity is going to the background
     @Override
     public void onStop() {
-        Log.d(TAG, "**** got onStop");
-
-        // if we're in a room, leave it.
-        leaveRoom();
+        Log.e(TAG, "**** got onStop");
         super.onStop();
+    }
+
+    // Activity is going to the background.
+    @Override
+    public void onPause() {
+        Log.e(TAG, "**** got onPause");
+        super.onPause();
     }
 
     // Activity just got to the foreground. We switch to the wait screen because we will now
@@ -364,10 +365,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onStart() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            Log.w(TAG,
+            Log.e(TAG,
                     "GameHelper: client was already connected on onStart()");
         } else {
-            Log.d(TAG,"Connecting client.");
+            Log.e(TAG,"Connecting client.");
             mGoogleApiClient.connect();
         }
         super.onStart();
@@ -403,7 +404,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Leave the room.
     void leaveRoom() {
         if (mRoomId != null) {
-            Log.d(TAG, "Leaving room.");
+            Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
         }
     }
@@ -427,7 +428,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         // We got an invitation to play a game! So, store it in
         // mIncomingInvitationId
         // and show the popup on the screen.
-        Log.d(TAG, "Invite Received.");
+        Log.e(TAG, "Invite Received.");
         mIncomingInvitationId = invitation.getInvitationId();
         //show invitation fragment
         showinvitefragment();
@@ -449,21 +450,21 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(TAG, "onConnected() called. Sign in successful!");
+        Log.e(TAG, "onConnected() called. Sign in successful!");
 
-        Log.d(TAG, "Sign-in succeeded.");
+        Log.e(TAG, "Sign-in succeeded.");
 
         // register listener so we are notified if we receive an invitation to play
         // while we are in the game
         Games.Invitations.registerInvitationListener(mGoogleApiClient, this);
 
         if (connectionHint != null) {
-            Log.d(TAG, "onConnected: connection hint provided. Checking for invite.");
+            Log.e(TAG, "onConnected: connection hint provided. Checking for invite.");
             Invitation inv = connectionHint
                     .getParcelable(Multiplayer.EXTRA_INVITATION);
             if (inv != null && inv.getInvitationId() != null) {
                 // retrieve and cache the invitation ID
-                Log.d(TAG,"onConnected: connection hint has a room invite!");
+                Log.e(TAG,"onConnected: connection hint has a room invite!");
                 acceptInviteToRoom(inv.getInvitationId());
             }
         }
@@ -471,16 +472,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.d(TAG, "onConnectionSuspended() called. Trying to reconnect.");
+        Log.e(TAG, "onConnectionSuspended() called. Trying to reconnect.");
         mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed() called, result: " + connectionResult);
+        Log.e(TAG, "onConnectionFailed() called, result: " + connectionResult);
 
         if (mResolvingConnectionFailure) {
-            Log.d(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
+            Log.e(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
             return;
         }
 
@@ -496,7 +497,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // is connected yet).
     @Override
     public void onConnectedToRoom(Room room) {
-        Log.d(TAG, "onConnectedToRoom.");
+        Log.e(TAG, "onConnectedToRoom.");
 
         // get room ID, participants and my ID:
         mRoomId = room.getRoomId();
@@ -504,9 +505,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(mGoogleApiClient));
 
         // print out the list of participants (for debug purposes)
-        Log.d(TAG, "Room ID: " + mRoomId);
-        Log.d(TAG, "My ID " + mMyId);
-        Log.d(TAG, "<< CONNECTED TO ROOM>>");
+        Log.e(TAG, "Room ID: " + mRoomId);
+        Log.e(TAG, "My ID " + mMyId);
+        Log.e(TAG, "<< CONNECTED TO ROOM>>");
     }
 
     // Called when we've successfully left the room (this happens a result of voluntarily leaving
@@ -514,7 +515,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onLeftRoom(int statusCode, String roomId) {
         // we have left the room; return to main screen.
-        Log.d(TAG, "onLeftRoom, code " + statusCode);
+        Log.e(TAG, "onLeftRoom, code " + statusCode);
         loadMainMenu();
         mRoomId = null;
     }
@@ -522,6 +523,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Called when we get disconnected from the room. We return to the main screen.
     @Override
     public void onDisconnectedFromRoom(Room room) {
+        Log.e("onDisconnectedFromRoom","Disconnected from room");
         mRoomId = null;
         showGameError();
     }
@@ -535,7 +537,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Called when room has been created
     @Override
     public void onRoomCreated(int statusCode, Room room) {
-        Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
+        Log.e(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
         if (statusCode != GamesStatusCodes.STATUS_OK) {
             Log.e(TAG, "*** Error: onRoomCreated, status " + statusCode);
             showGameError();
@@ -549,7 +551,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Called when room is fully connected.
     @Override
     public void onRoomConnected(int statusCode, Room room) {
-        Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
+        Log.e(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
         if (statusCode != GamesStatusCodes.STATUS_OK) {
             Log.e(TAG, "*** Error: onRoomConnected, status " + statusCode);
             showGameError();
@@ -560,7 +562,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onJoinedRoom(int statusCode, Room room) {
-        Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
+        Log.e(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
         if (statusCode != GamesStatusCodes.STATUS_OK) {
             Log.e(TAG, "*** Error: onRoomConnected, status " + statusCode);
             showGameError();
@@ -2141,12 +2143,4 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-
-
-    //TODO: (Done)Send bomb firing data to other players (Remember to pass IDs explicitly, make FireBomb method & move all firing bomb data to there like with attacking)
-    //TODO: (Done)Allocate Hydrogen bomb in the same way as Atom Bombs, once an A-Bomb is fired
-    //TODO: (Done)Test firing of H-Bombs & bombs in general
-    //TODO: (Done)enforce scorched regions & make sure that the game doesn't think they are all Paris
-    //TODO: Victory Condition
-    //TODO: Make "enter" on keyboard send message when typing
 }

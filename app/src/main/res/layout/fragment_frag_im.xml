@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="left|bottom"
-    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM">
+    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM"
+    android:background="#000000">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -43,7 +44,8 @@
                 android:layout_weight="1"
                 android:maxLength="100"
                 android:ellipsize="end"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="5dp"
+                android:height="23dp" />
 
             <Button
                 android:layout_width="match_parent"
@@ -52,7 +54,7 @@
                 android:id="@+id/btnSend"
                 android:background="#ccffffff"
                 android:layout_weight="4"
-                android:height="21dp"
+                android:height="23dp"
                 android:layout_gravity="bottom" />
         </LinearLayout>
 
