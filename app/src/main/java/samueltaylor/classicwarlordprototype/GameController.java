@@ -11,7 +11,6 @@ package samueltaylor.classicwarlordprototype;
         import android.content.Intent;
         import android.net.Uri;
         import android.os.Bundle;
-        import android.os.Handler;
         import android.os.PowerManager;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
@@ -901,7 +900,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
                 updateClickedRegions();//Update view
                 break;
-            case 'N'://New empire for current player sendRegionUpdate()
+            case 'N'://New empire for current player sendRegionUpdate(), used during mountain phase
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 int e = ByteToRegionID(b);
@@ -940,8 +939,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 int i= ByteToRegionID(b);//Allocated Forces
                 mModel.getRegion(s).getArmy().setSize(i);//Set size rather than increment due to difficulties discerning negative numbers
                 break;
-            case 'P'://sendNextPlayerPrompt()
-                nextPlayer();
+            case 'P'://sendNextPhasePrompt()
+                nextPhase();
                 break;
             case 'T'://New region for current player sendRegionUpdate(2, id)
                 b = new byte[4];
@@ -1186,9 +1185,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void sendNextPlayerPrompt(){
+    private void sendNextPhasePrompt(){
         byte[] bytes = new byte[1];
-        bytes[0] = 'P';//Label as Reinforcements Prompt
+        bytes[0] = 'P';//Label as nextPhase prompt
         //Send!
         for(Participant p : mParticipants){
             if(mRoomId!=null) {
@@ -1336,40 +1335,38 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel = new GameModel(r, pids);
     }
 
-    private void nextPlayer(){//Not called on initial movement to reinforcement phase, see moveToReinforcement()
-        mModel.nextPlayer();
-        if(mModel.getNextphase()){
-            mModel.nextPhase();
-            infofragment.setPhase(mModel.getCurrentphase());
-        }
-        if(!mModel.currentPlayerCanPlayThisPhaseCheck()){
-            nextPlayer();
+    private void nextPhase(){//Not called on initial movement to reinforcement phase, see moveToReinforcement()
+        mModel.nextPhase();
+        infofragment.setPhase(mModel.getCurrentphase());
+        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
+
+        if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
+            infofragment.setBtnEndTurnVisibility(true);
         } else {
-            infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
-
-            if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
-                infofragment.setBtnEndTurnVisibility(true);
-            } else {
-                infofragment.setBtnEndTurnVisibility(false);
-            }
-
-            switch (mModel.getCurrentphase()){
-                case 0://Mountain
-                    break;
-                case 1://Bombing
-                    subphase=0;
-                    break;
-                case 2://Reinforcement
-                    if(iAmCurrentPlayer()){
-                        allocateReinforcementsToCurrentPlayer();
-                    }
-                    break;
-                case 3://Attack/move
-                    break;
-
-            }
+            infofragment.setBtnEndTurnVisibility(false);
         }
 
+        switch (mModel.getCurrentphase()){
+            case 0://Mountain
+                break;
+            case 1://Bombing
+                subphase=0;
+                break;
+            case 2://Reinforcement
+                if(iAmCurrentPlayer()){
+                    allocateReinforcementsToCurrentPlayer();
+                }
+                break;
+            case 3://Attack/move
+                break;
+
+        }
+
+    }
+
+    private void nextPlayer(){//Used for Mountain selection phase only, see moveToReinforcement()
+        mModel.nextPlayer();
+        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
     }
 
     //End Turn
@@ -1385,18 +1382,18 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     }
                 }
                 if(!reinforcementsused && !confirmed){//If confirmed is passed as true (by the confirmation dialog) then reinforcementsused=false does not matter
-                    showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end your turn?",0,0);//Confirmation Dialog);
+                    showDialogFragment(4, "You have unallocated reinforcements, are you sure you wish to end this phase?",0,0);//Confirmation Dialog);
                 } else {
-                    nextPlayer();
-                    sendNextPlayerPrompt();
+                    nextPhase();
+                    sendNextPhasePrompt();
                 }
                 break;
             default:
                 if(!confirmed){
-                    showDialogFragment(4, "Are you sure you wish to end your turn?",0,0);//Confirmation Dialog);
+                    showDialogFragment(4, "Are you sure you wish to end this phase?",0,0);//Confirmation Dialog);
                 } else {
-                    nextPlayer();
-                    sendNextPlayerPrompt();
+                    nextPhase();
+                    sendNextPhasePrompt();
                 }
                 break;
 
@@ -1405,24 +1402,25 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //PHASE BASED CLICK INTERPRETATION
     public void regionClicked(int id) {
-        mModel.getPlayer(mMyId).setSelectedregionid(id);
-        sendMySelectionData();
-        updateClickedRegions();
-        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId) && !victory){//Players can only interact with the phase if it is their turn and noone has won
-            switch (mModel.getCurrentphaseString()){
-                case "Mountain":
-                    handleMountainClick(id);
-                    break;
-                case "Bombing":
-                    handleBombingClick(id);
-                    break;
-                case "Reinforcement":
-                    handleReinforcementClick(id);
-                    break;
-                case "Attack":
-                    handleAttackMoveClick(id);
-                    break;
-
+        if(id<mModel.getWorld().size()){
+            mModel.getPlayer(mMyId).setSelectedregionid(id);
+            sendMySelectionData();
+            updateClickedRegions();
+            if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId) && !victory){//Players can only interact with the phase if it is their turn and noone has won
+                switch (mModel.getCurrentphaseString()){
+                    case "Mountain":
+                        handleMountainClick(id);
+                        break;
+                    case "Bombing":
+                        handleBombingClick(id);
+                        break;
+                    case "Reinforcement":
+                        handleReinforcementClick(id);
+                        break;
+                    case "Attack":
+                        handleAttackMoveClick(id);
+                        break;
+                }
             }
         }
     }
@@ -1526,18 +1524,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
             mapfragment.reRender();
         }
-        mModel.nextPhase();
-        infofragment.setColour(mModel.getCurrentplayer().getColour(), mModel.getCurrentplayer().getColourstring());
-        infofragment.setPhase(mModel.getCurrentphase());
-
-        if(iAmCurrentPlayer()){
-            allocateReinforcementsToCurrentPlayer();
-        }
-        if(iAmCurrentPlayer() && mModel.getCurrentphase()!=0){//If its my turn and its not the mountain phase, show end turn button
-            infofragment.setBtnEndTurnVisibility(true);
-        } else {
-            infofragment.setBtnEndTurnVisibility(false);
-        }
+        nextPhase();
     }
 
     private boolean evenlyDistributedMountains(){
@@ -2033,6 +2020,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         List<Region> affectedRegions = new ArrayList<>();
         List<Empire> affectedEmpires = new ArrayList<>();
         Bomb b = mModel.getRegion(sourceid).getBomb();
+        int bombType = b.getBombtype();
         if(b.getBombtype()==0&&subphase==0){//End H-Bomb firing subphase
             subphase++;
         }
@@ -2049,7 +2037,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 e.checkShatteredEmpire();
             }
         }
-        if(iAmCurrentPlayer()&&bombTypeForPhase()==1){//If I am current player and I am receiving an H bomb
+        if(iAmCurrentPlayer()&&bombType==0){//If I am current player and I am receiving an H bomb
             abombfromregion=sourceid;//Attacker receives a bomb
             showDialogFragment(2,"You have earned an H-Bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the detonation, to place it.",0,0);
         }
@@ -2145,6 +2133,5 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //TODO: Stop device from sleeping, set timer on response for defender
-    //TODO: Swap game cycle to go P1 Ph1, Ph2, Ph3 P2 Ph1, Ph2, Ph3
     //TODO: Look into catching up players if they were supposed to receive defence notifications in onResume
 }

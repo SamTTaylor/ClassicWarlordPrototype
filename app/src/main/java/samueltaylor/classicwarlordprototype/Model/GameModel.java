@@ -81,49 +81,50 @@ public class GameModel {
 
     public void nextPlayer(){//Move to next player's turn
         currentplayerindex++;
-        if(currentplayerindex>=players.size()){
+        if(currentplayerindex>=players.size()){//Back to first player
             currentplayerindex=0;
             if(currentphase!=0){//Mountain phase (0) precedes usual phase cycle
-                nextphase=true;
+                currentphase=1;
             }
         }
         currentplayer = players.get(currentplayerindex);
-
     }
 
     public void nextPhase(){
         currentphase++;
-        switch (currentphase){
-            case 0://Mountain
-                break;
-            case 1://Bombs
-                boolean bombs=false;
-                //Check if any bombs exist
-                for(Player p : players){
-                    for(Empire e : p.getEmpires()){
-                        for(Region r : e.getRegions()){
-                            if(r.getBomb()!=null){
-                                bombs=true;
+        if(currentphase>=phases.size()){
+            currentphase=1;//Reset to first phase
+            nextPlayer();
+        }
+        if(!currentPlayerCanPlayThisPhaseCheck()){
+            nextPhase();
+        }else{
+            switch (currentphase){
+                case 0://Mountain
+                    break;
+                case 1://Bombs
+                    boolean bombs=false;
+                    //Check if any bombs exist
+                    for(Player p : players){
+                        for(Empire e : p.getEmpires()){
+                            for(Region r : e.getRegions()){
+                                if(r.getBomb()!=null){
+                                    bombs=true;
+                                }
                             }
                         }
                     }
-                }
-                if(bombs==false){
-                    nextPhase();//No bombs, skip this phase
-                }
-                break;
-            case 2://Reinforcement
-                break;
+                    if(bombs==false){
+                        nextPhase();//No bombs, skip this phase
+                    }
+                    break;
+                case 2://Reinforcement
+                    break;
 
-            case 3://Attack/defence
-                break;
+                case 3://Attack/defence
+                    break;
+            }
         }
-        if(currentphase>=phases.size()){
-            currentphase=0;//Reset to first phase
-            nextPhase();
-        }
-        setCurrentplayer(0);//Reset back to first player
-        nextphase=false;
     }
 
     public boolean currentPlayerCanPlayThisPhaseCheck(){
@@ -204,6 +205,7 @@ public class GameModel {
         }
         return null;
     }
+
     public List<Player> getPlayers(){return players;}
     public Player getCurrentplayer(){return currentplayer;}
     public void setCurrentplayer(int id){currentplayer = players.get(id);currentplayerindex=id;}
