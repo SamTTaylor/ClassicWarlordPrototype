@@ -5,11 +5,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.gms.games.Game;
 
 import org.w3c.dom.Text;
 
@@ -67,14 +70,30 @@ public class fragIM extends Fragment {
         Chat = (TextView) getActivity().findViewById(R.id.txtChat);
         IM = (TextView) getActivity().findViewById(R.id.txtMessage);
         btnSendIM = (Button) getActivity().findViewById(R.id.btnSend);
-        btnSendIM.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            //Don't send blank messages
-            if (IM.getText().length()>0) {
-                //Ask controller to update everyone's chat and clear the text field
-                ((GameController) getActivity()).updateChat(IM.getText().toString());
-                IM.setText("");
+        btnSendIM.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Don't send blank messages
+                if (IM.getText().length() > 0) {
+                    //Ask controller to update everyone's chat and clear the text field
+                    ((GameController) getActivity()).updateChat(IM.getText().toString());
+                    IM.setText("");
+                }
             }
-        }});
+        });
+        IM.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // If the event is a key-down event on the "enter" button
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    // Perform action on key press
+                    ((GameController)getActivity()).HideKeyboard();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void appendChat(String message){
@@ -109,5 +128,10 @@ public class fragIM extends Fragment {
         // TODO: Update argument type and name
         public void onIMFragmentInteraction(Uri uri);
     }
+
+    public void btnSendIMClick(){
+        btnSendIM.callOnClick();
+    }
+
 
 }

@@ -171,18 +171,22 @@ public class GameModel {
         colournames = new LinkedList<>(Arrays.asList("Blue", "Red", "Green", "Orange", "Purple", "Pink", "Tan"));
     }
 
-    public boolean mountainsAvailable(){
-        if((double) remainingmountaincount /players.size()<1){
-            return false;
+    public Player checkVictor(){
+        List<Player> stillalive = new ArrayList<>();
+        for(Player p : players){
+            if(p.getEmpires()!=null && p.getEmpires().size()>0){
+                stillalive.add(p);
+            }
+        }
+        if(stillalive.size()>1){
+            return null;//No victor yet
         } else {
-            return true;
+            return stillalive.get(0);
         }
     }
 
 
-
     //Get/set
-
     public float[] getParticipantColour(String pid){
         for(Player p : players){
             if(p.getParticipantid().equals(pid)){

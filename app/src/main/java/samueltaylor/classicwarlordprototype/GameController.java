@@ -7,6 +7,7 @@ package samueltaylor.classicwarlordprototype;
         import android.app.Fragment;
         import android.app.FragmentManager;
         import android.app.FragmentTransaction;
+        import android.content.Context;
         import android.content.Intent;
         import android.net.Uri;
         import android.os.Bundle;
@@ -14,6 +15,8 @@ package samueltaylor.classicwarlordprototype;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
+        import android.view.View;
+        import android.view.inputmethod.InputMethodManager;
 
         import com.google.android.gms.common.ConnectionResult;
         import com.google.android.gms.common.api.GoogleApiClient;
@@ -373,16 +376,28 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Handle back key to make sure we cleanly leave a game if we are in the middle of one
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
-        if (keyCode == KeyEvent.KEYCODE_BACK ) {
-            if(inRoom()){
-                leaveRoom();
-            } else {
-                this.finish();
-                System.exit(0);
-            }
-
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                if (inRoom()) {
+                    leaveRoom();
+                } else {
+                    this.finish();
+                    System.exit(0);
+                }
+                break;
         }
         return true;
+    }
+
+    public void HideKeyboard(){
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            imfragment.btnSendIMClick();
+        }
     }
 
     // Leave the room.
@@ -811,6 +826,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(inspectfragment);
+        transaction.commit();
+    }
+
+    public void removeInfoFragment(){
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(infofragment);
         transaction.commit();
     }
 
@@ -1301,6 +1323,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     * GAME LOGIC SECTION. Methods that implement the game's rules.
     */
     GameModel mModel;
+    private boolean firstclick = true;
+    private int abombfromregion=-1;
+    private List<Region> pastempire;
+    private boolean victory=false;
+
     private void initialiseModel(List<SVGtoRegionParser.Region> r, List<Participant> plist){
         List<String> pids = new ArrayList<>();
         for(Participant p : plist){
@@ -1381,7 +1408,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mModel.getPlayer(mMyId).setSelectedregionid(id);
         sendMySelectionData();
         updateClickedRegions();
-        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId)){//Players can only interact with the phase if it is their turn
+        if(mModel.getCurrentplayer()==mModel.getPlayer(mMyId) && !victory){//Players can only interact with the phase if it is their turn and noone has won
             switch (mModel.getCurrentphaseString()){
                 case "Mountain":
                     handleMountainClick(id);
@@ -1407,18 +1434,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         showInspectFragment(id);
     }
 
-    private void updateClickedRegions(){
-        for(Player p : mModel.getPlayers()){
-            if(p.getPrevselectedregionid()!=-1){
-                mapfragment.deselectRegion(p.getPrevselectedregionid());
-            }
-            if (p.getSelectedregionid()!=-1) {
-                mapfragment.selectRegion(p.getSelectedregionid(), mModel.getParticipantColour(p.getParticipantid()));
-            }
 
-        }
+    public List<Region> getRegionAdjacentRegions(int id) {
+        return mModel.getRegion(id).getAdjacentregions();
     }
-
 
     boolean iAmCurrentPlayer(){
         if(mModel.getCurrentplayer().getParticipantid().equals(mMyId)){
@@ -1426,6 +1445,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         return false;
     }
+
+    private void checkVictory(){
+        Player p = mModel.checkVictor();
+        if(p!=null){
+            removeInfoFragment();
+            if(dialogfragment.isVisible()){
+                removeDialogFragment();
+            }
+            showDialogFragment(2, p.getColourstring() + " Player is victorious.", 0, 0);//Dialog 2 is basic dialog
+            victory=true;
+        }
+    }
+
+
 
     //MOUNTAIN SELECTION PHASE
     private void handleMountainClick(int id){
@@ -1521,6 +1554,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
+
+
+
+
+
     //REINFORCEMENT PHASE
     private void handleReinforcementClick(int id){
         for(Empire e : mModel.getCurrentplayer().getEmpires()){
@@ -1548,12 +1586,16 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                                 //Also allows better visibility of current player's actions for other players
     }
 
+
+
+
+
+
+
     //ATTACK PHASE
-    private boolean firstclick = true;
-    private int abombfromregion=-1;
     private boolean waitingfordefenceresponse=false;
     private int[] defenceinfomation;
-    private List<Region> pastempire;
+
 
     private void handleAttackMoveClick(int id){
         if(abombfromregion!=-1){//All A bombs must be placed immediately
@@ -1568,7 +1610,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
         } else{
             if(prevSelectedIsMine()){
-                if(regionIsNotMine(id) && regionIsAdjacentToPrev(id) && prevSelectedHasMoreThan1Army()){
+                if(regionIsNotMine(id) && regionIsAdjacentToPrev(id) && prevSelectedHasMoreThan1Army() && !regionIsScorched(id)){
                     //Moving to adjacent region that is not mine
                     if(selectedIsHostile(id)){
                         //ATTACK
@@ -1765,6 +1807,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
+    private boolean regionIsScorched(int id){
+        return mModel.getRegion(id).getScorched();
+    }
+
     private boolean prevSelectedIsMine(){
         int prev = mModel.getCurrentplayer().getPrevselectedregionid();
         if(prev != -1 && //Have I got a previously selected region?
@@ -1870,7 +1916,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
             showDialogFragment(2, "You have earned an atom bomb, select a region within the same empire as '" + mModel.getRegion(abombfromregion).getName() + "' to place it.", 0, 0);
         }
-
+        checkVictory();
     }
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
@@ -2005,6 +2051,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             abombfromregion=sourceid;//Attacker receives a bomb
             showDialogFragment(2,"You have earned an H-Bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the detonation, to place it.",0,0);
         }
+        checkVictory();
     }
 
 
@@ -2082,15 +2129,23 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         updateClickedRegions();
     }
 
+    private void updateClickedRegions(){
+        for(Player p : mModel.getPlayers()){
+            if(p.getPrevselectedregionid()!=-1){
+                mapfragment.deselectRegion(p.getPrevselectedregionid());
+            }
+            if (p.getSelectedregionid()!=-1) {
+                mapfragment.selectRegion(p.getSelectedregionid(), mModel.getParticipantColour(p.getParticipantid()));
+            }
 
-
-    public List<Region> getRegionAdjacentRegions(int id){
-        return mModel.getRegion(id).getAdjacentregions();
+        }
     }
 
+
+
     //TODO: (Done)Send bomb firing data to other players (Remember to pass IDs explicitly, make FireBomb method & move all firing bomb data to there like with attacking)
-    //TODO: Allocate Hydrogen bomb in the same way as Atom Bombs, once an A-Bomb is fired
-    //TODO: Test firing of H-Bombs & bombs in general
+    //TODO: (Done)Allocate Hydrogen bomb in the same way as Atom Bombs, once an A-Bomb is fired
+    //TODO: (Done)Test firing of H-Bombs & bombs in general
     //TODO: (Done)enforce scorched regions & make sure that the game doesn't think they are all Paris
     //TODO: Victory Condition
     //TODO: Make "enter" on keyboard send message when typing
