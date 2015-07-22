@@ -178,4 +178,6 @@ public class Bomb extends Object{
     public boolean getDetonated(){return detonated;}
     public void setDetonated(boolean b){detonated=b;}
 
+    public Region getLocation(){return location;}
+
 }
