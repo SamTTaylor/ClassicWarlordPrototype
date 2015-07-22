@@ -67,11 +67,7 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
-/**
- * @author Mateusz Mysliwiec
- * @author www.matim-dev.com
- * @version 1.0
- */
+
 public class GameController extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener, fragMain.OnFragmentInteractionListener, fragGameMap.OnFragmentInteractionListener, fragInvitationReceived.OnFragmentInteractionListener,
         fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener, fragDialog.OnFragmentInteractionListener,
@@ -356,6 +352,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onPause() {
         Log.e(TAG, "**** got onPause");
         super.onPause();
+    }
+
+    // Activity is going to be destroyed
+    @Override
+    public void onDestroy() {
+        updateChat("Has left the game.");
+        Log.e(TAG, "**** got onDestroy");
+        leaveRoom();
+        super.onDestroy();
     }
 
     // Activity just got to the foreground. We switch to the wait screen because we will now
@@ -1719,6 +1724,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         defenceinfomation[4]++;//Increment guess count
         if(guess==defenceinfomation[2]){
             showDialogFragment(2, "Guess successful! Attacker loses " + defenceinfomation[2] + " pledged forces!", 0, 0);
+            updateChat(mModel.getCurrentplayer().getColourstring()+" attacked "+ mModel.getPlayer(mMyId).getColourstring() + " with "+defenceinfomation[2]+" pledged forces and lost!");
             sendDefenceConclusion(true);
             resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], true);
         } else {
@@ -1726,6 +1732,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
             } else {
                 showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName()+"'",0,0);
+                updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and won!");
                 sendDefenceConclusion(false);
                 resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], false);
             }
@@ -2049,7 +2056,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 e.checkShatteredEmpire();
             }
         }
-        if(iAmCurrentPlayer()&&bombTypeForPhase()==0){//If I am current player and I am firing an Atom bomb
+        if(iAmCurrentPlayer()&&bombTypeForPhase()==1){//If I am current player and I am receiving an H bomb
             abombfromregion=sourceid;//Attacker receives a bomb
             showDialogFragment(2,"You have earned an H-Bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the detonation, to place it.",0,0);
         }
@@ -2143,4 +2150,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
+
+    //TODO: Stop device from sleeping, set timer on response for defender
+    //TODO: Look into whether the running of the main game cycle needs to be swapped round
+    //TODO: Look into catching up players if they were supposed to receive defence notifications in onResume
+    //TODO: Change reinfocement icon to a soldier with a plus
 }

@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="left|bottom"
-    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM"
-    android:background="#000000">
+    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragIM">
 
     <!-- TODO: Update blank fragment layout -->
 
