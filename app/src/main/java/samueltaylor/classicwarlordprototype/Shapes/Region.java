@@ -239,10 +239,20 @@ public class Region {
                     break;
             }
         } else {
-            mUseGradient=0;
-            mFillColor = cBlack;
-            mOutlineColor = cBlack;
-            mDrawMode=0;
+            switch (mDrawMode){
+                case 1://Colour Identification for pixel grab
+                    mUseGradient=0;
+                    mFillColor = mColorID;
+                    mOutlineColor = mColorID;
+                    mDrawMode=prevMode;
+                    break;
+                default://default scorched is always blackened
+                    mUseGradient=0;
+                    mFillColor = cBlack;
+                    mOutlineColor = cBlack;
+                    mDrawMode=0;
+                    break;
+            }
         }
 
 
