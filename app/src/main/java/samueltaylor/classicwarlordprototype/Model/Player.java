@@ -17,6 +17,7 @@ public class Player extends Object{
     private String colourstring;
     int selectedregionid=-1;
     int prevselectedregionid=-1;
+    private boolean connected=false;
 
     public Player(float[] c, String cs, String pid){
         armies = new ArrayList<>();
@@ -96,4 +97,7 @@ public class Player extends Object{
     public void deselectall(){selectedregionid=-1;prevselectedregionid=-1;}
 
     public void removeArmy(Army a){armies.remove(a);}
+
+    public boolean isConnected(){return connected;}
+    public void setConnected(boolean b){connected=b;}
 }

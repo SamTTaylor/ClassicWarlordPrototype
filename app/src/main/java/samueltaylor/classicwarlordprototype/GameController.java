@@ -409,9 +409,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Leave the room.
     void leaveRoom() {
         if (mRoomId != null) {
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-            wl.release();
             Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
         }
@@ -531,7 +528,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Called when we get disconnected from the room. We return to the main screen.
     @Override
     public void onDisconnectedFromRoom(Room room) {
-        Log.e("onDisconnectedFromRoom","Disconnected from room");
+        Log.e("onDisconnectedFromRoom", "Disconnected from room");
         mRoomId = null;
         showGameError();
     }
@@ -596,18 +593,20 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onP2PDisconnected(String participant) {}
+    public void onP2PDisconnected(String participant) {
+        Log.e("onP2PDisconnected", "Player: " + participant);
+    }
 
     @Override
     public void onP2PConnected(String participant) {}
 
     @Override
-    public void onPeerJoined(Room room, List<String> arg1) {
-        updateRoom(room);
-    }
+    public void onPeerJoined(Room room, List<String> arg1) {updateRoom(room);}
 
     @Override
     public void onPeerLeft(Room room, List<String> peersWhoLeft) {
+        Log.e("onPeerLeft", "Player left: " +peersWhoLeft.get(0));
+        disconnectPlayers(peersWhoLeft);
         updateRoom(room);
     }
 
@@ -628,6 +627,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onPeersDisconnected(Room room, List<String> peers) {
+        Log.e("onPeersDisconnected", "Player DC: " +peers.get(0));
+        disconnectPlayers(peers);
         updateRoom(room);
     }
 
@@ -638,14 +639,26 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     }
 
+    void disconnectPlayers(List<String> players){
+        for(Participant p : mParticipants){
+            if(mModel.getPlayer(p.getParticipantId()).isConnected()){
+                for(String s : players){
+                    if(s.equals(p.getParticipantId())){
+                        mModel.getPlayer(p.getParticipantId()).setConnected(false);
+                        imfragment.appendChat(p.getDisplayName() + " disconnected.");
+                        hudfragment.disconnectPlayer(p.getDisplayName());
+                        if(mModel.getCurrentplayer()==mModel.getPlayer(p.getParticipantId())){
+                            nextPlayer();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /*
      * GAME CONSTRUCTION - Fragments, OpenGL Initialisation etc..
      */
-
-    // Current state of the game:
-    int mSecondsLeft = -1; // how long until the game ends (seconds)
-    final static int GAME_DURATION = 20; // game duration, seconds.
-    String mInfo = ""; // user's current score
 
 
     //Check if we are currently in game
@@ -655,8 +668,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     // Reset game variables in preparation for a new game.
     void resetGameVars() {
-        mSecondsLeft = GAME_DURATION;
-        mInfo = "";
         mParticipantChoice.clear();
         mFinishedParticipants.clear();
     }
@@ -2132,6 +2143,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
-    //TODO: Stop device from sleeping, set timer on response for defender
+    //TODO: Set timer on response for defender
     //TODO: Look into catching up players if they were supposed to receive defence notifications in onResume
 }

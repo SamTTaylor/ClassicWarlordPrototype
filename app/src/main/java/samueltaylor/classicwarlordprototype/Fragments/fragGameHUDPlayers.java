@@ -43,7 +43,6 @@ public class fragGameHUDPlayers extends Fragment {
     Button btnShowPlayers;
     Button btnMyColour;
 
-    // TODO: Rename and change types and number of parameters
     public static fragGameHUDPlayers newInstance(String param1, String param2) {
         fragGameHUDPlayers fragment = new fragGameHUDPlayers();
         Bundle args = new Bundle();
@@ -135,6 +134,20 @@ public class fragGameHUDPlayers extends Fragment {
         txtName.setText(name);
     }
 
+    public void disconnectPlayer(String name){
+        TableRow row;
+        TextView txtName;
+
+
+        for(int i=0;i<8;i++){
+            row = (TableRow)tblPlayers.getChildAt(i);
+            txtName = (TextView)row.getChildAt(1);
+            if(txtName.getText().equals(name)){
+                txtName.setText("DISCONNECTED");
+            }
+        }
+
+    }
 
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -159,16 +172,6 @@ public class fragGameHUDPlayers extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onHUDFragmentInteraction(Uri uri);

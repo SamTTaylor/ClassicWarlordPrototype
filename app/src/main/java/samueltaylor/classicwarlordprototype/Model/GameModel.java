@@ -56,6 +56,7 @@ public class GameModel {
             colours.remove(colours.get(i));
             colournames.remove(colournames.get(i));
             players.add(p);
+            p.setConnected(true);
         }
 
         world = new ArrayList<>();
@@ -88,6 +89,9 @@ public class GameModel {
             }
         }
         currentplayer = players.get(currentplayerindex);
+        if(!currentplayer.isConnected()){
+            nextPlayer();
+        }
     }
 
     public void nextPhase(){
@@ -96,7 +100,7 @@ public class GameModel {
             currentphase=1;//Reset to first phase
             nextPlayer();
         }
-        if(!currentPlayerCanPlayThisPhaseCheck()){
+        if(!currentPlayerCanPlayThisPhaseCheck() && currentplayer.isConnected()){
             nextPhase();
         }else{
             switch (currentphase){
