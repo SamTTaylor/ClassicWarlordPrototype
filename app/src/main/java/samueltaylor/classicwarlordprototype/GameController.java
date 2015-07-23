@@ -48,6 +48,7 @@ package samueltaylor.classicwarlordprototype;
         import java.util.HashSet;
         import java.util.List;
         import java.util.Map;
+        import java.util.Random;
         import java.util.Set;
 
         import samueltaylor.classicwarlordprototype.Fragments.fragDialog;
@@ -648,7 +649,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                         imfragment.appendChat(p.getDisplayName() + " disconnected.");
                         hudfragment.disconnectPlayer(p.getDisplayName());
                         if(mModel.getCurrentplayer()==mModel.getPlayer(p.getParticipantId())){
-                            nextPlayer();
+                            switch (mModel.getCurrentphase()){
+                                case 0:
+                                    nextPlayer();
+                                    break;
+                                default:
+                                    nextPhase();
+                                    break;
+                            }
+
                         }
                     }
                 }
@@ -1515,7 +1524,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private boolean checkRemainingMountains(){
         int playedthisround=0;
         for(Player p : mModel.getPlayers()){
-            if(p.getEmpires().size()==mModel.getCurrentplayer().getEmpires().size()+1){//Nextplayer has already been called so everyone who has played this round has 1 more empire than the current player
+            if(p.getEmpires().size()==mModel.getCurrentplayer().getEmpires().size()+1 && p.isConnected()){//Nextplayer has already been called so everyone who has played this round has 1 more empire than the current player
                 playedthisround++;
             }
         }
@@ -1699,14 +1708,53 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void attackConfirmed(int pledge, int guesses){
         int id=mModel.getCurrentplayer().getSelectedregionid();
         int prev=mModel.getCurrentplayer().getPrevselectedregionid();
-        sendDefencePrompt(prev, id, pledge, guesses);
-        waitingfordefenceresponse=true;
-        infofragment.setBtnEndTurnVisibility(false);
-        updateChat("Attacked "+ mModel.getRegion(id).getName()+" from "+mModel.getRegion(prev).getName()+"!");
-        //Save the empire that was, in preparation for bomb placement
-        pastempire = new ArrayList<>();
-        for(Region r : mModel.getRegion(prev).getEmpire().getRegions()){
-            pastempire.add(r);
+        if(mModel.getRegion(id).getArmy().getPlayer().isConnected()){//Only prompt a defence if target player is connected
+            sendDefencePrompt(prev, id, pledge, guesses);
+            waitingfordefenceresponse=true;
+            infofragment.setBtnEndTurnVisibility(false);
+            updateChat("Attacked "+ mModel.getRegion(id).getName()+" from "+mModel.getRegion(prev).getName()+"!");
+            //Save the empire that was, in preparation for bomb placement
+            pastempire = new ArrayList<>();
+            for(Region r : mModel.getRegion(prev).getEmpire().getRegions()){
+                pastempire.add(r);
+            }
+        } else {
+            pastempire = new ArrayList<>();
+            for(Region r : mModel.getRegion(prev).getEmpire().getRegions()){
+                pastempire.add(r);
+            }
+            randomizedDefence(id, prev, pledge, guesses);
+        }
+    }
+
+    private void randomizedDefence(int sel, int prev, int pledge, int guesses){
+        //defenceinformation: 0: sel    1: prev     2: pledge     3: guesses    4: guesses made
+        Random rand = new Random();
+        int guess;
+        defenceinfomation = new int[5];
+        defenceinfomation[0]=sel;
+        defenceinfomation[1]=prev;
+        defenceinfomation[2]=pledge;
+        int upperguess=0;
+        if(mModel.getRegion(prev).getArmy().getSize()<getAttackLimitations(sel,prev)[0]){upperguess=mModel.getRegion(prev).getArmy().getSize();} else {
+            upperguess=getAttackLimitations(sel,prev)[0];
+        }
+        for(int i=0;i<guesses;i++){
+            guess = rand.nextInt((upperguess - getAttackLimitations(sel,prev)[1]) + 1) + getAttackLimitations(sel,prev)[1];
+            Log.e("Guess", String.valueOf(guess));
+            checkAIGuess(sel, prev, pledge, guess);
+        }
+    }
+
+    private void checkAIGuess(int sel, int prev, int pledge, int guess){
+        if(guess==pledge){
+            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and lost!");
+            sendDefenceConclusion(true);
+            resolveAttack(prev, sel, pledge, true);
+        } else {
+            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and won!");
+            sendDefenceConclusion(false);
+            resolveAttack(prev, sel, pledge, false);
         }
     }
 
