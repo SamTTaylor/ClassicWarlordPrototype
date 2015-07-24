@@ -380,6 +380,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         super.onStart();
     }
 
+
+    @Override
+    public void onResume(){
+        if(defensePrompted){
+            showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getRegion(defenceinfomation[1]).getArmy().getPlayer().getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
+        }
+        super.onResume();
+    }
+
     // Handle back key to make sure we cleanly leave a game if we are in the middle of one
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
@@ -1004,6 +1013,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                         break;
                 }
                 defenceinfomation[4]=0;//Number of guesses so far
+                defensePrompted=true;
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
             case 'O'://sendDefenceConclusion, everyone receives the result of the attack
@@ -1346,6 +1356,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private int abombfromregion=-1;
     private List<Region> pastempire;
     private boolean victory=false;
+    private boolean defensePrompted=false;
 
     private void initialiseModel(List<SVGtoRegionParser.Region> r, List<Participant> plist){
         List<String> pids = new ArrayList<>();
@@ -1763,9 +1774,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         defenceinfomation[4]++;//Increment guess count
         if(guess==defenceinfomation[2]){
             showDialogFragment(2, "Guess successful! Attacker loses " + defenceinfomation[2] + " pledged forces!", 0, 0);
-            updateChat(mModel.getCurrentplayer().getColourstring()+" attacked "+ mModel.getPlayer(mMyId).getColourstring() + " with "+defenceinfomation[2]+" pledged forces and lost!");
+            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and lost!");
             sendDefenceConclusion(true);
             resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], true);
+            defensePrompted=false;
         } else {
             if(defenceinfomation[3]>defenceinfomation[4]){
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
@@ -1774,6 +1786,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and won!");
                 sendDefenceConclusion(false);
                 resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], false);
+                defensePrompted=false;
             }
         }
     }
@@ -2190,7 +2203,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-
+    //TODO: Look into inviting players into disconnected player slots
     //TODO: Set timer on response for defender
-    //TODO: Look into catching up players if they were supposed to receive defence notifications in onResume
 }
