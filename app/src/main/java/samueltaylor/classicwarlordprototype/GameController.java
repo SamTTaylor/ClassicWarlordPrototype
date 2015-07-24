@@ -919,6 +919,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 text = getName(rtm.getSenderParticipantId()) + ": " + text + "\n";
                 imfragment.appendChat(text);
                 break;
+            case 'Y'://sYstem notification notifyChat()
+                buf[0] = ' ';//Clear unwanted character
+                text = new String(buf);
+                //Format
+                text = text + "\n";
+                imfragment.appendChat(text);
+                break;
             case 'S'://Selection data received sendMySelectionData()
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
@@ -1084,6 +1091,26 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
         }
         message = getName(mMyId) + ": " + message + "\n";
+        imfragment.appendChat(message);
+    }
+
+    //Broadcast an IM from a player
+    public void notifyChat(String message){
+        //Structure message as IM and add it to our own fragment
+        int i = message.getBytes().length+1;
+        // Buffer message as bytes and broadcast
+        byte[] bytes = new byte[i];
+        //Label message as IM
+        bytes[0] = 'Y';
+        for(int x=1; x<i; x++){
+            bytes[x] = message.getBytes()[x-1];
+        }
+        for(Participant pa : mParticipants){
+            if(mRoomId!=null){
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+            }
+        }
+        message = message + "\n";
         imfragment.appendChat(message);
     }
 
@@ -1726,7 +1753,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             sendDefencePrompt(prev, id, pledge, guesses);
             waitingfordefenceresponse=true;
             infofragment.setBtnEndTurnVisibility(false);
-            updateChat("Attacked "+ mModel.getRegion(id).getName()+" from "+mModel.getRegion(prev).getName()+"!");
+            notifyChat("Attacked " + mModel.getRegion(id).getName() + " from " + mModel.getRegion(prev).getName() + "!");
             //Save the empire that was, in preparation for bomb placement
             pastempire = new ArrayList<>();
             for(Region r : mModel.getRegion(prev).getEmpire().getRegions()){
@@ -1762,11 +1789,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void checkAIGuess(int sel, int prev, int pledge, int guess){
         if(guess==pledge){
-            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and lost!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and lost!");
             sendDefenceConclusion(true);
             resolveAttack(prev, sel, pledge, true);
         } else {
-            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and won!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(sel).getArmy().getPlayer().getColourstring() + "(AI) with " + pledge + " pledged forces and won!");
             sendDefenceConclusion(false);
             resolveAttack(prev, sel, pledge, false);
         }
@@ -1777,7 +1804,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         defenceinfomation[4]++;//Increment guess count
         if(guess==defenceinfomation[2]){
             showDialogFragment(2, "Guess successful! Attacker loses " + defenceinfomation[2] + " pledged forces!", 0, 0);
-            updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and lost!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and lost!");
             sendDefenceConclusion(true);
             resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], true);
             defensePrompted=false;
@@ -1786,7 +1813,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(9,"Incorrect guess, try again ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
             } else {
                 showDialogFragment(2,"Incorrect guess, no guesses remaining, you lose 1 from\n'"+mModel.getRegion(defenceinfomation[0]).getName()+"'",0,0);
-                updateChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and won!");
+                notifyChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getPlayer(mMyId).getColourstring() + " with " + defenceinfomation[2] + " pledged forces and won!");
                 sendDefenceConclusion(false);
                 resolveAttack(defenceinfomation[1], defenceinfomation[0], defenceinfomation[2], false);
                 defensePrompted=false;
@@ -1818,11 +1845,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the attack, to place it.",0,0);
             }
             if(mModel.getRegion(destid).getArmy().getSize()<=0){
-                Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
+                Empire sourceE = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
+                Empire destE = mModel.getRegion(destid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(destid).wipeOut();
                 takeRegionForCurrentPlayer(pledge, destid, sourceid, false);
-                if(e.getRegions().size()>0){
-                    e.checkSplitEmpire(mModel.getRegion(sourceid));
+                if(sourceE.getRegions().size()>0){
+                    sourceE.checkSplitEmpire(mModel.getRegion(sourceid));
+                }
+                if(destE.getRegions().size()>0){
+                    destE.checkSplitEmpire(mModel.getRegion(destid));
                 }
             }
         }
@@ -1915,9 +1946,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         mModel.getCurrentplayer().allocateBomb(sel, type);
         if(sel.getBomb().getSize()==1){
-            updateChat("Placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + "placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
         } else {
-            updateChat("Increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to "+String.valueOf(sel.getBomb().getSize())+"!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + "increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to " + String.valueOf(sel.getBomb().getSize()) + "!");
         }
         sendBombPlacement(id, type);
         abombfromregion=-1;
@@ -2079,11 +2110,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         switch (mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb().getBombtype()){
             case 0://A
-                updateChat("Fired an A-Bomb at " +mModel.getRegion(sel).getName()+"!");
+                notifyChat(mModel.getCurrentplayer().getColourstring() + "Fired an A-Bomb at " +mModel.getRegion(sel).getName()+"!");
                 infofragment.setBtnEndTurnVisibility(false);
                 break;
             case 1://H
-                updateChat("Fired an H-Bomb at " +mModel.getRegion(sel).getName()+"!");
+                notifyChat(mModel.getCurrentplayer().getColourstring() + "Fired an H-Bomb at " +mModel.getRegion(sel).getName()+"!");
                 break;
         }
         fireBomb(mModel.getCurrentplayer().getPrevselectedregionid(), sel);
