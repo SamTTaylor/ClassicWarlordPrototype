@@ -1753,7 +1753,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             sendDefencePrompt(prev, id, pledge, guesses);
             waitingfordefenceresponse=true;
             infofragment.setBtnEndTurnVisibility(false);
-            notifyChat("Attacked " + mModel.getRegion(id).getName() + " from " + mModel.getRegion(prev).getName() + "!");
+            notifyChat(mModel.getCurrentplayer().getColourstring()+" attacked " + mModel.getRegion(id).getName() + " from " + mModel.getRegion(prev).getName() + "!");
             //Save the empire that was, in preparation for bomb placement
             pastempire = new ArrayList<>();
             for(Region r : mModel.getRegion(prev).getEmpire().getRegions()){
@@ -1946,9 +1946,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         mModel.getCurrentplayer().allocateBomb(sel, type);
         if(sel.getBomb().getSize()==1){
-            notifyChat(mModel.getCurrentplayer().getColourstring() + "placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + " placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
         } else {
-            notifyChat(mModel.getCurrentplayer().getColourstring() + "increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to " + String.valueOf(sel.getBomb().getSize()) + "!");
+            notifyChat(mModel.getCurrentplayer().getColourstring() + " increased size of " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + " to " + String.valueOf(sel.getBomb().getSize()) + "!");
         }
         sendBombPlacement(id, type);
         abombfromregion=-1;
@@ -2110,11 +2110,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
         switch (mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getBomb().getBombtype()){
             case 0://A
-                notifyChat(mModel.getCurrentplayer().getColourstring() + "Fired an A-Bomb at " +mModel.getRegion(sel).getName()+"!");
+                notifyChat(mModel.getCurrentplayer().getColourstring() + " fired an A-Bomb at " +mModel.getRegion(sel).getName()+"!");
                 infofragment.setBtnEndTurnVisibility(false);
                 break;
             case 1://H
-                notifyChat(mModel.getCurrentplayer().getColourstring() + "Fired an H-Bomb at " +mModel.getRegion(sel).getName()+"!");
+                notifyChat(mModel.getCurrentplayer().getColourstring() + " fired an H-Bomb at " +mModel.getRegion(sel).getName()+"!");
                 break;
         }
         fireBomb(mModel.getCurrentplayer().getPrevselectedregionid(), sel);
