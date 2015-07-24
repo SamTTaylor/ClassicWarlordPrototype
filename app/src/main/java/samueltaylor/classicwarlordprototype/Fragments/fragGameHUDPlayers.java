@@ -38,6 +38,7 @@ public class fragGameHUDPlayers extends Fragment {
     List<String> playernames;
     List<float[]> playerColours;
     public String myName;
+    int playernumber;
 
     //Objects
     Button btnShowPlayers;
@@ -119,11 +120,13 @@ public class fragGameHUDPlayers extends Fragment {
         TableRow row;
         Button btnPlayerColours;
         TextView txtName;
+        Button btnInvite;
 
         btnMyColour =  (Button)getActivity().findViewById(R.id.btnPlayerColour);
         row = (TableRow)tblPlayers.getChildAt(index);
         btnPlayerColours = (Button)row.getChildAt(0);
         txtName = (TextView)row.getChildAt(1);
+        btnInvite = (Button)row.getChildAt(2);
         int[] intcolour = new int[]{(int)(colour[0]*255),(int)(colour[1]*255),(int)(colour[2]*255)};
         if(name == myName){
             btnMyColour.setBackgroundColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
@@ -132,21 +135,30 @@ public class fragGameHUDPlayers extends Fragment {
             btnPlayerColours.setBackgroundColor(Color.rgb(intcolour[0], intcolour[1], intcolour[2]));
         }
         txtName.setText(name);
+        btnInvite.setVisibility(View.GONE);
     }
 
     public void disconnectPlayer(String name){
         TableRow row;
         TextView txtName;
-
+        Button btnInvite;
 
         for(int i=0;i<8;i++){
             row = (TableRow)tblPlayers.getChildAt(i);
             txtName = (TextView)row.getChildAt(1);
+            btnInvite = (Button)row.getChildAt(2);
             if(txtName.getText().equals(name)){
                 txtName.setText("DISCONNECTED");
+                btnInvite.setVisibility(View.VISIBLE);
+                playernumber=i;
+                btnInvite.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ((GameController) getActivity()).inviteToExisting(playernumber);
+                    }
+                });
             }
         }
-
     }
 
     public void onButtonPressed(Uri uri) {

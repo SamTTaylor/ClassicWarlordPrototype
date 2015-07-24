@@ -16,6 +16,7 @@ package samueltaylor.classicwarlordprototype;
         import android.util.Log;
         import android.view.KeyEvent;
         import android.view.View;
+        import android.view.WindowManager;
         import android.view.inputmethod.InputMethodManager;
 
         import com.google.android.gms.common.ConnectionResult;
@@ -161,6 +162,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             mGoogleApiClient.connect();
             signedin = true;
         }
+    }
+
+    public void inviteToExisting(int playerpos) {
+        Log.e("InviteToExisting", String.valueOf(playerpos));
     }
 
     public void seeinvites(){
@@ -695,10 +700,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mMultiplayer = multiplayer;
         //Show game related fragments
         loadGame();
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-        wl.acquire();
-
+        // prevent screen from sleeping
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // update the names on screen from room
         updatePlayers();
