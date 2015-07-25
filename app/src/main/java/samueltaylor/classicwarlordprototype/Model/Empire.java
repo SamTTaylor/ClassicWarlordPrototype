@@ -17,10 +17,11 @@ public class Empire extends Object{
     private int unallocatedforces=0;
     private int unallocatedbombs=0;
 
-    public Empire(Region r){
+    public Empire(Region r, Player p){
         regions = new ArrayList<>();
         regions.add(r);
         r.setEmpire(this);
+        player = p;
     }
 
     public boolean allocateArmy(Region r, Army a){
@@ -131,7 +132,7 @@ public class Empire extends Object{
                 }
 
                 if(thisempireused){//For first iteration just leave them in current empire
-                    Empire e = new Empire(reg);//Otherwise, create new empire and put all those regions in it
+                    Empire e = new Empire(reg, player);//Otherwise, create new empire and put all those regions in it
                     for(Region regi : linkedregions){
                         regions.remove(regi);
                         if(regi!=reg){

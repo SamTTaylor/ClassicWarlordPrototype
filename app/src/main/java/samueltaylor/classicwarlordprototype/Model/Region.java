@@ -38,7 +38,7 @@ public class Region extends Object{
         }
         if(empire!=null){
             empire.removeRegion(this);
-            if(empire.getRegions().size()<=0){
+            if(empire.getRegions().size()<=0 && empire.getPlayer().getEmpires().contains(empire)){
                 empire.getPlayer().removeEmpire(empire);
             }
             empire=null;

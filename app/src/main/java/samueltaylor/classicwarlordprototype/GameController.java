@@ -208,7 +208,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void startQuickGame() {
         // quick-start a game with randomly selected opponents
         if(mGoogleApiClient.isConnected()){
-            final int MIN_OPPONENTS = 3, MAX_OPPONENTS = 6;
+            final int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
             Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
                     MAX_OPPONENTS, 0);
             RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
@@ -389,7 +389,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onResume(){
         if(defensePrompted){
-            showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getRegion(defenceinfomation[1]).getArmy().getPlayer().getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
+            showDialogFragment(9, "'" + mModel.getRegion(defenceinfomation[0]).getName() + "'\nHas been attacked from\n'" + mModel.getRegion(defenceinfomation[1]).getName() + "'\nBy " + mModel.getRegion(defenceinfomation[1]).getArmy().getPlayer().getColourstring() + " player\nMake defensive guess (" + (defenceinfomation[3] - defenceinfomation[4]) + " remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0], getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
         }
         super.onResume();
     }
@@ -401,6 +401,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             case KeyEvent.KEYCODE_BACK:
                 if (inRoom()) {
                     leaveRoom();
+                    destroyGame();
                 } else {
                     this.finish();
                     System.exit(0);
@@ -427,6 +428,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
         }
+    }
+
+    void destroyGame(){
+        mapfragment=null;
+        hudfragment=null;
+        imfragment=null;
+        infofragment=null;
     }
 
     // Show the waiting room UI to track the progress of other players as they enter the
@@ -1505,16 +1513,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
-    private void checkVictory(){
+    private boolean checkVictory(){
         Player p = mModel.checkVictor();
         if(p!=null){
             removeInfoFragment();
-            if(dialogfragment.isVisible()){
-                removeDialogFragment();
-            }
             showDialogFragment(2, p.getColourstring() + " Player is victorious.", 0, 0);//Dialog 2 is basic dialog
-            victory=true;
+            victory=true;//All clicks are ignored while victory is true
+            return true;
         }
+        return false;
     }
 
 
@@ -1971,7 +1978,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             targetregionid=mModel.getCurrentplayer().getSelectedregionid();
             sourceregionid=mModel.getCurrentplayer().getPrevselectedregionid();
         }
-        Empire e = mModel.getRegion(sourceregionid).getEmpire();
+        Empire sourceE = mModel.getRegion(sourceregionid).getEmpire();
+        Empire destE = mModel.getRegion(targetregionid).getEmpire();
         if(pledge>0) {
             Region source = mModel.getRegion(sourceregionid);
             Region dest = mModel.getRegion(targetregionid);
@@ -2003,15 +2011,19 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         } else {
             DeselectForCurrentPlayer();
         }
-        if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){//Assign bomb to player outside of usual attack protocol
-            if(wipedout){
-                if(e.getRegions().size()>0){
-                    e.checkSplitEmpire(mModel.getRegion(sourceregionid));
+        if(!checkVictory()){
+            if(mModel.getRegion(targetregionid).getType().equals("sea") && abombfromregion!=-1 && iAmCurrentPlayer()){//Assign bomb to player outside of usual attack protocol
+                if(wipedout){
+                    if(sourceE.getRegions().size()>0){
+                        sourceE.checkSplitEmpire(mModel.getRegion(sourceregionid));
+                    }
                 }
+                if(destE.getRegions().size()>0){
+                    destE.checkSplitEmpire(mModel.getRegion(targetregionid));
+                }
+                showDialogFragment(2, "You have earned an atom bomb, select a region within the same empire as '" + mModel.getRegion(abombfromregion).getName() + "' to place it.", 0, 0);
             }
-            showDialogFragment(2, "You have earned an atom bomb, select a region within the same empire as '" + mModel.getRegion(abombfromregion).getName() + "' to place it.", 0, 0);
         }
-        checkVictory();
     }
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
@@ -2143,11 +2155,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 e.checkShatteredEmpire();
             }
         }
-        if(iAmCurrentPlayer()&&bombType==0){//If I am current player and I am receiving an H bomb
-            abombfromregion=sourceid;//Attacker receives a bomb
-            showDialogFragment(2,"You have earned an H-Bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the detonation, to place it.",0,0);
+        if(!checkVictory()) {
+            if (iAmCurrentPlayer() && bombType == 0) {//If I am current player and I am receiving an H bomb
+                abombfromregion = sourceid;//Attacker receives a bomb
+                showDialogFragment(2, "You have earned an H-Bomb, select a region within the same empire as '" + mModel.getRegion(abombfromregion).getName() + "' was prior to the detonation, to place it.", 0, 0);
+            }
         }
-        checkVictory();
+
     }
 
 

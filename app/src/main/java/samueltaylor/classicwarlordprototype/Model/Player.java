@@ -52,10 +52,9 @@ public class Player extends Object{
     }
 
     public void newEmpire(Region r, int armysize){//Creates a new empire starting at specified region
-        Empire empire = new Empire(r);
+        Empire empire = new Empire(r, this);
         empires.add(empire);
         allocateArmy(r, armysize);
-        empire.setPlayer(this);
     }
 
     public List<Empire> getEmpires(){
