@@ -21,6 +21,7 @@ public class GameModel {
     private int currentplayerindex;
     private int currentphase=0;
     private boolean nextphase=false;
+    private boolean draw=false;
 
     //Players
     private Player currentplayer;
@@ -185,6 +186,9 @@ public class GameModel {
         }
         if(stillalive.size()>1){
             return null;//No victor yet
+        } else if(stillalive.size()==0){
+            draw=true;
+            return null;
         } else {
             return stillalive.get(0);
         }
@@ -245,5 +249,7 @@ public class GameModel {
     public int getTotalmountaincount(){ return totalmountaincount;}
 
     public List<Region> getWorld(){return world;}
+
+    public boolean getDraw(){return draw;}
 }
 

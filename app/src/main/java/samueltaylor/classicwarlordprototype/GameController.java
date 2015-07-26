@@ -430,6 +430,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if (mRoomId != null) {
             Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
+            loadMainMenu();
         }
     }
 
@@ -503,7 +504,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.e(TAG, "onConnectionSuspended() called. Trying to reconnect.");
+        updateChat("Trying to reconnect.");
         mGoogleApiClient.connect();
     }
 
@@ -524,8 +525,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    // Called when we are connected to the room. We're not ready to play yet! (maybe not everybody
-    // is connected yet).
     @Override
     public void onConnectedToRoom(Room room) {
         Log.e(TAG, "onConnectedToRoom.");
@@ -546,17 +545,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onLeftRoom(int statusCode, String roomId) {
         // we have left the room; return to main screen.
-        Log.e(TAG, "onLeftRoom, code " + statusCode);
+        updateChat("Left Room");
         loadMainMenu();
-        mRoomId = null;
     }
 
     // Called when we get disconnected from the room. We return to the main screen.
     @Override
     public void onDisconnectedFromRoom(Room room) {
-        Log.e("onDisconnectedFromRoom", "Disconnected from room");
-        mRoomId = null;
-        showGameError();
+        updateChat("Left Room");
+        loadMainMenu();
     }
 
     // Show error message about game being cancelled and return to main screen.
@@ -669,12 +666,15 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(Participant p : mParticipants){
             if(mModel.getPlayer(p.getParticipantId()).isConnected()){
                 for(String s : players){
-                    if(s.equals(p.getParticipantId())){
+                    if(s.equals(p.getParticipantId())) {
+                        if (waitingfordefenceresponse == mModel.getPlayer(p.getParticipantId())) {
+                            waitingfordefenceresponse=null;//undo any attacks
+                        }
                         mModel.getPlayer(p.getParticipantId()).setConnected(false);
                         imfragment.appendChat(p.getDisplayName() + " disconnected.");
                         hudfragment.disconnectPlayer(p.getDisplayName());
-                        if(mModel.getCurrentplayer()==mModel.getPlayer(p.getParticipantId())){
-                            switch (mModel.getCurrentphase()){
+                        if (mModel.getCurrentplayer() == mModel.getPlayer(p.getParticipantId())) {
+                            switch (mModel.getCurrentphase()) {
                                 case 0:
                                     nextPlayer();
                                     break;
@@ -995,16 +995,22 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             case 'T'://New region for current player sendRegionUpdate(2, id)
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
-                i= ByteToRegionID(b);//Allocated Forces
-                takeRegionForCurrentPlayer(i,mModel.getCurrentplayer().getSelectedregionid(),mModel.getCurrentplayer().getPrevselectedregionid(), true);
-                break;
-            case 'W'://Move army within empire sendRegionUpdate(3, pledge)
-                b = new byte[4];
-                System.arraycopy(buf, 1, b, 0, b.length);
                 int sel = ByteToRegionID(b);//Selected Region ID
                 b = new byte[4];
                 System.arraycopy(buf, 5, b, 0, b.length);
                 int prev = ByteToRegionID(b);//Prev Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 9, b, 0, b.length);
+                i= ByteToRegionID(b);//Allocated Forces
+                takeRegionForCurrentPlayer(i,sel,prev, false);
+                break;
+            case 'W'://Move army within empire sendRegionUpdate(3, pledge)
+                b = new byte[4];
+                System.arraycopy(buf, 1, b, 0, b.length);
+                sel = ByteToRegionID(b);//Selected Region ID
+                b = new byte[4];
+                System.arraycopy(buf, 5, b, 0, b.length);
+                prev = ByteToRegionID(b);//Prev Selected Region ID
                 b = new byte[4];
                 System.arraycopy(buf, 9, b, 0, b.length);
                 i= ByteToRegionID(b);//Pledged Forces
@@ -1038,7 +1044,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
             case 'O'://sendDefenceConclusion, everyone receives the result of the attack
-                waitingfordefenceresponse=false;
+                waitingfordefenceresponse=null;
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 sel = ByteToRegionID(b);//Selected Region ID
@@ -1180,9 +1186,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 break;
             case 2://New region for current player
                 // Buffer ints as bytes
-                bytes = new byte[5];
+                bytes = new byte[13];
+                b = intToByte(mModel.getCurrentplayer().getSelectedregionid());//Copy selected region id into bytes
+                System.arraycopy(b, 0, bytes, 1, b.length);
+                b = intToByte(mModel.getCurrentplayer().getPrevselectedregionid());//Copy prev selected region id into bytes
+                System.arraycopy(b, 0, bytes, 5, b.length);
                 b = intToByte(mModel.getRegion(regionid).getArmy().getSize());//Converting int to ID using regionID method
-                System.arraycopy(b, 0, bytes, 1, b.length);//Package new army size
+                System.arraycopy(b, 0, bytes, 9, b.length);//Package new army size
                 bytes[0] = 'T';//Label as new region
                 //send it
                 for(Participant p : mParticipants){
@@ -1468,7 +1478,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                     sendNextPhasePrompt();
                 }
                 break;
-
         }
     }
 
@@ -1523,6 +1532,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             showDialogFragment(2, p.getColourstring() + " Player is victorious.", 0, 0);//Dialog 2 is basic dialog
             victory=true;//All clicks are ignored while victory is true
             return true;
+        } else {
+            if(mModel.getDraw()){
+                removeInfoFragment();
+                showDialogFragment(2,"All players defeated, draw.", 0, 0);//Dialog 2 is basic dialog
+                victory=true;//All clicks are ignored while victory is true
+                return true;
+            }
         }
         return false;
     }
@@ -1651,7 +1667,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //ATTACK PHASE
-    private boolean waitingfordefenceresponse=false;
+    private Player waitingfordefenceresponse=null;
     private int[] defenceinfomation;
 
 
@@ -1664,7 +1680,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             } else {
                 showDialogFragment(2, "Target region for bomb placement must be within the empire the source region was in prior to your attack.", 0, 0);
             }
-        } else if (waitingfordefenceresponse) {
+        } else if (waitingfordefenceresponse!=null) {
             showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
         } else{
             if(prevSelectedIsMine()){
@@ -1761,7 +1777,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         int prev=mModel.getCurrentplayer().getPrevselectedregionid();
         if(mModel.getRegion(id).getArmy().getPlayer().isConnected()){//Only prompt a defence if target player is connected
             sendDefencePrompt(prev, id, pledge, guesses);
-            waitingfordefenceresponse=true;
+            waitingfordefenceresponse=mModel.getRegion(id).getArmy().getPlayer();
             infofragment.setBtnEndTurnVisibility(false);
             notifyChat(mModel.getCurrentplayer().getColourstring()+" attacked " + mModel.getRegion(id).getName() + " from " + mModel.getRegion(prev).getName() + "!");
             //Save the empire that was, in preparation for bomb placement
