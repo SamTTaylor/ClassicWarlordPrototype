@@ -4,6 +4,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
@@ -74,6 +75,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
     public void viewTapped(MotionEvent e){
         mRenderer.mLongPressed=false;
         mRenderer.mClicked=true;
+//        Log.e("Touched", String.valueOf(e.getX()) + "X : Y" + String.valueOf(e.getY()));
         mRenderer.mTouchedPos[0] = e.getX();
         mRenderer.mTouchedPos[1] = e.getY();
         requestRender();
