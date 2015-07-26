@@ -205,10 +205,14 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
+    int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
+    public void setOpponentsForQuickGame(int i){
+        MIN_OPPONENTS=i;
+        MAX_OPPONENTS=i;
+    }
     public void startQuickGame() {
         // quick-start a game with randomly selected opponents
         if(mGoogleApiClient.isConnected()){
-            final int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
             Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
                     MAX_OPPONENTS, 0);
             RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
@@ -363,7 +367,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     // Activity is going to be destroyed
     @Override
     public void onDestroy() {
-        updateChat("Has left the game.");
         Log.e(TAG, "**** got onDestroy");
         leaveRoom();
         super.onDestroy();
