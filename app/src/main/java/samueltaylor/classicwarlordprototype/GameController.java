@@ -368,7 +368,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onDestroy() {
         Log.e(TAG, "**** got onDestroy");
-        leaveRoom();
         super.onDestroy();
     }
 
@@ -516,8 +515,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Log.e(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
             return;
         }
-        updateChat("Disconnected");
-        leaveRoom();
         if (mSignInClicked || mAutoStartSignInFlow) {
             mAutoStartSignInFlow = false;
             mSignInClicked = false;
