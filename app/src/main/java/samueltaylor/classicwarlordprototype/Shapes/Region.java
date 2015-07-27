@@ -247,8 +247,9 @@ public class Region {
                     mDrawMode=prevMode;
                     break;
                 default://default scorched is always blackened
-                    mUseGradient=0;
-                    mFillColor = cBlack;
+                    mUseGradient=2;
+                    mPlayerColor=cBlack;
+                    mFillColor = mColor;
                     mOutlineColor = cBlack;
                     mDrawMode=0;
                     break;

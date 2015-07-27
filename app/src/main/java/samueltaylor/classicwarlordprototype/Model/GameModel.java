@@ -101,7 +101,7 @@ public class GameModel {
             currentphase=1;//Reset to first phase
             nextPlayer();
         }
-        if(!currentPlayerCanPlayThisPhaseCheck() && currentplayer.isConnected()){
+        if(!currentPlayerCanPlayThisPhaseCheck() || !currentplayer.isConnected()){
             nextPhase();
         }else{
             switch (currentphase){

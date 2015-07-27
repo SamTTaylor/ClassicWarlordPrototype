@@ -516,7 +516,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Log.e(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
             return;
         }
-
+        updateChat("Disconnected");
+        leaveRoom();
         if (mSignInClicked || mAutoStartSignInFlow) {
             mAutoStartSignInFlow = false;
             mSignInClicked = false;
@@ -1102,13 +1103,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(int x=1; x<i; x++){
             bytes[x] = message.getBytes()[x-1];
         }
+        message = getName(mMyId) + ": " + message + "\n";
+        imfragment.appendChat(message);
         for(Participant pa : mParticipants){
             if(mRoomId!=null){
                 Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
             }
         }
-        message = getName(mMyId) + ": " + message + "\n";
-        imfragment.appendChat(message);
     }
 
     //Broadcast an IM from a player
@@ -1122,13 +1123,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(int x=1; x<i; x++){
             bytes[x] = message.getBytes()[x-1];
         }
+        message = message + "\n";
+        imfragment.appendChat(message);
         for(Participant pa : mParticipants){
             if(mRoomId!=null){
                 Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
             }
         }
-        message = message + "\n";
-        imfragment.appendChat(message);
     }
 
 
