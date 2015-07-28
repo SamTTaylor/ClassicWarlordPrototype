@@ -148,7 +148,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     }
 
-
     public void invite() {
         if(mGoogleApiClient.isConnected()){
             Intent intent;
@@ -206,6 +205,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
+
     public void setOpponentsForQuickGame(int i){
         MIN_OPPONENTS=i;
         MAX_OPPONENTS=i;
@@ -332,7 +332,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
         Log.e(TAG, "Invitation inbox UI succeeded.");
         Invitation inv = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
-
         // accept invitation
         acceptInviteToRoom(inv.getInvitationId());
     }
@@ -505,14 +504,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     @Override
     public void onConnectionSuspended(int i) {
-        updateChat("Trying to reconnect.");
-        mGoogleApiClient.connect();
+        Log.e(TAG, "ConnectionSuspended");
+        leaveRoom();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e(TAG, "onConnectionFailed() called, result: " + connectionResult);
-
         if (mResolvingConnectionFailure) {
             Log.e(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
             return;
@@ -545,14 +543,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onLeftRoom(int statusCode, String roomId) {
         // we have left the room; return to main screen.
-        updateChat("Left Room");
+        Log.e("Disconnected", "Disconnected");
+        if(mRoomId!=null){
+            leaveRoom();
+        }
         loadMainMenu();
     }
 
     // Called when we get disconnected from the room. We return to the main screen.
     @Override
     public void onDisconnectedFromRoom(Room room) {
-        updateChat("Left Room");
+        Log.e("Disconnected", "Disconnected");
         leaveRoom();
         loadMainMenu();
     }
@@ -597,7 +598,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             showGameError();
             return;
         }
-
         // show the waiting room UI
         showWaitingRoom(room);
     }

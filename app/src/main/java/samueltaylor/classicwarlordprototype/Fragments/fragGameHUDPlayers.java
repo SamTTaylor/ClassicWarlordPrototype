@@ -93,7 +93,7 @@ public class fragGameHUDPlayers extends Fragment {
         });
         tblPlayers = (TableLayout)getActivity().findViewById(R.id.tblPlayers);
         for(int i=0; i<8;i++){
-            if(i<playernames.size()){
+            if(playernames!=null && i<playernames.size()){
                 addPlayer(playernames.get(i), i, playerColours.get(i));
             } else {
                 tblPlayers.getChildAt(i).setVisibility(View.GONE);
