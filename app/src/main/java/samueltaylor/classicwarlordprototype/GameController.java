@@ -89,7 +89,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private static final int RC_SIGN_IN = 9001;
 
     // Client used to interact with Google APIs.
-    private GoogleApiClient mGoogleApiClient;
+    public GoogleApiClient mGoogleApiClient;
 
     // Are we currently resolving a connection failure?
     private boolean mResolvingConnectionFailure = false;
@@ -210,6 +210,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         MIN_OPPONENTS=i;
         MAX_OPPONENTS=i;
     }
+
     public void startQuickGame() {
         // quick-start a game with randomly selected opponents
         if(mGoogleApiClient.isConnected()){
@@ -429,6 +430,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         if (mRoomId != null) {
             Log.e(TAG, "Leaving room.");
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
+            mRoomId=null;
             loadMainMenu();
         }
     }
@@ -551,6 +553,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onDisconnectedFromRoom(Room room) {
         updateChat("Left Room");
+        leaveRoom();
         loadMainMenu();
     }
 
@@ -2269,5 +2272,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     //TODO: Look into inviting players into disconnected player slots
-    //TODO: Set timer on response for defender
+    //TODO: Continue automated tests
+    //TODO: Start unit tests
 }
