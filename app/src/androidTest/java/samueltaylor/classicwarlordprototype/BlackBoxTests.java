@@ -19,8 +19,9 @@ import java.util.List;
  * NOTE: Tests ran on GT-P7510 and GT-I9300 without translation of touch coordinates, results on devices of other sizes may vary
  * Tests run using worldsmall map
  * Run with 2 devices plugged in using gradlew createDebugCoverageReport in Android Studio terminal
+ * Tests run through regular actions of a normal game to ensure nothing has been broken during implementation
  */
-public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameController> {
+public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameController> {
     private Solo solo;
     //Coords for regions in worldsmall
     private List<Float[]> mountaincoords;
@@ -39,7 +40,7 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
 
     //Utility methods
     private void waitForMyTurn(){
-        while(!((GameController)getActivity()).iAmCurrentPlayer()){
+        while(solo.searchText("Send") && !((GameController)getActivity()).iAmCurrentPlayer()){
             solo.sleep(100);
         }
     }
@@ -61,20 +62,10 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
         mountaincoords.add(savoiecoords);
     }
 
-
-
-
-    //Tests
-    public WhiteBoxTests() {
-        super(GameController.class);
-    }
-
-    public void setUp() throws Exception {
-        solo = new Solo(getInstrumentation(), getActivity());
-    }
-
-    public void testAutoMatch() throws Exception {
+    //AUTO MATCH
+    private void testAutoMatch() throws Exception {
         ((GameController)getActivity()).setOpponentsForQuickGame(1);
+        solo.sleep(4000);//Wait for login
         solo.clickOnButton("AUTO-MATCH");
         while(!solo.searchText("Loading")){//Wait until game scene is loaded as indicated by the presence of the send button
             solo.sleep(10);
@@ -89,9 +80,8 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
     }
 
 
-
-    public void testMountainSelection() throws Exception{
-        testAutoMatch();
+    //MOUNTAIN SELECTION
+    private void testMountainSelection() throws Exception{
         initialiseMountainsForSelection();
         button = solo.getView(R.id.btnIcon);
         solo.clickOnView(button);
@@ -111,12 +101,31 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
             }
         }
         Assert.assertTrue(solo.searchText("Reinforcement"));//We have moved to the reinforcements stage successfully
-        solo.sleep(20000);//Allow other device to finish before quitting
     }
 
-    public void testReinforcement() throws Exception{
-        testMountainSelection();
+
+    //REINFORCEMENT
+    private void testReinforcement() throws Exception{
         waitForMyTurn();
+        fillRegions();
+        endTurnWithConfirmation();
+        //Add it back
+        solo.clickOnScreen(myRegionCoords.get(0)[0], myRegionCoords.get(0)[1]);
+        if(solo.searchButton("Confirm")){//confirmation popup has appeared
+            button = solo.getView(R.id.btnPlus);//Take reinforcement
+            solo.clickOnView(button);
+            solo.clickOnButton("Confirm");//Assign reinforcement
+        }
+        endTurn();
+        Assert.assertTrue(solo.searchText("Attack/Moving"));//We have moved to the reinforcements stage successfully
+        endTurn();
+        //Allow other bot to finish
+        waitForMyTurn();
+        boolean b = true;
+        Assert.assertTrue(b);
+    }
+
+    private void fillRegions(){
         for(Float[] f : myRegionCoords){
             solo.clickOnScreen(f[0], f[1]);
             if(solo.searchButton("Confirm")){//confirmation popup has appeared
@@ -125,6 +134,9 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
                 solo.clickOnButton("Confirm");//Assign reinforcement
             }
         }
+    }
+
+    private void endTurnWithConfirmation(){
         //Take one off of first region in order to trigger confirmation on end turn
         solo.clickOnScreen(myRegionCoords.get(0)[0], myRegionCoords.get(0)[1]);
         if(solo.searchButton("Confirm")){//confirmation popup has appeared
@@ -136,23 +148,35 @@ public class WhiteBoxTests extends ActivityInstrumentationTestCase2<GameControll
         if(solo.searchButton("Cancel")){//Info message triggered
             solo.clickOnButton("Cancel");
         }
-        //Add it back
-        solo.clickOnScreen(myRegionCoords.get(0)[0], myRegionCoords.get(0)[1]);
-        if(solo.searchButton("Confirm")){//confirmation popup has appeared
-            button = solo.getView(R.id.btnPlus);//Take reinforcement
-            solo.clickOnView(button);
-            solo.clickOnButton("Confirm");//Assign reinforcement
-        }
-        solo.clickOnButton("End Turn");
-        Assert.assertTrue(solo.searchText("Attack/Moving"));//We have moved to the reinforcements stage successfully
+    }
+
+    private void endTurn(){
         solo.clickOnButton("End Turn");
         if(solo.searchButton("Confirm")){//confirmation popup has appeared
             solo.clickOnButton("Confirm");
         }
-        //Allow other bot to finish
-        if(getActivity().mModel.getPlayer(getActivity().mMyId)==getActivity().mModel.getPlayers().get(0)){//Wait for player 1's turn again
-            waitForMyTurn();
-        }
+    }
+
+
+    //ATTACK MOVE
+    private void testAttackMove(){
+
+    }
+
+
+    //Tests
+    public BlackBoxTests() {
+        super(GameController.class);
+    }
+
+    public void setUp() throws Exception {
+        solo = new Solo(getInstrumentation(), getActivity());
+    }
+
+    public void testFull() throws Exception {
+        testAutoMatch();
+        testMountainSelection();
+        testReinforcement();
     }
 
 
