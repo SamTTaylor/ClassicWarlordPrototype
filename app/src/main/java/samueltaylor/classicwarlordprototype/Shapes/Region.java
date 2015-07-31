@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.opengl.GLES20;
-import android.util.Log;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;

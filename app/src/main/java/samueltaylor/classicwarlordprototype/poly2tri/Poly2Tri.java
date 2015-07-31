@@ -30,8 +30,6 @@
  */
 package samueltaylor.classicwarlordprototype.poly2tri;
 
-import java.util.logging.Logger;
-
 import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.Polygon;
 import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.PolygonSet;
 import samueltaylor.classicwarlordprototype.poly2tri.triangulation.Triangulatable;

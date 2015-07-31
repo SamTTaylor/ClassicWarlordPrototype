@@ -1,1 +1,1 @@
-include ':libraries:BaseGameUtils', 'app'
+include ':libraries:BaseGameUtils', ':poly2tri', 'app'

@@ -11,7 +11,6 @@ package samueltaylor.classicwarlordprototype;
         import android.content.Intent;
         import android.net.Uri;
         import android.os.Bundle;
-        import android.os.PowerManager;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
@@ -1980,6 +1979,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         sendBombPlacement(id, type);
         abombfromregion=-1;
         infofragment.setBtnEndTurnVisibility(true);
+        DeselectForCurrentPlayer();
     }
 
     private int bombTypeForPhase(){
@@ -2255,8 +2255,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     public void DeselectForCurrentPlayer(){
         mModel.getCurrentplayer().setSelectedregionid(-1);
-        sendMySelectionData();
-        updateClickedRegions();
+        if(iAmCurrentPlayer()){
+            sendMySelectionData()   ;
+            updateClickedRegions();
+        }
     }
 
     private void updateClickedRegions(){
