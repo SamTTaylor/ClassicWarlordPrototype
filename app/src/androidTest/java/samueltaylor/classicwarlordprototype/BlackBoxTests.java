@@ -50,6 +50,7 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
     private void waitForMyTurnWithDefenceListener(){
         while(solo.searchText("Send") && !((GameController)getActivity()).iAmCurrentPlayer()){
             if(solo.searchText("Has been attacked from") || solo.searchText("Incorrect guess, try again")){//Been attacked by the other player
+                Assert.assertTrue(solo.searchButton("Confirm"));
                 solo.clickOnButton("Confirm");
                 //Always guess base amount
             }
@@ -324,8 +325,8 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         placeBomb(londoncoords);
         moveArmy(merciacoords, walescoords, 1); //Attack mountain
         placeBomb(northumbriacoords);
-        moveArmy(walescoords,stgeorgeschannelcoords,1);//Dominate Sea
-        placeBomb(northumbriacoords);
+        moveArmy(walescoords, stgeorgeschannelcoords, 1);//Dominate Sea
+        if(largescreen) {placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
         endTurn();
     }
 
@@ -355,12 +356,13 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         moveArmy(stgeorgeschannelcoords,walescoords,2);//Attack wales with 3 men, Attack Mountain
         placeBomb(munstercoords);
         moveArmy(walescoords,merciacoords,3);
-        if(largescreen){moveArmy(merciacoords,yorkshirecoords, 1);} else {moveArmy(merciacoords,yorkshirecoordssm,1);}
+        if(largescreen){moveArmy(merciacoords, yorkshirecoords, 1);} else {moveArmy(merciacoords, yorkshirecoordssm, 1);}
         placeBomb(ardennescoords);//For hydrogen bomb denial later
         endTurn();
     }
 
     private void player2Attack2(){
+        endTurn();//End bombing phase
         fillRegions();//Reinforce
         endTurn();
         moveArmy(munstercoords, stgeorgeschannelcoords, 1);//Dominate Sea
@@ -391,8 +393,33 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         }
     }
 
-
-
+    //BOMBING
+    /* Both players must:
+    Attack from sea to land
+    Attack from land to sea
+    Attack city
+    Attack mountain
+    Split an empire (from source and dest)
+    */
+    private void testBombing(){
+        waitForMyTurnWithDefenceListener();
+        fillRegions();
+        endTurn();
+        endTurn();
+        waitForMyTurnWithDefenceListener();
+        fillRegions();
+        endTurn();//Building up enough men to play out all attacks in 1 sweep
+        //Begin attack move
+        Assert.assertTrue(solo.searchText("Attack/Moving"));
+        if(player1){
+            endTurn(); waitForMyTurnWithDefenceListener(); endTurn(); player1Attack(); waitForMyTurnWithDefenceListener();}
+        else {
+            player2Attack(); waitForMyTurnWithDefenceListener(); player2Attack2();
+        }
+        solo.sleep(400000);
+        boolean b = true;
+        assertTrue(b);
+    }
 
 
 
