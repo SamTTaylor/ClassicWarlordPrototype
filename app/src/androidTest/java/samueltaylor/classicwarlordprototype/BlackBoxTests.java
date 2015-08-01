@@ -54,9 +54,7 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
                 solo.clickOnButton("Confirm");
                 //Always guess base amount
             }
-            if(solo.searchButton("OK")){//Dismiss any other notifications
-                solo.clickOnButton("OK");
-            }
+            OK();
         }
     }
 
@@ -170,7 +168,9 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
     }
 
     private void endTurn(){
-        solo.clickOnButton("End Turn");
+        if(solo.searchButton("End Turn")){
+            solo.clickOnButton("End Turn");
+        }
         if(solo.searchButton("Confirm")){//confirmation popup has appeared
             solo.clickOnButton("Confirm");
         }
@@ -291,24 +291,19 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         //Begin attack move
         Assert.assertTrue(solo.searchText("Attack/Moving"));
         if(player1){
-           endTurn(); waitForMyTurnWithDefenceListener(); endTurn(); player1Attack(); waitForMyTurnWithDefenceListener();}
-        else {
+           endTurn(); waitForMyTurnWithDefenceListener(); endTurn(); player1Attack();
+        } else {
             player2Attack(); waitForMyTurnWithDefenceListener(); player2Attack2();
         }
-        solo.sleep(400000);
-        boolean b = true;
-        assertTrue(b);
     }
 
     private void player1Attack(){//Note: Happens AFTER player2Attack
 
         if(largescreen){moveArmy(northumbriacoords,yorkshirecoords, 5);} else {moveArmy(northumbriacoords,yorkshirecoordssm,5);}
         solo.clickOnScreen(bergencoords[0], bergencoords[1]);//Trigger waiting for defender
-        Assert.assertTrue(solo.searchButton("OK"));
-        solo.clickOnButton("OK");//Dismiss
+        OK();//Dismiss
         placeBomb(bergencoords);//Trigger must be inside previous empire
-        Assert.assertTrue(solo.searchButton("OK"));
-        solo.clickOnButton("OK");//Dismiss
+        OK();//Dismiss
         solo.clickOnScreen(northumbriacoords[0], northumbriacoords[1]);
         if(solo.searchButton("Confirm")){
             solo.clickOnButton("Confirm");
@@ -335,11 +330,9 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         moveArmy(thamescoords, londoncoords, 2);//Attack City && Attack Land from Sea
 
         solo.clickOnScreen(bergencoords[0], bergencoords[1]);//Trigger waiting for defender
-        Assert.assertTrue(solo.searchButton("OK"));
-        solo.clickOnButton("OK");//Dismiss
+        OK();//Dismiss
         placeBomb(bergencoords);//Trigger must be inside previous empire
-        Assert.assertTrue(solo.searchButton("OK"));
-        solo.clickOnButton("OK");//Dismiss
+        OK();//Dismiss
         solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
         if(solo.searchButton("Confirm")){
             solo.clickOnButton("Confirm");
@@ -353,9 +346,9 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         placeBomb(belgiumcoords);//Place bomb in belgium, triggers increase size of bomb
         moveArmy(merciacoords, londoncoords, 1);//Join empire again
         moveArmy(munstercoords, stgeorgeschannelcoords, 2);//Move all men to stgeorgeschannel
-        moveArmy(stgeorgeschannelcoords,walescoords,2);//Attack wales with 3 men, Attack Mountain
+        moveArmy(stgeorgeschannelcoords, walescoords, 2);//Attack wales with 3 men, Attack Mountain
         placeBomb(munstercoords);
-        moveArmy(walescoords,merciacoords,3);
+        moveArmy(walescoords, merciacoords, 3);
         if(largescreen){moveArmy(merciacoords, yorkshirecoords, 1);} else {moveArmy(merciacoords, yorkshirecoordssm, 1);}
         placeBomb(ardennescoords);//For hydrogen bomb denial later
         endTurn();
@@ -384,43 +377,110 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
     }
 
     private void placeBomb(Float[] target){
-        while(!solo.searchText("atom bomb")){solo.sleep(100);}//wait for atom bomb notification
+        while(!solo.searchText("earned")){solo.sleep(100);}//wait for bomb notification
         Assert.assertTrue(solo.searchButton("OK"));
         solo.clickOnButton("OK");//Dismiss
         solo.clickOnScreen(target[0], target[1]);
         if(solo.searchButton("Confirm")){
             solo.clickOnButton("Confirm");
         }
+        if(solo.searchButton("OK")){
+            solo.clickOnButton("OK");
+        }
+    }
+
+    private void OK(){
+        if(solo.searchButton("OK")){
+            solo.clickOnButton("OK");
+        }
     }
 
     //BOMBING
     /* Both players must:
-    Attack from sea to land
-    Attack from land to sea
-    Attack city
-    Attack mountain
-    Split an empire (from source and dest)
+    See can't destroy source empire message
+    Out of range message
+    Cause shattered empire check
+    Earn hydrogen bomb
+    Can't place hydrogen bomb on atom bomb
+    Place hydrogen bomb
+    Detonate hydrogen bomb
     */
     private void testBombing(){
         waitForMyTurnWithDefenceListener();
-        fillRegions();
-        endTurn();
-        endTurn();
-        waitForMyTurnWithDefenceListener();
-        fillRegions();
-        endTurn();//Building up enough men to play out all attacks in 1 sweep
-        //Begin attack move
-        Assert.assertTrue(solo.searchText("Attack/Moving"));
+
+        //Begin bombing
+        Assert.assertTrue(solo.searchText("Bombing"));
         if(player1){
-            endTurn(); waitForMyTurnWithDefenceListener(); endTurn(); player1Attack(); waitForMyTurnWithDefenceListener();}
-        else {
-            player2Attack(); waitForMyTurnWithDefenceListener(); player2Attack2();
+            player1ABomb();waitForMyTurnWithDefenceListener();player1HBomb();waitForMyTurnWithDefenceListener();
+        } else {
+            player2ABomb();waitForMyTurnWithDefenceListener();player2HBomb();
         }
-        solo.sleep(400000);
         boolean b = true;
         assertTrue(b);
     }
 
+    private void player1ABomb(){
+        interactRegions(northumbriacoords, merciacoords);//Can't destroy empire
+        interactRegions(londoncoords, munstercoords);//Out of range
+        if(largescreen){//Shattered empire + earn hydrogen bomb
+            interactRegions(yorkshirecoords, londoncoords);
+        } else {
+            interactRegions(yorkshirecoordssm, londoncoords);
+        }
+        placeBomb(northumbriacoords);//Can't place bomb on atom bomb
+        OK();
+        if(largescreen){solo.clickOnScreen(yorkshirecoords[0], yorkshirecoords[1]);}else{solo.clickOnScreen(yorkshirecoordssm[0], yorkshirecoordssm[1]);}
+        if(solo.searchButton("Confirm")){
+            solo.clickOnButton("Confirm");
+        }
+        if(largescreen){interactRegions(yorkshirecoords, merciacoords);}else{interactRegions(yorkshirecoordssm,merciacoords);}//Can't fire Hydrogenbomb anymore
+        endTurn();//Move to reinforcement
+        endTurn();//Move to attack/Move
+        endTurn();//Move to next player
+    }
+    private void player2ABomb(){
+        interactRegions(munstercoords,stgeorgeschannelcoords);//Can't destroy empire
+        interactRegions(munstercoords,belgiumcoords);//Out of range
+        interactRegions(belgiumcoords,thamescoords);//Shattered empire, earn hydrogen bomb
+        placeBomb(ardennescoords);//Can't place bomb on atom bomb
+        OK();
+        solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
+        if(solo.searchButton("Confirm")){
+            solo.clickOnButton("Confirm");
+        }
+        interactRegions(munstercoords, walescoords);//earn another hydrogen bomb
+        placeBomb(munstercoords);
+        interactRegions(munstercoords, stgeorgeschannelcoords);//Can't fire Hydrogen bomb anymore
+        endTurn();//Move to reinforcement
+        endTurn();//Move to attack/Move
+        endTurn();//Move to next player
+    }
+
+    private void player1HBomb(){
+        if(largescreen){//Detonate Hydrogen Bomb
+            interactRegions(yorkshirecoords,yorkshirecoords);
+        } else {
+            interactRegions(yorkshirecoordssm,yorkshirecoordssm);
+        }
+        endTurn();//Move to reinforcement
+        endTurn();//Move to attack/Move
+        endTurn();//Move to next player
+    }
+    private void player2HBomb(){
+        //Detonate Hydrogen Bombs
+        interactRegions(munstercoords,munstercoords);
+    }
+
+    private void interactRegions(Float[] source, Float[] dest){
+        solo.clickOnScreen(source[0], source[1]);
+        solo.clickOnScreen(dest[0], dest[1]);
+        if(solo.searchButton("OK")){
+            solo.clickOnButton("OK");//Confirm notification
+        }
+        if(solo.searchButton("Confirm")){
+            solo.clickOnButton("Confirm");//Confirm action
+        }
+    }
 
 
     //Tests
@@ -438,6 +498,7 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         testReinforcement();
         testMove();
         testAttack();
+        testBombing();
     }
 
 
