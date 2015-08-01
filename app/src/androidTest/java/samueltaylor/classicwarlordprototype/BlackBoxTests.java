@@ -1,6 +1,7 @@
 package samueltaylor.classicwarlordprototype;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.KeyEvent;
 import android.view.View;
 
 import com.robotium.solo.Solo;
@@ -413,10 +414,8 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         if(player1){
             player1ABomb();waitForMyTurnWithDefenceListener();player1HBomb();waitForMyTurnWithDefenceListener();
         } else {
-            player2ABomb();waitForMyTurnWithDefenceListener();player2HBomb();
+            player2ABomb();waitForMyTurnWithDefenceListener();player2HBomb();solo.sendKey(KeyEvent.KEYCODE_BACK);
         }
-        boolean b = true;
-        assertTrue(b);
     }
 
     private void player1ABomb(){
@@ -499,6 +498,7 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
         testMove();
         testAttack();
         testBombing();
+        Assert.assertTrue(solo.searchButton("AUTO-MATCH"));//Back to the main menu
     }
 
 
