@@ -18,7 +18,7 @@ import java.util.List;
  * Run with 2 devices plugged in using gradlew createDebugCoverageReport in Android Studio terminal
  * Tests run through regular actions of a normal game to ensure nothing has been broken during implementation
  */
-public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameController> {
+public class InstrumentationTests extends ActivityInstrumentationTestCase2<GameController> {
     private Solo solo;
 
     private boolean player1=false;
@@ -483,7 +483,7 @@ public class BlackBoxTests extends ActivityInstrumentationTestCase2<GameControll
 
 
     //Tests
-    public BlackBoxTests() {
+    public InstrumentationTests() {
         super(GameController.class);
     }
 
