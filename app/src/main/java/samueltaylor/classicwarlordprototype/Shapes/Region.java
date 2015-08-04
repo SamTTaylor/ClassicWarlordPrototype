@@ -22,7 +22,10 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
@@ -74,6 +77,7 @@ public class Region {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
     private float mOutlineCoords[] = {};//For checking adjacent Regions from fragGameMap
+    private float centreCoords[] = new float[2];
 
     int fillVertexCount;
     int outlineVertexCount;
@@ -94,12 +98,15 @@ public class Region {
     private int mDrawMode = 0;
     int prevMode=0;
     private boolean scorched=false;
+    private fragGameMap mRenderer;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Region(fragGameMap renderer, float[] coords, float[] color) {
         mOutlineCoords = coords;
         regionCoords = coords;
+        mRenderer=renderer;
+
         fillVertexCount = regionCoords.length / COORDS_PER_VERTEX;
         List<PolygonPoint> PointList = new ArrayList<>();
         for (int i=0;i<regionCoords.length;i+=3){
@@ -176,13 +183,11 @@ public class Region {
 
     /**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
-     *
-     * @param mvpMatrix - The Model View Project matrix in which to draw
-     * this shape.
      */
     int mUseGradient=0;
     boolean mUseGradientSetting=false;
     public void draw(float[] mvpMatrix) {
+//        SetupText();
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
@@ -259,10 +264,10 @@ public class Region {
 
 
         // Draw the region
-        GLES20.glUniform1i(mGradientHandle,mUseGradient);
+        GLES20.glUniform1i(mGradientHandle, mUseGradient);
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glUniform4fv(mPlayerColourHandle, 1, mPlayerColor, 0);//Set region gradient colour
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0, fillVertexCount);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, fillVertexCount);
 
         //Draw outline
         GLES20.glUniform4fv(mPlayerColourHandle, 1, cBlack, 0);//Set region gradient colour
@@ -271,6 +276,42 @@ public class Region {
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+    }
+
+
+    private void findCentrePoint(){
+        //Left most point     //Right most point
+        Float x1 = regionCoords[0], x2 = regionCoords[0];
+        //highest point         //Lowest point
+        Float y1 = regionCoords[1], y2 = regionCoords[1];
+        for(int i=0; i<regionCoords.length-1;i+=2){
+            if(regionCoords[i]< x1){
+                x1=regionCoords[i];
+            }
+            if(regionCoords[i]>x2){
+                x2=regionCoords[i];
+            }
+            if(regionCoords[i+1]< y1){
+                y1=regionCoords[i+1];
+            }
+            if(regionCoords[i+1]>y2){
+                y2=regionCoords[i+1];
+            }
+        }
+        centreCoords[0] = (x1+x2)/2;
+        centreCoords[1] = (y1+y2)/2;
+
+//        Log.e(mName,String.valueOf(centreCoords[0]) + " : " + String.valueOf(centreCoords[1]));
+    }
+
+    public void SetupText()
+    {
+        findCentrePoint();
+        // Create our new textobject
+        TextObject txt = new TextObject("Test", centreCoords[0], centreCoords[1]);
+
+        // Add it to our manager
+        mRenderer.getTextManager().addText(txt);
     }
 
     public void toggleDrawMode(int i) {
@@ -291,3 +332,5 @@ public class Region {
         return mOutlineCoords;
     }
 }
+
+

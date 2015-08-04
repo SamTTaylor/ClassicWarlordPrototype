@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -16,7 +19,11 @@ import android.view.ViewGroup;
 
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.List;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -24,6 +31,9 @@ import javax.microedition.khronos.opengles.GL10;
 import samueltaylor.classicwarlordprototype.GameController;
 import samueltaylor.classicwarlordprototype.OpenGL.GameGLSurfaceView;
 import samueltaylor.classicwarlordprototype.Shapes.Region;
+import samueltaylor.classicwarlordprototype.Shapes.TextManager;
+import samueltaylor.classicwarlordprototype.Shapes.TextObject;
+import samueltaylor.classicwarlordprototype.Shapes.shaderCodes;
 import samueltaylor.classicwarlordprototype.XMLParsing.SVGtoRegionParser;
 
 
@@ -154,22 +164,55 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public boolean mLongPressed=false;
     public float[] mTouchedPos = new float[2];
     private GL10 mGl;
+    private TextManager tm;
 
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         mGl = gl;
         GLES20.glDisable(GLES20.GL_DITHER);
         // initialiseWorld();
         initialiseWorld();
         mSurfaceCreated = true;
+
+        // Create the triangles
+        SetupTriangle();
+        // Create the image information
+        SetupImage();
+        // Create our texts
+        SetupText();
+        // Create the shaders, images
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        int vertexShader = shaderCodes.loadShader(GLES20.GL_VERTEX_SHADER, shaderCodes.vertexBG);
+        int fragmentShader = shaderCodes.loadShader(GLES20.GL_FRAGMENT_SHADER, shaderCodes.fragBG);
+
+        shaderCodes.progBg = GLES20.glCreateProgram();             // create empty OpenGL ES Program
+        GLES20.glAttachShader(shaderCodes.progBg, vertexShader);   // add the vertex shader to program
+        GLES20.glAttachShader(shaderCodes.progBg, fragmentShader); // add the fragment shader to program
+        GLES20.glLinkProgram(shaderCodes.progBg);                  // creates OpenGL ES program executables
+
+        // Text shader
+        int vshadert = shaderCodes.loadShader(GLES20.GL_VERTEX_SHADER, shaderCodes.vertexText);
+        int fshadert = shaderCodes.loadShader(GLES20.GL_FRAGMENT_SHADER, shaderCodes.fragText);
+
+        shaderCodes.progText = GLES20.glCreateProgram();
+        GLES20.glAttachShader(shaderCodes.progText, vshadert);
+        GLES20.glAttachShader(shaderCodes.progText, fshadert); 		// add the fragment shader to program
+        GLES20.glLinkProgram(shaderCodes.progText);                  // creates OpenGL ES program executables
+
+        // Set our shader programm
+        GLES20.glUseProgram(shaderCodes.progBg);
+
+
         //Draw world
-        for (int i=0;i<regions.length;i++) {
-            regions[i].draw(mMVPMatrix);
-        }
+        drawRegions();
         ((GameController)getActivity()).fadeOutLoadingFragment();
     }
+
 
 
 
@@ -230,10 +273,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         Matrix.multiplyMM(mMVPMatrix, 0, mOrthographicMatrix, 0, mViewMatrix, 0);
         Matrix.translateM(mMVPMatrix, 0, -mWorldWidth/2, -mWorldHeight/2, 0.0f);
         //Draw all the regions loaded from the world
-        for(Region r : regions){
-            GLES20.glLineWidth(mOutline);
-            r.draw(mMVPMatrix);
-        }
+        drawRegions();
     }
 
 
@@ -360,6 +400,165 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         mGLView.requestRender();
     }
 
+    private void drawRegions(){
+        for(Region r : regions){
+
+            GLES20.glLineWidth(mOutline);
+            r.draw(mMVPMatrix);
+            tm.Draw(mMVPMatrix);
+        }
+    }
 
 
+
+
+
+
+    // Text Drawing methods
+    public static float vertices[];
+    public static short indices[];
+    public static float uvs[];
+    public FloatBuffer vertexBuffer;
+    public ShortBuffer drawListBuffer;
+    public FloatBuffer uvBuffer;
+    float 	ssu = 0.005f;
+    public void SetupText()
+    {
+        // Create our text manager
+        tm = new TextManager();
+
+        // Tell our text manager to use index 1 of textures loaded
+        tm.setTextureID(1);
+
+        // Pass the uniform scale
+        tm.setUniformscale(ssu);
+
+        // Create our new textobject
+        TextObject txt = new TextObject("Hello lerone :D", 1.5f, 3f);
+
+        // Add it to our manager
+        tm.addText(txt);
+
+        // Prepare the text for rendering
+        tm.PrepareDraw();
+    }
+
+    public void SetupImage()
+    {
+        // We will use a randomizer for randomizing the textures from texture atlas.
+        // This is strictly optional as it only effects the output of our app,
+        // Not the actual knowledge.
+        Random rnd = new Random();
+
+        // 30 imageobjects times 4 vertices times (u and v)
+        uvs = new float[30*4*2];
+
+        // We will make 30 randomly textures objects
+        for(int i=0; i<30; i++)
+        {
+            int random_u_offset = rnd.nextInt(2);
+            int random_v_offset = rnd.nextInt(2);
+
+            // Adding the UV's using the offsets
+            uvs[(i*8) + 0] = random_u_offset * 0.5f;
+            uvs[(i*8) + 1] = random_v_offset * 0.5f;
+            uvs[(i*8) + 2] = random_u_offset * 0.5f;
+            uvs[(i*8) + 3] = (random_v_offset+1) * 0.5f;
+            uvs[(i*8) + 4] = (random_u_offset+1) * 0.5f;
+            uvs[(i*8) + 5] = (random_v_offset+1) * 0.5f;
+            uvs[(i*8) + 6] = (random_u_offset+1) * 0.5f;
+            uvs[(i*8) + 7] = random_v_offset * 0.5f;
+        }
+
+        // The texture buffer
+        ByteBuffer bb = ByteBuffer.allocateDirect(uvs.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        uvBuffer = bb.asFloatBuffer();
+        uvBuffer.put(uvs);
+        uvBuffer.position(0);
+
+        // Generate Textures, if more needed, alter these numbers.
+        int[] texturenames = new int[2];
+        GLES20.glGenTextures(2, texturenames, 0);
+
+
+
+        // Again for the text texture
+       int id = getActivity().getResources().getIdentifier("drawable/font", null, getActivity().getPackageName());
+       Bitmap bmp = BitmapFactory.decodeResource(getActivity().getResources(), id);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texturenames[1]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        bmp.recycle();
+    }
+
+    public void SetupTriangle()
+    {
+        // We will need a randomizer
+        Random rnd = new Random();
+
+        // Our collection of vertices
+        vertices = new float[30*4*3];
+
+        // Create the vertex data
+        for(int i=0;i<30;i++)
+        {
+            int offset_x = rnd.nextInt((int)mGLView.getWidth());
+            int offset_y = rnd.nextInt((int)mGLView.getHeight());
+
+            // Create the 2D parts of our 3D vertices, others are default 0.0f
+            vertices[(i*12) + 0] = offset_x;
+            vertices[(i*12) + 1] = offset_y + (30.0f*ssu);
+            vertices[(i*12) + 2] = 0f;
+            vertices[(i*12) + 3] = offset_x;
+            vertices[(i*12) + 4] = offset_y;
+            vertices[(i*12) + 5] = 0f;
+            vertices[(i*12) + 6] = offset_x + (30.0f*ssu);
+            vertices[(i*12) + 7] = offset_y;
+            vertices[(i*12) + 8] = 0f;
+            vertices[(i*12) + 9] = offset_x + (30.0f*ssu);
+            vertices[(i*12) + 10] = offset_y + (30.0f*ssu);
+            vertices[(i*12) + 11] = 0f;
+        }
+
+        // The indices for all textured quads
+        indices = new short[30*6];
+        int last = 0;
+        for(int i=0;i<30;i++)
+        {
+            // We need to set the new indices for the new quad
+            indices[(i*6) + 0] = (short) (last + 0);
+            indices[(i*6) + 1] = (short) (last + 1);
+            indices[(i*6) + 2] = (short) (last + 2);
+            indices[(i*6) + 3] = (short) (last + 0);
+            indices[(i*6) + 4] = (short) (last + 2);
+            indices[(i*6) + 5] = (short) (last + 3);
+
+            // Our indices are connected to the vertices so we need to keep them
+            // in the correct order.
+            // normal quad = 0,1,2,0,2,3 so the next one will be 4,5,6,4,6,7
+            last = last + 4;
+        }
+
+        // The vertex buffer.
+        ByteBuffer bb = ByteBuffer.allocateDirect(vertices.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        vertexBuffer = bb.asFloatBuffer();
+        vertexBuffer.put(vertices);
+        vertexBuffer.position(0);
+
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(indices.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(indices);
+        drawListBuffer.position(0);
+    }
+
+    public TextManager getTextManager(){return tm;}
+    public void setTextManager(TextManager t){tm=t;}
 }
