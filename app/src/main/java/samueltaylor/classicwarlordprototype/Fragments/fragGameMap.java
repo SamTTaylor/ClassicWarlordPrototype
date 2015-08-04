@@ -402,11 +402,11 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     private void drawRegions(){
         for(Region r : regions){
-
             GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
-            tm.Draw(mMVPMatrix);
         }
+        prepareDraw();
+        tm.Draw(mMVPMatrix);
     }
 
 
@@ -433,16 +433,12 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         // Pass the uniform scale
         tm.setUniformscale(ssu);
 
-        // Create our new textobject
-        TextObject txt = new TextObject("Hello lerone :D", 1.5f, 3f);
+    }
 
-        // Add it to our manager
-        tm.addText(txt);
-
+    public void prepareDraw(){
         // Prepare the text for rendering
         tm.PrepareDraw();
     }
-
     public void SetupImage()
     {
         // We will use a randomizer for randomizing the textures from texture atlas.

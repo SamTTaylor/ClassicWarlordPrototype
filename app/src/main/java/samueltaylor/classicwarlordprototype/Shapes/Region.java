@@ -21,12 +21,11 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 
+import org.w3c.dom.Text;
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 import samueltaylor.classicwarlordprototype.poly2tri.Poly2Tri;
@@ -34,9 +33,7 @@ import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.Polygon;
 import samueltaylor.classicwarlordprototype.poly2tri.geometry.polygon.PolygonPoint;
 import samueltaylor.classicwarlordprototype.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
-/**
- * A two-dimensional triangle for use as a drawn object in OpenGL ES 2.0.
- */
+
 public class Region {
 
     private final String vertexShaderCode =
@@ -99,6 +96,8 @@ public class Region {
     int prevMode=0;
     private boolean scorched=false;
     private fragGameMap mRenderer;
+
+    private TextObject regionInfo = new TextObject();
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -187,7 +186,7 @@ public class Region {
     int mUseGradient=0;
     boolean mUseGradientSetting=false;
     public void draw(float[] mvpMatrix) {
-//        SetupText();
+
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
@@ -276,42 +275,52 @@ public class Region {
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+
+        SetupText();
     }
 
 
     private void findCentrePoint(){
-        //Left most point     //Right most point
-        Float x1 = regionCoords[0], x2 = regionCoords[0];
-        //highest point         //Lowest point
-        Float y1 = regionCoords[1], y2 = regionCoords[1];
-        for(int i=0; i<regionCoords.length-1;i+=2){
-            if(regionCoords[i]< x1){
-                x1=regionCoords[i];
+        //Left most point                    //Right most point
+        float xmin = mOutlineCoords[0],        xmax = mOutlineCoords[0];
+        //highest point                      //Lowest point
+        float ymin = mOutlineCoords[1],        ymax = mOutlineCoords[1];
+
+        for(int i=0; i<mOutlineCoords.length;i+=3){
+            if(mOutlineCoords[i]< xmin){
+                xmin=mOutlineCoords[i];
             }
-            if(regionCoords[i]>x2){
-                x2=regionCoords[i];
+            if(mOutlineCoords[i]>xmax){
+                xmax=mOutlineCoords[i];
             }
-            if(regionCoords[i+1]< y1){
-                y1=regionCoords[i+1];
+            if(mOutlineCoords[i+1]< ymin){
+                ymin=mOutlineCoords[i+1];
             }
-            if(regionCoords[i+1]>y2){
-                y2=regionCoords[i+1];
+            if(mOutlineCoords[i+1]>ymax){
+                ymax=mOutlineCoords[i+1];
             }
         }
-        centreCoords[0] = (x1+x2)/2;
-        centreCoords[1] = (y1+y2)/2;
 
-//        Log.e(mName,String.valueOf(centreCoords[0]) + " : " + String.valueOf(centreCoords[1]));
+
+        centreCoords[0] = (xmin+xmax)/2;
+        centreCoords[1] = (ymin+ymax)/2;
+
     }
 
     public void SetupText()
     {
         findCentrePoint();
-        // Create our new textobject
-        TextObject txt = new TextObject("Test", centreCoords[0], centreCoords[1]);
+        Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
+//        Log.e(mName, String.valueOf(centreCoords[0]) + " : " + String.valueOf(centreCoords[1]));
 
-        // Add it to our manager
-        mRenderer.getTextManager().addText(txt);
+        regionInfo.setX(centreCoords[0]);
+        regionInfo.setY(centreCoords[1]);
+        regionInfo.setText(mName.substring(0,1));
+
+
+        if(!col.contains(regionInfo)){
+            col.add(regionInfo);
+        }
     }
 
     public void toggleDrawMode(int i) {

@@ -28,4 +28,5 @@ public class TextObject {
 
     public void setX(float f){x=f;}
     public void setY(float f){y=f;}
+    public void setText(String s){text=s;}
 }

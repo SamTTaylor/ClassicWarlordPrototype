@@ -167,14 +167,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     public void seeinvites(){
-        if(mGoogleApiClient.isConnected() && signedin){
-            Intent intent;
-            // show list of pending invitations
-            intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
-            startActivityForResult(intent, RC_INVITATION_INBOX);
-            //show loading fragment
-            showLoadingFragment("Loading Invites");
-        }
+        Intent intent;
+        // show list of pending invitations
+        intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
+        startActivityForResult(intent, RC_INVITATION_INBOX);
+        //show loading fragment
+        showLoadingFragment("Loading Invites");
     }
 
     public boolean signedin;
