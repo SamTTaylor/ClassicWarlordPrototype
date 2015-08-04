@@ -18,7 +18,7 @@ import java.util.List;
  * Run with 2 devices plugged in using gradlew createDebugCoverageReport in Android Studio terminal
  * Tests run through regular actions of a normal game to ensure nothing has been broken during implementation
  */
-public class InstrumentationTests extends ActivityInstrumentationTestCase2<GameController> {
+public class IntegrationTests extends ActivityInstrumentationTestCase2<GameController> {
     private Solo solo;
 
     private boolean player1=false;
@@ -299,7 +299,6 @@ public class InstrumentationTests extends ActivityInstrumentationTestCase2<GameC
     }
 
     private void player1Attack(){//Note: Happens AFTER player2Attack
-
         if(largescreen){moveArmy(northumbriacoords,yorkshirecoords, 5);} else {moveArmy(northumbriacoords,yorkshirecoordssm,5);}
         solo.clickOnScreen(bergencoords[0], bergencoords[1]);//Trigger waiting for defender
         OK();//Dismiss
@@ -483,7 +482,7 @@ public class InstrumentationTests extends ActivityInstrumentationTestCase2<GameC
 
 
     //Tests
-    public InstrumentationTests() {
+    public IntegrationTests() {
         super(GameController.class);
     }
 
