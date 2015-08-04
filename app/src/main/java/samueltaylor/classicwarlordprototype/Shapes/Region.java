@@ -300,22 +300,23 @@ public class Region {
                 ymax=mOutlineCoords[i+1];
             }
         }
-
+        xmin-=0.05f;
+        ymin-=0.2f;
 
         centreCoords[0] = (xmin+xmax)/2;
         centreCoords[1] = (ymin+ymax)/2;
-
     }
 
     public void SetupText()
     {
+        regionInfo.setText(mName.substring(0,1));
         findCentrePoint();
         Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 //        Log.e(mName, String.valueOf(centreCoords[0]) + " : " + String.valueOf(centreCoords[1]));
 
         regionInfo.setX(centreCoords[0]);
         regionInfo.setY(centreCoords[1]);
-        regionInfo.setText(mName.substring(0,1));
+
 
 
         if(!col.contains(regionInfo)){

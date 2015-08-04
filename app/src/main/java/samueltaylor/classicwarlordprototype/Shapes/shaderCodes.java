@@ -21,7 +21,7 @@ public class shaderCodes {
                     "attribute vec2 a_texCoord;" +
                     "varying vec2 v_texCoord;" +
                     "void main() {" +
-                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
                     "  v_texCoord = a_texCoord;" +
                     "}";
 
@@ -47,7 +47,7 @@ public class shaderCodes {
                     "varying vec4 v_Color;" +
                     "varying vec2 v_texCoord;" +
                     "void main() {" +
-                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
                     "  v_texCoord = a_texCoord;" +
                     "  v_Color = a_Color;" +
                     "}";
