@@ -74,7 +74,6 @@ public class Region {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     static float regionCoords[] = {};
     private float mOutlineCoords[] = {};//For checking adjacent Regions from fragGameMap
-    private float centreCoords[] = new float[2];
 
     int fillVertexCount;
     int outlineVertexCount;
@@ -280,121 +279,36 @@ public class Region {
         SetupText();
     }
 
-    float letterwidth=0.06f;
-    float letterheight=0.18f;
+    float letterwidth=0.05f;
+    float letterheight=0.1f;
+    DelaunayTriangle T1;
     private void findCentrePoint() {
-        //Left most point                    //Right most point
-        float xmin = mOutlineCoords[0],        xmax = mOutlineCoords[0];
-        //highest point                      //Lowest point
-        float ymin = mOutlineCoords[1],        ymax = mOutlineCoords[1];
-
-        for(int i=0; i<mOutlineCoords.length;i+=3){
-            if(mOutlineCoords[i]< xmin){
-                xmin=mOutlineCoords[i];
+        T1 = poly.getTriangles().get(0);
+        for(int i=0;i<poly.getTriangles().size();i++){
+            if(poly.getTriangles().get(i).area()> T1.area()){
+                T1 =poly.getTriangles().get(i);
             }
-            if(mOutlineCoords[i]>xmax){
-                xmax=mOutlineCoords[i];
-            }
-            if(mOutlineCoords[i+1]< ymin){
-                ymin=mOutlineCoords[i+1];
-            }
-            if(mOutlineCoords[i+1]>ymax){
-                ymax=mOutlineCoords[i+1];
-            }
-        }
-        xmin-=letterwidth* armyInfo.text.length();
-        ymin-=letterheight;
-
-        centreCoords[0] = (xmin+xmax)/2;
-        centreCoords[1] = (ymin+ymax)/2;
-
-        List<float[]> points = new ArrayList<>();
-        float[] coords = new float[mOutlineCoords.length+3];
-        System.arraycopy(mOutlineCoords,0,coords,0,mOutlineCoords.length);
-        coords[coords.length-3] = mOutlineCoords[0];
-        coords[coords.length-2] = mOutlineCoords[1];
-        coords[coords.length-1] = mOutlineCoords[2];
-        for(int i=0;i<coords.length;i+=3){
-            float[] f = new float[2];
-            f[0]=coords[i];
-            f[1]=coords[i+1];
-            points.add(f);
-        }
-        shimmyTextIntoPolygonBounds(points, centreCoords);
-    }
-
-    private boolean polygonContainsPoint(List<float[]> points, float x, float y){
-        //Check if bounding box centre is inside the polygon
-        int i;
-        int j;
-        boolean result = false;
-        for (i = 0, j = points.size() - 1; i < points.size(); j = i++) {
-            if ((points.get(i)[1] > y) != (points.get(j)[1] > y) &&
-                    (x < (points.get(j)[0] - points.get(i)[0]) * (y - points.get(i)[1]) / (points.get(j)[1]-points.get(i)[1]) + points.get(i)[0])) {
-                result = !result;
-            }
-        }
-        return result;
-    }
-
-    private boolean polyContainsBounds(List<float[]> points, float[] coords){
-        boolean result=true;
-        float x = letterwidth* armyInfo.text.length();
-        float y = letterheight;
-        if(!polygonContainsPoint(points,coords[0],coords[1])){    result=false;    }
-        if(!polygonContainsPoint(points,coords[0]+x,coords[1])){    result=false;    }
-        if(!polygonContainsPoint(points,coords[0],coords[1]+y)){    result=false;    }
-        if(!polygonContainsPoint(points,coords[0]+x,coords[1]+y)){    result=false;    }
-        return result;
-    }
-
-    private void shimmyTextIntoPolygonBounds(List<float[]> points, float[] coords){
-        float[] tempcoords = new float[coords.length];
-        System.arraycopy(coords,0,tempcoords,0,coords.length);
-        float sensitivity = 0.05f;
-        int count=0;
-        int direction=0;
-        while(!polyContainsBounds(points,tempcoords) && count<10){
-            System.arraycopy(coords, 0, tempcoords, 0, coords.length);
-            switch (direction){
-                case 0:
-                    coords[0]+=sensitivity*count;
-                    direction++;
-                    break;
-                case 1:
-                    coords[0]-=sensitivity*count;
-                    direction++;
-                    break;
-                case 2:
-                    coords[1]+=sensitivity*count;
-                    direction++;
-                    break;
-                case 3:
-                    coords[1]-=sensitivity*count;
-                    direction=0;
-                    count++;
-                    break;
-            }
-        }
-        if(count<9){
-            centreCoords=tempcoords;
         }
     }
-
 
     public void SetupText()
     {
-            armyInfo.setText("A1\nB2");
+            armyInfo.setText("R1");
+            bombInfo.setText("A1");
             findCentrePoint();
             Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 
-            armyInfo.setX(centreCoords[0]);
-            armyInfo.setY(centreCoords[1]);
-
+            armyInfo.setX(T1.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
+            armyInfo.setY(T1.centroid().getYf()-letterheight);
+            bombInfo.setX(T1.centroid().getXf()-(letterwidth*bombInfo.text.length())/2);
+            bombInfo.setY(T1.centroid().getYf());
 
             if (!col.contains(armyInfo)) {
                 col.add(armyInfo);
             }
+        if (!col.contains(bombInfo)) {
+            col.add(bombInfo);
+        }
     }
 
     public void toggleDrawMode(int i) {

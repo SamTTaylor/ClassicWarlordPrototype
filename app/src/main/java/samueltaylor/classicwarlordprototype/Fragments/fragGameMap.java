@@ -299,6 +299,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     float mZoom = -4.5f;
+    float mZoomRenderLimit = -2.0f;
     float mOutline = 1.0f;
     float mSensitivity = 0.2f;
     public void incrementZoom(boolean direction){
@@ -400,7 +401,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
-        if(mZoom>-2.0f){
+        if(mZoom>mZoomRenderLimit){
             prepareDraw();
             tm.Draw(mMVPMatrix);
         }
@@ -562,4 +563,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     public TextManager getTextManager(){return tm;}
     public void setTextManager(TextManager t){tm=t;}
+
+    public float getmZoom(){return mZoom;}
+    public float getmZoomRenderLimit(){return mZoomRenderLimit;}
 }
