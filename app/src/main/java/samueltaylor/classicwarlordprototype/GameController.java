@@ -60,6 +60,7 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+        import samueltaylor.classicwarlordprototype.Model.Army;
         import samueltaylor.classicwarlordprototype.Model.Bomb;
         import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
@@ -988,6 +989,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 System.arraycopy(buf, 5, b, 0, b.length);
                 int i= ByteToRegionID(b);//Allocated Forces
                 mModel.getRegion(s).getArmy().setSize(i);//Set size rather than increment due to difficulties discerning negative numbers
+                updateRegionCounters(s);
                 break;
             case 'P'://sendNextPhasePrompt()
                 nextPhase();
@@ -1065,7 +1067,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 b = new byte[4];
                 System.arraycopy(buf, 5, b, 0, b.length);
                 i = ByteToRegionID(b);//Bomb Type
-                mModel.getCurrentplayer().allocateBomb(mModel.getRegion(sel), i);
+                incrementBomb(sel,i);
                 break;
             case 'F':
                 b = new byte[4];
@@ -1654,13 +1656,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         removeDialogFragment();
         //Appropriate amounts verified in fragDialog
         mModel.getRegion(id).getEmpire().adjustUnallocatedforces(-amount);
-        mModel.getRegion(id).getArmy().incrementSize(amount);
+        incrementArmy(id, amount);
         mModel.getRegion(id).adjustAllocatedforces(amount);
         sendRegionUpdate(1, id);//Reinforcement Update after each confirmation for simplicity, probably less efficient than sending them all at the end of the turn
                                 //Also allows better visibility of current player's actions for other players
+
     }
 
-
+    private void incrementArmy(int regionid, int amount){
+        mModel.getRegion(regionid).getArmy().incrementSize(amount);
+        updateRegionCounters(regionid);
+    }
 
 
 
@@ -1747,7 +1753,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 attacklimitations[1]=minlimit;
                 break;
         }
-        if(prev.getArmy().getSize()<attacklimitations[0]){
+        if (prev.getArmy().getSize()<attacklimitations[0]){
             attacklimitations[0]=prev.getArmy().getSize();
         }
         return attacklimitations;
@@ -1851,7 +1857,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private void resolveAttack(int sourceid, int destid, int pledge, boolean defenderwins){
         //0: sel    1: prev    2: pledge    3: guesses    4: guesses made
         if(defenderwins){//Defender wins
-            mModel.getRegion(sourceid).getArmy().incrementSize(-pledge);//Attacker loses pledged army
+            incrementArmy(sourceid, -pledge);//Attacker loses pledged army
             if(mModel.getRegion(sourceid).getArmy().getSize()<=0){//If attacker has lost all men
                 Empire e = mModel.getRegion(sourceid).getEmpire();//In preparation for SplitEmpire check
                 mModel.getRegion(sourceid).wipeOut();
@@ -1865,7 +1871,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 infofragment.setBtnEndTurnVisibility(true);
             }
         } else {//Attacker wins
-            mModel.getRegion(destid).getArmy().incrementSize(-1);//Defender loses 1 man
+            incrementArmy(destid, -1);//Defender loses 1 man
             if(iAmCurrentPlayer()){
                 abombfromregion=sourceid;//Attacker receives a bomb
                 showDialogFragment(2,"You have earned an atom bomb, select a region within the same empire as '"+mModel.getRegion(abombfromregion).getName() + "' was prior to the attack, to place it.",0,0);
@@ -1969,8 +1975,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void confirmBombPlacement(int id){
         Region sel = mModel.getRegion(id);
         int type=bombTypeForPhase();
-
-        mModel.getCurrentplayer().allocateBomb(sel, type);
+        incrementBomb(id,type);
         if(sel.getBomb().getSize()==1){
             notifyChat(mModel.getCurrentplayer().getColourstring() + " placed " + sel.getBomb().getTypeString() + "-Bomb in " + sel.getName() + "!");
         } else {
@@ -2005,7 +2010,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Region dest = mModel.getRegion(targetregionid);
 
             //Move army
-            source.getArmy().incrementSize(-pledge);
+            incrementArmy(sourceregionid, -pledge);
 
             if (dest.getArmy() != null) {
                 dest.wipeOut();
@@ -2048,11 +2053,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     public void moveArmyInsideEmpire(int sel, int prev, int pledge){
         if(sel==-1&&prev==-1){//If no regions are passed, assume it is current players selected regions
-            mModel.getRegion(mModel.getCurrentplayer().getPrevselectedregionid()).getArmy().incrementSize(-pledge);
-            mModel.getRegion(mModel.getCurrentplayer().getSelectedregionid()).getArmy().incrementSize(pledge);
+            incrementArmy(mModel.getCurrentplayer().getPrevselectedregionid(), -pledge);
+            incrementArmy(mModel.getCurrentplayer().getSelectedregionid(), pledge);
         } else {
-            mModel.getRegion(prev).getArmy().incrementSize(-pledge);
-            mModel.getRegion(sel).getArmy().incrementSize(pledge);
+            incrementArmy(prev, -pledge);
+            incrementArmy(sel, pledge);
         }
         if(iAmCurrentPlayer()){
             sendRegionUpdate(3, pledge);
@@ -2069,7 +2074,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-
+    private void incrementBomb(int regionid, int type){
+        mModel.getCurrentplayer().allocateBomb(mModel.getRegion(regionid),type);
+        updateRegionCounters(regionid);
+    }
 
 
 
@@ -2240,12 +2248,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     //GENERAL VIEW MANIPULATION
     private void addRegiontoEmpireinView(int id) {
         mapfragment.getRegion(id).setUseGradient(true, mModel.getCurrentplayer().getColour());
-        mapfragment.reRender();
         DeselectForCurrentPlayer(); //Bear this in mind when relying on player selection data
+        updateRegionCounters(id);
     }
     private void wipeOutRegionInView(int id){
+
         mapfragment.getRegion(id).setUseGradient(false, null);
-        mapfragment.reRender();
+        updateRegionCounters(id);
     }
 
     private void scorchRegionInView(int id){
@@ -2269,11 +2278,24 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if (p.getSelectedregionid()!=-1) {
                 mapfragment.selectRegion(p.getSelectedregionid(), mModel.getParticipantColour(p.getParticipantid()));
             }
-
         }
     }
 
-    //TODO: Look into inviting players into disconnected player slots
+    private void updateRegionCounters(int regionid){
+        if(mModel.getRegion(regionid).getArmy()!=null){
+            mapfragment.getRegion(regionid).setArmy(mModel.getRegion(regionid).getArmy().getSize());
+        } else {
+            mapfragment.getRegion(regionid).setArmy(0);
+        }
+        if(mModel.getRegion(regionid).getBomb()!=null){
+            mapfragment.getRegion(regionid).setBomb(mModel.getRegion(regionid).getBomb().getBombtype(), mModel.getRegion(regionid).getBomb().getSize());
+        } else {
+            mapfragment.getRegion(regionid).setBomb(0, 0);
+        }
+        mapfragment.reRender();
+    }
+
+
     //TODO: Continue automated tests
     //TODO: Start unit tests
 }

@@ -25,10 +25,6 @@ public class Army extends Object {
         }
     }
 
-    void splitArmy(Region r, int x){
-
-    }
-
     public int getSize(){return size;}
     public void incrementSize(int i){size +=i;}
     public void setSize(int i){size = i;}

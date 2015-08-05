@@ -96,8 +96,8 @@ public class Region {
     private boolean scorched=false;
     private fragGameMap mRenderer;
 
-    private TextObject armyInfo = new TextObject();
-    private TextObject bombInfo = new TextObject();
+    private TextObject armyInfo = new TextObject("",0,0);
+    private TextObject bombInfo = new TextObject("",0,0);
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -293,19 +293,17 @@ public class Region {
 
     public void SetupText()
     {
-            armyInfo.setText("R1");
-            bombInfo.setText("A1");
-            findCentrePoint();
-            Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
+        findCentrePoint();
+        Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 
-            armyInfo.setX(T1.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
-            armyInfo.setY(T1.centroid().getYf()-letterheight);
-            bombInfo.setX(T1.centroid().getXf()-(letterwidth*bombInfo.text.length())/2);
-            bombInfo.setY(T1.centroid().getYf());
+        armyInfo.setX(T1.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
+        armyInfo.setY(T1.centroid().getYf() - letterheight);
+        bombInfo.setX(T1.centroid().getXf() - (letterwidth * bombInfo.text.length()) / 2);
+        bombInfo.setY(T1.centroid().getYf());
 
-            if (!col.contains(armyInfo)) {
-                col.add(armyInfo);
-            }
+        if (!col.contains(armyInfo)) {
+            col.add(armyInfo);
+        }
         if (!col.contains(bombInfo)) {
             col.add(bombInfo);
         }
@@ -327,6 +325,44 @@ public class Region {
 
     public float[] getmOutlineCoords(){
         return mOutlineCoords;
+    }
+
+    public void setBomb(int type, int size){
+        if(size==0){
+            bombInfo.setText("");
+        } else {
+            String t;
+            String s ="9";
+            switch (type){
+                case 0:
+                    t="A";
+                    break;
+                case 2:
+                    t="H";
+                    break;
+                default:
+                    t="UNKNOWN BOMB";
+                    break;
+            }
+            if(size<9){
+                s=String.valueOf(size);
+            }
+            bombInfo.setText(t+s);
+        }
+
+    }
+
+    public void setArmy(int size){
+        if(size==0){
+            armyInfo.setText("");
+        } else {
+            String s ="9";
+            if(size<9){
+                s=String.valueOf(size);
+            }
+            armyInfo.setText("R"+s);//R on text map is army symbol
+        }
+
     }
 }
 
