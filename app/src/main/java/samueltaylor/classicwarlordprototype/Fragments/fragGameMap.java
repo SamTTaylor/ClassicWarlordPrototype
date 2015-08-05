@@ -13,6 +13,7 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -341,10 +342,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         if(mClicked == true){
             mClicked=false;
             //Draw all the regions in their assigned ID colour
-            for(Region r : regions){
-                r.toggleDrawMode(1);//Colour ID mode
-                r.draw(mMVPMatrix);
-            }
+            drawColourIDRegions();
             ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
             gl.glReadPixels((int) mTouchedPos[0], mGLView.getHeight() - (int) mTouchedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
@@ -362,10 +360,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         if(mLongPressed== true){
             mLongPressed=false;
             //Draw all the regions in their assigned ID colour
-            for(Region r : regions){
-                r.toggleDrawMode(1);//Colour ID mode
-                r.draw(mMVPMatrix);
-            }
+            drawColourIDRegions();
             ByteBuffer PixelBuffer = ByteBuffer.allocateDirect(4);
             gl.glReadPixels((int) mTouchedPos[0], mGLView.getHeight() - (int) mTouchedPos[1], 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, PixelBuffer);
             byte b[] = new byte[4];
@@ -409,6 +404,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         tm.Draw(mMVPMatrix);
     }
 
+    private void drawColourIDRegions(){
+        GLES20.glDisable(GLES20.GL_BLEND);
+        for(Region r : regions){
+            r.toggleDrawMode(1);//Colour ID mode
+            r.draw(mMVPMatrix);
+        }
+        GLES20.glEnable(GLES20.GL_BLEND);
+    }
 
 
 

@@ -23,7 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.drawable.shapes.Shape;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import org.w3c.dom.Text;
 
@@ -279,8 +283,9 @@ public class Region {
         SetupText();
     }
 
-
-    private void findCentrePoint(){
+    float letterwidth=0.06f;
+    float letterheight=0.18f;
+    private void findCentrePoint() {
         //Left most point                    //Right most point
         float xmin = mOutlineCoords[0],        xmax = mOutlineCoords[0];
         //highest point                      //Lowest point
@@ -300,28 +305,99 @@ public class Region {
                 ymax=mOutlineCoords[i+1];
             }
         }
-        xmin-=0.05f;
-        ymin-=0.2f;
+        xmin-=letterwidth*regionInfo.text.length();
+        ymin-=letterheight;
 
         centreCoords[0] = (xmin+xmax)/2;
         centreCoords[1] = (ymin+ymax)/2;
+
+        List<float[]> points = new ArrayList<>();
+        float[] coords = new float[mOutlineCoords.length+3];
+        System.arraycopy(mOutlineCoords,0,coords,0,mOutlineCoords.length);
+        coords[coords.length-3] = mOutlineCoords[0];
+        coords[coords.length-2] = mOutlineCoords[1];
+        coords[coords.length-1] = mOutlineCoords[2];
+        for(int i=0;i<coords.length;i+=3){
+            float[] f = new float[2];
+            f[0]=coords[i];
+            f[1]=coords[i+1];
+            points.add(f);
+        }
+        shimmyTextIntoPolygonBounds(points, centreCoords);
     }
+
+    private boolean polygonContainsPoint(List<float[]> points, float x, float y){
+        //Check if bounding box centre is inside the polygon
+        int i;
+        int j;
+        boolean result = false;
+        for (i = 0, j = points.size() - 1; i < points.size(); j = i++) {
+            if ((points.get(i)[1] > y) != (points.get(j)[1] > y) &&
+                    (x < (points.get(j)[0] - points.get(i)[0]) * (y - points.get(i)[1]) / (points.get(j)[1]-points.get(i)[1]) + points.get(i)[0])) {
+                result = !result;
+            }
+        }
+        return result;
+    }
+
+    private boolean polyContainsBounds(List<float[]> points, float[] coords){
+        boolean result=true;
+        float x = letterwidth*regionInfo.text.length();
+        float y = letterheight;
+        if(!polygonContainsPoint(points,coords[0],coords[1])){    result=false;    }
+        if(!polygonContainsPoint(points,coords[0]+x,coords[1])){    result=false;    }
+        if(!polygonContainsPoint(points,coords[0],coords[1]+y)){    result=false;    }
+        if(!polygonContainsPoint(points,coords[0]+x,coords[1]+y)){    result=false;    }
+        return result;
+    }
+
+    private void shimmyTextIntoPolygonBounds(List<float[]> points, float[] coords){
+        float[] tempcoords = new float[coords.length];
+        System.arraycopy(coords,0,tempcoords,0,coords.length);
+        float sensitivity = 0.05f;
+        int count=0;
+        int direction=0;
+        while(!polyContainsBounds(points,tempcoords) && count<10){
+            System.arraycopy(coords,0,tempcoords,0,coords.length);
+            switch (direction){
+                case 0:
+                    coords[0]+=sensitivity*count;
+                    direction++;
+                    break;
+                case 1:
+                    coords[0]-=sensitivity*count;
+                    direction++;
+                    break;
+                case 2:
+                    coords[1]+=sensitivity*count;
+                    direction++;
+                    break;
+                case 3:
+                    coords[1]-=sensitivity*count;
+                    direction=0;
+                    count++;
+                    break;
+            }
+        }
+        if(count<9){
+            centreCoords=tempcoords;
+        }
+    }
+
 
     public void SetupText()
     {
-        regionInfo.setText(mName.substring(0,1));
-        findCentrePoint();
-        Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
-//        Log.e(mName, String.valueOf(centreCoords[0]) + " : " + String.valueOf(centreCoords[1]));
+            regionInfo.setText(mName.substring(0, 1));
+            findCentrePoint();
+            Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 
-        regionInfo.setX(centreCoords[0]);
-        regionInfo.setY(centreCoords[1]);
-
+            regionInfo.setX(centreCoords[0]);
+            regionInfo.setY(centreCoords[1]);
 
 
-        if(!col.contains(regionInfo)){
-            col.add(regionInfo);
-        }
+            if (!col.contains(regionInfo)) {
+                col.add(regionInfo);
+            }
     }
 
     public void toggleDrawMode(int i) {

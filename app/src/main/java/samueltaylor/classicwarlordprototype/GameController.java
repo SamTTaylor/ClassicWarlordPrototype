@@ -203,7 +203,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
-    int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
+    int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;//TODO: Set back to 3
 
     public void setOpponentsForQuickGame(int i){
         MIN_OPPONENTS=i;
