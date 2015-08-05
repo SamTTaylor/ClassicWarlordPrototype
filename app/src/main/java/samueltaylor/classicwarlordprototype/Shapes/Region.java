@@ -23,13 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import android.graphics.Path;
-import android.graphics.RectF;
-import android.graphics.drawable.shapes.Shape;
-import android.opengl.GLES20;
-import android.util.Log;
 
-import org.w3c.dom.Text;
+import android.opengl.GLES20;
+
 
 import samueltaylor.classicwarlordprototype.Fragments.fragGameMap;
 import samueltaylor.classicwarlordprototype.poly2tri.Poly2Tri;
@@ -101,7 +97,8 @@ public class Region {
     private boolean scorched=false;
     private fragGameMap mRenderer;
 
-    private TextObject regionInfo = new TextObject();
+    private TextObject armyInfo = new TextObject();
+    private TextObject bombInfo = new TextObject();
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -305,7 +302,7 @@ public class Region {
                 ymax=mOutlineCoords[i+1];
             }
         }
-        xmin-=letterwidth*regionInfo.text.length();
+        xmin-=letterwidth* armyInfo.text.length();
         ymin-=letterheight;
 
         centreCoords[0] = (xmin+xmax)/2;
@@ -342,7 +339,7 @@ public class Region {
 
     private boolean polyContainsBounds(List<float[]> points, float[] coords){
         boolean result=true;
-        float x = letterwidth*regionInfo.text.length();
+        float x = letterwidth* armyInfo.text.length();
         float y = letterheight;
         if(!polygonContainsPoint(points,coords[0],coords[1])){    result=false;    }
         if(!polygonContainsPoint(points,coords[0]+x,coords[1])){    result=false;    }
@@ -358,7 +355,7 @@ public class Region {
         int count=0;
         int direction=0;
         while(!polyContainsBounds(points,tempcoords) && count<10){
-            System.arraycopy(coords,0,tempcoords,0,coords.length);
+            System.arraycopy(coords, 0, tempcoords, 0, coords.length);
             switch (direction){
                 case 0:
                     coords[0]+=sensitivity*count;
@@ -387,16 +384,16 @@ public class Region {
 
     public void SetupText()
     {
-            regionInfo.setText(mName.substring(0, 1));
+            armyInfo.setText("A1\nB2");
             findCentrePoint();
             Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 
-            regionInfo.setX(centreCoords[0]);
-            regionInfo.setY(centreCoords[1]);
+            armyInfo.setX(centreCoords[0]);
+            armyInfo.setY(centreCoords[1]);
 
 
-            if (!col.contains(regionInfo)) {
-                col.add(regionInfo);
+            if (!col.contains(armyInfo)) {
+                col.add(armyInfo);
             }
     }
 

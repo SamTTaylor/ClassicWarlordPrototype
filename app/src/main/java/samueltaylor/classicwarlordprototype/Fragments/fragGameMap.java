@@ -400,8 +400,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
-        prepareDraw();
-        tm.Draw(mMVPMatrix);
+        if(mZoom>-2.0f){
+            prepareDraw();
+            tm.Draw(mMVPMatrix);
+        }
     }
 
     private void drawColourIDRegions(){
@@ -424,7 +426,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
-    float 	ssu = 0.005f;
+    float 	ssu = 0.003f;
     public void SetupText()
     {
         // Create our text manager
