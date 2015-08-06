@@ -170,7 +170,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Initial drawing
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl.glClearColor(0.608f, 0.722f, 0.859f, 1.0f);
         mGl = gl;
         GLES20.glDisable(GLES20.GL_DITHER);
         // initialiseWorld();
@@ -228,7 +228,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
             switch (r.type){
                 case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 1.0f }; break;
                 case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 1.0f }; break;
-                case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 0.0f }; break;
+                case "city":  color= new float[]{ 1f, 0.965f, 0.58f, 1.0f }; break;
                 case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 1.0f }; break;
                 case "light":  color= new float[]{ 1.0f, 1.0f, 1.0f, 1.0f }; break;
                 case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 1.0f}; break;
@@ -427,7 +427,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
-    float 	ssu = 0.003f;
+    float 	ssu = 0.004f;
     public void SetupText()
     {
         // Create our text manager

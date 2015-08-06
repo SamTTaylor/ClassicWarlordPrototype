@@ -279,8 +279,8 @@ public class Region {
         SetupText();
     }
 
-    float letterwidth=0.05f;
-    float letterheight=0.1f;
+    float letterwidth=0.06f;
+    float letterheight=0.10f;
     DelaunayTriangle T1;
     private void findCentrePoint() {
         T1 = poly.getTriangles().get(0);
@@ -298,8 +298,8 @@ public class Region {
 
         armyInfo.setX(T1.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
         armyInfo.setY(T1.centroid().getYf() - letterheight);
-        bombInfo.setX(T1.centroid().getXf() - (letterwidth * bombInfo.text.length()) / 2);
-        bombInfo.setY(T1.centroid().getYf());
+        bombInfo.setX(T1.centroid().getXf() - ((letterwidth+0.01f) * bombInfo.text.length()) / 2);
+        bombInfo.setY(armyInfo.y + letterheight);
 
         if (!col.contains(armyInfo)) {
             col.add(armyInfo);
@@ -337,7 +337,7 @@ public class Region {
                 case 0:
                     t="A";
                     break;
-                case 2:
+                case 1:
                     t="H";
                     break;
                 default:

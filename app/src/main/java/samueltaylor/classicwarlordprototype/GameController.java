@@ -204,7 +204,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
 
-    int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;//TODO: Set back to 3
+    int MIN_OPPONENTS = 3, MAX_OPPONENTS = 3;
 
     public void setOpponentsForQuickGame(int i){
         MIN_OPPONENTS=i;
@@ -2178,6 +2178,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 scorchRegionInView(id);
             }
         }
+        updateRegionCounters(sourceid);
         for(Empire e : affectedEmpires){
             if(e.getRegions()!=null && e.getRegions().size()>0){
                 e.checkShatteredEmpire();

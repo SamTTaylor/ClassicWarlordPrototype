@@ -79,7 +79,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     //AUTO MATCH
     private void testAutoMatch() throws Exception {
         ((GameController)getActivity()).setOpponentsForQuickGame(1);
-        solo.sleep(4000);//Wait for login
+        while(!solo.searchButton("AUTO-MATCH")){solo.sleep(10);}
         solo.clickOnButton("AUTO-MATCH");
         while(!solo.searchText("Loading")){//Wait until game scene is loaded as indicated by the presence of the send button
             solo.sleep(10);
@@ -99,7 +99,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         initialiseMountainsForSelection();
         solo.clickLongOnScreen(yorkshirecoords[0], yorkshirecoords[1]);//Check if we are large screen or small screen by identifying a click at point, in case it needs distinguishing at some point
         if(solo.searchText("Yorkshire")){largescreen=true;}
-        solo.clickOnButton("OK");
+        OK();
         solo.sleep(4000);
         button = solo.getView(R.id.btnIcon);
         solo.clickOnView(button);
@@ -197,7 +197,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         solo.clickOnScreen(rockallcoords[0], rockallcoords[1]);
         solo.clickOnScreen(bergencoords[0], bergencoords[1]);
         solo.clickOnScreen(rockallcoords[0], rockallcoords[1]);
-        solo.clickOnButton("OK");
+        OK();
     }
 
     private void player1Move(){
@@ -313,7 +313,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         if(largescreen){moveArmy(yorkshirecoords, merciacoords, 5);} else {moveArmy(yorkshirecoordssm, merciacoords, 5);} //Split empire from source and target
         if(largescreen){placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
         if(largescreen){moveArmy(merciacoords, yorkshirecoords, 1);} else {moveArmy(merciacoords, yorkshirecoordssm, 1);}//Rejoin empire
-        moveArmy(merciacoords,londoncoords,1);//Attack london with 3 men (Attack City)
+        moveArmy(merciacoords, londoncoords, 1);//Attack london with 3 men (Attack City)
         if(largescreen){placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
         moveArmy(londoncoords,merciacoords,1);
         moveArmy(londoncoords, thamescoords, 1);//Dominate Sea
@@ -360,8 +360,8 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         endTurn();
         moveArmy(munstercoords, stgeorgeschannelcoords, 1);//Dominate Sea
         placeBomb(munstercoords);
-        moveArmy(ardennescoords,belgiumcoords,1);
-        moveArmy(belgiumcoords,thamescoords,1);//Dominate sea
+        moveArmy(ardennescoords, belgiumcoords, 1);
+        moveArmy(belgiumcoords, thamescoords, 1);//Dominate sea
         placeBomb(belgiumcoords);
         endTurn();
     }
@@ -378,15 +378,12 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
 
     private void placeBomb(Float[] target){
         while(!solo.searchText("earned")){solo.sleep(100);}//wait for bomb notification
-        Assert.assertTrue(solo.searchButton("OK"));
-        solo.clickOnButton("OK");//Dismiss
+        OK();//Dismiss
         solo.clickOnScreen(target[0], target[1]);
         if(solo.searchButton("Confirm")){
             solo.clickOnButton("Confirm");
         }
-        if(solo.searchButton("OK")){
-            solo.clickOnButton("OK");
-        }
+        OK();
     }
 
     private void OK(){
