@@ -41,12 +41,14 @@ public class Region {
                     "uniform vec4 vColor;" +
                     "uniform vec4 playercolour;" +
                     "attribute vec4 vPosition;" +
+                    "uniform vec3 vCentrePosition;" +
                     "varying vec4 color;" +
                     "uniform int usegradient;" +
                     "void main() {" +
                     "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
+                    "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0);" +
                     "  if((usegradient>1) && (vPosition.z>0.0))" +
-                    "    color = playercolour;" +
+                    "    color = mix(playercolour, vColor, distanceFromReferencePoint*5.0);" +
                     "  else" +
                     "    color = vColor;"+
                     "}";
@@ -63,6 +65,7 @@ public class Region {
 
     private final int mProgram;
     private int mPositionHandle;
+    private int mCentroidPositionHandle;
     private int mColorHandle;
     private int mGradientHandle;
     private int mPlayerColourHandle;
@@ -83,7 +86,7 @@ public class Region {
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    float mPlayerColor[] = cBlack;
+    float mPlayerColor[] = cWhite;
     float mSelectedColour[] = cBlack;
     float mFillColor[];//Used to determine shape fill colour on Draw
     float mOutlineColor[];//Used to determine shape outline colour on Draw
@@ -98,6 +101,10 @@ public class Region {
 
     private TextObject armyInfo = new TextObject("",0,0);
     private TextObject bombInfo = new TextObject("",0,0);
+
+    float letterwidth=0.06f;
+    float letterheight=0.10f;
+    DelaunayTriangle largestTriangleInRegion;
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -119,14 +126,16 @@ public class Region {
         for(DelaunayTriangle p : poly.getTriangles()){
             newCoords.add(p.points[0].getXf());
             newCoords.add(p.points[0].getYf());
-            newCoords.add(0.0f);
+            newCoords.add(1.0f);
             newCoords.add(p.points[1].getXf());
             newCoords.add(p.points[1].getYf());
             newCoords.add(1.0f);
             newCoords.add(p.points[2].getXf());
             newCoords.add(p.points[2].getYf());
-            newCoords.add(0.0f);
+            newCoords.add(1.0f);
         }
+
+
 
         fillVertexCount = newCoords.size() / COORDS_PER_VERTEX;
 
@@ -148,6 +157,8 @@ public class Region {
             regionCoords[i] = newCoords.get(i);
         }
         mColor = color;
+
+
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -177,16 +188,15 @@ public class Region {
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
-
     }
 
     /**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
      */
     int mUseGradient=0;
-    boolean mUseGradientSetting=false;
+    boolean mUseGradientSetting=true;
     public void draw(float[] mvpMatrix) {
-
+        SetupText();
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
@@ -206,7 +216,7 @@ public class Region {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         mGradientHandle = GLES20.glGetUniformLocation(mProgram, "usegradient");
         mPlayerColourHandle = GLES20.glGetUniformLocation(mProgram, "playercolour");
-
+        mCentroidPositionHandle = GLES20.glGetUniformLocation(mProgram, "vCentrePosition");
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 
@@ -217,7 +227,7 @@ public class Region {
         } else {
             mUseGradient=0;
         }
-        if(!scorched){//If a region is scorched it is blackened permanently
+        if(!scorched){
             switch (mDrawMode){
                 case 0://Initial
                     mFillColor = mColor;
@@ -241,7 +251,7 @@ public class Region {
                     prevMode = 0;
                     break;
             }
-        } else {
+        } else {//If a region is scorched it is blackened permanently, except for colour ID grab
             switch (mDrawMode){
                 case 1://Colour Identification for pixel grab
                     mUseGradient=0;
@@ -254,15 +264,15 @@ public class Region {
                     mPlayerColor=cBlack;
                     mFillColor = mColor;
                     mOutlineColor = cBlack;
-                    mDrawMode=0;
+                    mDrawMode = 0;
                     break;
             }
         }
 
 
 
-
         // Draw the region
+        GLES20.glUniform3fv(mCentroidPositionHandle,1,centreFloat(),0);
         GLES20.glUniform1i(mGradientHandle, mUseGradient);
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glUniform4fv(mPlayerColourHandle, 1, mPlayerColor, 0);//Set region gradient colour
@@ -276,29 +286,36 @@ public class Region {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
 
-        SetupText();
+
     }
 
-    float letterwidth=0.06f;
-    float letterheight=0.10f;
-    DelaunayTriangle T1;
-    private void findCentrePoint() {
-        T1 = poly.getTriangles().get(0);
+
+    private void findSpaceForText() {
+        largestTriangleInRegion = poly.getTriangles().get(0);
         for(int i=0;i<poly.getTriangles().size();i++){
-            if(poly.getTriangles().get(i).area()> T1.area()){
-                T1 =poly.getTriangles().get(i);
+            if(poly.getTriangles().get(i).area()> largestTriangleInRegion.area()){
+                largestTriangleInRegion =poly.getTriangles().get(i);
             }
         }
     }
 
+
+    private float[] centreFloat(){
+        float[] f = new float[3];
+        f[0]=largestTriangleInRegion.centroid().getXf();
+        f[1]=largestTriangleInRegion.centroid().getYf();
+        f[2]=largestTriangleInRegion.centroid().getZf();
+        return f;
+    }
+
     public void SetupText()
     {
-        findCentrePoint();
+        findSpaceForText();
         Vector<TextObject> col = mRenderer.getTextManager().txtcollection;
 
-        armyInfo.setX(T1.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
-        armyInfo.setY(T1.centroid().getYf() - letterheight);
-        bombInfo.setX(T1.centroid().getXf() - ((letterwidth+0.01f) * bombInfo.text.length()) / 2);
+        armyInfo.setX(largestTriangleInRegion.centroid().getXf()-(letterwidth*armyInfo.text.length())/2);
+        armyInfo.setY(largestTriangleInRegion.centroid().getYf() - letterheight);
+        bombInfo.setX(largestTriangleInRegion.centroid().getXf() - ((letterwidth+0.01f) * bombInfo.text.length()) / 2);
         bombInfo.setY(armyInfo.y + letterheight);
 
         if (!col.contains(armyInfo)) {
@@ -314,14 +331,13 @@ public class Region {
     }
     public void setmPlayerColor(float[] f){mPlayerColor = f;}
     public void setmSelectedColour(float[] f){mSelectedColour = f;}
-    public void setUseGradient(boolean b, float[] colour){
-        mUseGradientSetting=b;
+    public void setUseGradient(float[] colour){
         mPlayerColor = colour;
         if(colour == null){
-            mPlayerColor = cBlack;
+            mPlayerColor = cWhite;
         }
     }
-    public void setScorched(boolean b){scorched=b;}
+    public void setScorched(boolean b){scorched=b; mPlayerColor=cBlack;}
 
     public float[] getmOutlineCoords(){
         return mOutlineCoords;

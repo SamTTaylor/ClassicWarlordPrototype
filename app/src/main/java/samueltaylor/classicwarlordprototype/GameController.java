@@ -1607,8 +1607,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 if (mModel.getPlayers().indexOf(p) < mModel.getPlayers().indexOf(mModel.getCurrentplayer())) {
                     String name = p.getEmpires().get(p.getEmpires().size() - 1).getRegions().get(0).getName();//Find name of first(only) region in last empire taken by player
                     int id = mModel.getRegionIDByName(name);
-                    wipeOutRegionInView(id);//Set outline back to black again
                     mModel.getRegion(id).wipeOut();
+                    wipeOutRegionInView(id);//Clear region
                 }
             }
             mapfragment.reRender();
@@ -2248,13 +2248,12 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     //GENERAL VIEW MANIPULATION
     private void addRegiontoEmpireinView(int id) {
-        mapfragment.getRegion(id).setUseGradient(true, mModel.getCurrentplayer().getColour());
+        mapfragment.getRegion(id).setUseGradient(mModel.getCurrentplayer().getColour());//Colour with owner's colour gradient
         DeselectForCurrentPlayer(); //Bear this in mind when relying on player selection data
         updateRegionCounters(id);
     }
     private void wipeOutRegionInView(int id){
-
-        mapfragment.getRegion(id).setUseGradient(false, null);
+        mapfragment.getRegion(id).setUseGradient(null);//Reset to white gradient
         updateRegionCounters(id);
     }
 
