@@ -185,6 +185,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         SetupText();
         // Create the shaders, images
 
+
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -378,14 +379,14 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     public void selectRegion(int id, float[] playercolour){
-        if(regions[id]!=null){
+        if(id<regions.length){
             regions[id].setmSelectedColour(playercolour);
             regions[id].toggleDrawMode(2);
             reRender();
         }
     }
     public void deselectRegion(int id){
-        if(regions[id]!=null){
+        if(id<regions.length){
             regions[id].toggleDrawMode(0);
             reRender();
         }

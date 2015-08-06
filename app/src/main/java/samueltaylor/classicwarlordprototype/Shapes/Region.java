@@ -46,11 +46,11 @@ public class Region {
                     "uniform int usegradient;" +
                     "void main() {" +
                     "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
-                    "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0);" +
-                    "  if((usegradient>1) && (vPosition.z>0.0))" +
-                    "    color = mix(playercolour, vColor, distanceFromReferencePoint*5.0);" +
+                    "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0)*2.0;" +
+                    "  if((usegradient>1) && (vPosition.z>0.0) && (distanceFromReferencePoint<0.5))" +
+                    "    color = mix(playercolour, vColor, distanceFromReferencePoint);" +
                     "  else" +
-                    "    color = vColor;"+
+                    "    color = vColor;"+//For Colour ID selection
                     "}";
 
     private final String fragmentShaderCode =
