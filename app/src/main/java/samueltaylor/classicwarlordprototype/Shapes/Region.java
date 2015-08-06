@@ -47,7 +47,7 @@ public class Region {
                     "void main() {" +
                     "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
                     "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0)*2.0;" +
-                    "  if((usegradient>1) && (vPosition.z>0.0) && (distanceFromReferencePoint<0.5))" +
+                    "  if((usegradient>1) && (vPosition.z>0.0) && (distanceFromReferencePoint<0.5))" +//Distance limiter manually stops the gradient going passed the destination colour
                     "    color = mix(playercolour, vColor, distanceFromReferencePoint);" +
                     "  else" +
                     "    color = vColor;"+//For Colour ID selection
@@ -85,6 +85,7 @@ public class Region {
     float mColor[];
     public float[] mColorID = { 0.00f, 0.00f, 0.00f, 0.00f };
     float cBlack[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    float cGrey[] = { 0.5f, 0.5f, 0.5f, 1.0f };
     float cWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float mPlayerColor[] = cWhite;
     float mSelectedColour[] = cBlack;
@@ -231,7 +232,7 @@ public class Region {
             switch (mDrawMode){
                 case 0://Initial
                     mFillColor = mColor;
-                    mOutlineColor = cBlack;
+                    mOutlineColor = cGrey;
                     prevMode = 0;
                     break;
                 case 1://Colour Identification for pixel grab
@@ -242,12 +243,12 @@ public class Region {
                     break;
                 case 2://Selected
                     mFillColor = mSelectedColour;
-                    mOutlineColor = cBlack;
+                    mOutlineColor = cGrey;
                     prevMode = 2;
                     break;
                 default://default
                     mFillColor = mColor;
-                    mOutlineColor = cBlack;
+                    mOutlineColor = cGrey;
                     prevMode = 0;
                     break;
             }
@@ -263,7 +264,7 @@ public class Region {
                     mUseGradient=2;
                     mPlayerColor=cBlack;
                     mFillColor = mColor;
-                    mOutlineColor = cBlack;
+                    mOutlineColor = cGrey;
                     mDrawMode = 0;
                     break;
             }
