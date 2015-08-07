@@ -156,6 +156,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     //Drawing
     Region[] regions;
     static float regionCoords[];
+    private int mRegionProgram;
     public List<SVGtoRegionParser.Region> mWorld;
     float mWorldWidth = 12.0f;
     float mWorldHeight = 8.9f;
@@ -173,9 +174,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         gl.glClearColor(0.608f, 0.722f, 0.859f, 1.0f);
         mGl = gl;
         GLES20.glDisable(GLES20.GL_DITHER);
-        // initialiseWorld();
-        initialiseWorld();
-        mSurfaceCreated = true;
+
 
         // Create the triangles
         SetupTriangle();
@@ -185,10 +184,10 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         SetupText();
         // Create the shaders, images
 
-
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
+        //Image shader
         int vertexShader = shaderCodes.loadShader(GLES20.GL_VERTEX_SHADER, shaderCodes.vertexBG);
         int fragmentShader = shaderCodes.loadShader(GLES20.GL_FRAGMENT_SHADER, shaderCodes.fragBG);
 
@@ -209,7 +208,21 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         // Set our shader programm
         GLES20.glUseProgram(shaderCodes.progBg);
 
+        // Regions shaters
+        int regionVShader = loadShader(
+                GLES20.GL_VERTEX_SHADER, shaderCodes.regionVertexShader);
+        int regionFShader = loadShader(
+                GLES20.GL_FRAGMENT_SHADER, shaderCodes.regionFragmentShader);
 
+
+        mRegionProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
+        GLES20.glAttachShader(mRegionProgram, regionVShader);   // add the vertex shader to program
+        GLES20.glAttachShader(mRegionProgram, regionFShader); // add the fragment shader to program
+        GLES20.glLinkProgram(mRegionProgram);                  // create OpenGL program executables
+
+        // initialiseWorld();
+        initialiseWorld();
+        mSurfaceCreated = true;
         //Draw world
         drawRegions();
         ((GameController)getActivity()).fadeOutLoadingFragment();
@@ -400,8 +413,8 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     }
 
     private void drawRegions(){
+        GLES20.glLineWidth(mOutline);
         for(Region r : regions){
-            GLES20.glLineWidth(mOutline);
             r.draw(mMVPMatrix);
         }
         if(mZoom>mZoomRenderLimit){
@@ -569,4 +582,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
     public float getmZoom(){return mZoom;}
     public float getmZoomRenderLimit(){return mZoomRenderLimit;}
+
+    public int getmRegionProgram(){return mRegionProgram;}
 }

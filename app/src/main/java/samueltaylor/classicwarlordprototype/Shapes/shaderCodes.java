@@ -63,6 +63,30 @@ public class shaderCodes {
 
 
 
+    public static final String regionVertexShader =
+            "uniform mat4 uMVPMatrix;" +
+                    "uniform vec4 vColor;" +
+                    "uniform vec4 playercolour;" +
+                    "attribute vec4 vPosition;" +
+                    "uniform vec3 vCentrePosition;" +
+                    "varying vec4 color;" +
+                    "uniform int usegradient;" +
+                    "void main() {" +
+                    "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
+                    "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0)*2.0;" +
+                    "  if((usegradient>1) && (vPosition.z>0.0) && (distanceFromReferencePoint<0.8))" +//Distance limiter manually stops the gradient going passed the destination colour
+                    "    color = mix(playercolour, vColor, distanceFromReferencePoint);" +
+                    "  else" +
+                    "    color = vColor;"+//For Colour ID selection
+                    "}";
+
+    public static final String regionFragmentShader =
+            "precision mediump float;" +
+                    "varying vec4 color;" +
+                    "void main() {" +
+                    "  gl_FragColor = color;" +
+                    "}";
+
     public static int loadShader(int type, String shaderCode){
 
         int shader = GLES20.glCreateShader(type);

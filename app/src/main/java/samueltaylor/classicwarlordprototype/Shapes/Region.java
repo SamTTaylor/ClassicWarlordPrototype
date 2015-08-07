@@ -36,30 +36,6 @@ import samueltaylor.classicwarlordprototype.poly2tri.triangulation.delaunay.Dela
 
 public class Region {
 
-    private final String vertexShaderCode =
-            "uniform mat4 uMVPMatrix;" +
-                    "uniform vec4 vColor;" +
-                    "uniform vec4 playercolour;" +
-                    "attribute vec4 vPosition;" +
-                    "uniform vec3 vCentrePosition;" +
-                    "varying vec4 color;" +
-                    "uniform int usegradient;" +
-                    "void main() {" +
-                    "  gl_Position = uMVPMatrix * vec4(vPosition.x,vPosition.y,0,1);" +
-                    "  mediump float distanceFromReferencePoint = clamp(distance(vec2(vPosition.x,vPosition.y), vec2(vCentrePosition.x, vCentrePosition.y)), 0.0, 1.0)*2.0;" +
-                    "  if((usegradient>1) && (vPosition.z>0.0) && (distanceFromReferencePoint<0.5))" +//Distance limiter manually stops the gradient going passed the destination colour
-                    "    color = mix(playercolour, vColor, distanceFromReferencePoint);" +
-                    "  else" +
-                    "    color = vColor;"+//For Colour ID selection
-                    "}";
-
-    private final String fragmentShaderCode =
-            "precision mediump float;" +
-                    "varying vec4 color;" +
-                    "void main() {" +
-                    "  gl_FragColor = color;" +
-                    "}";
-
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
 
@@ -110,9 +86,11 @@ public class Region {
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Region(fragGameMap renderer, float[] coords, float[] color) {
+
         mOutlineCoords = coords;
         regionCoords = coords;
         mRenderer=renderer;
+        mProgram = mRenderer.getmRegionProgram();
 
         fillVertexCount = regionCoords.length / COORDS_PER_VERTEX;
         List<PolygonPoint> PointList = new ArrayList<>();
@@ -178,17 +156,6 @@ public class Region {
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
 
-        // prepare shaders and OpenGL program
-        int vertexShader = renderer.loadShader(
-                GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = renderer.loadShader(
-                GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
-
-
-        mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
-        GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
-        GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
-        GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
     }
 
     /**
@@ -273,7 +240,7 @@ public class Region {
 
 
         // Draw the region
-        GLES20.glUniform3fv(mCentroidPositionHandle,1,centreFloat(),0);
+        GLES20.glUniform3fv(mCentroidPositionHandle,1, getCentreFloat(),0);
         GLES20.glUniform1i(mGradientHandle, mUseGradient);
         GLES20.glUniform4fv(mColorHandle, 1, mFillColor, 0);//Set region colour
         GLES20.glUniform4fv(mPlayerColourHandle, 1, mPlayerColor, 0);//Set region gradient colour
@@ -301,7 +268,7 @@ public class Region {
     }
 
 
-    private float[] centreFloat(){
+    public float[] getCentreFloat(){
         float[] f = new float[3];
         f[0]=largestTriangleInRegion.centroid().getXf();
         f[1]=largestTriangleInRegion.centroid().getYf();
