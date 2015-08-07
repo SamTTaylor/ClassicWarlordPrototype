@@ -83,29 +83,37 @@ public class TextManager {
         // We should add the vec, translating the indices to our saved vector
         for(int i=0;i<vec.length;i++)
         {
-            vecs[index_vecs] = vec[i];
-            index_vecs++;
+            if(index_vecs<vecs.length){
+                vecs[index_vecs] = vec[i];
+                index_vecs++;
+            }
         }
 
         // We should add the colors, so we can use the same texture for multiple effects.
         for(int i=0;i<cs.length;i++)
         {
-            colors[index_colors] = cs[i];
-            index_colors++;
+            if(index_colors<colors.length) {
+                colors[index_colors] = cs[i];
+                index_colors++;
+            }
         }
 
         // We should add the uvs
         for(int i=0;i<uv.length;i++)
         {
-            uvs[index_uvs] = uv[i];
-            index_uvs++;
+            if(index_uvs<uvs.length) {
+                uvs[index_uvs] = uv[i];
+                index_uvs++;
+            }
         }
 
         // We handle the indices
         for(int j=0;j<indi.length;j++)
         {
-            indices[index_indices] = (short) (base + indi[j]);
-            index_indices++;
+            if(index_indices<indices.length) {
+                indices[index_indices] = (short) (base + indi[j]);
+                index_indices++;
+            }
         }
     }
 
