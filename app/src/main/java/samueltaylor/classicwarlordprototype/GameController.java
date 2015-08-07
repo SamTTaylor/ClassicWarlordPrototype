@@ -781,7 +781,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         mParser = new SVGtoRegionParser();
         InputStream inputStream;
         try{
-            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.world));
+            inputStream = new BufferedInputStream(getResources().openRawResource(R.raw.worldsmall));
             world = mParser.parse(inputStream);
         } catch (FileNotFoundException e){
             Log.e("FileNotFoundException", e.toString());
