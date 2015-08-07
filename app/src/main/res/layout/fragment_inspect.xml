@@ -28,7 +28,8 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="Region"
                 android:id="@+id/txtInspectTitle"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal" />
 
             <LinearLayout
                 android:orientation="horizontal"

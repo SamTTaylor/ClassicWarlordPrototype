@@ -60,7 +60,7 @@ public class fragInspect extends Fragment {
         txtReinforcements = (TextView) getActivity().findViewById(R.id.txtInspectReinforcements);
         btnOk = (Button) getActivity().findViewById(R.id.btnInspectConfirm);
 
-        txtTitle.setText(region.getName());
+        txtTitle.setText(region.getName() + "\n(" + region.getType().replace(region.getType().charAt(0),region.getType().substring(0,1).toUpperCase().toCharArray()[0]) + ")");
         if(region.getArmy()!=null){
             txtArmy.setText(String.valueOf(region.getArmy().getSize()));
         } else {
