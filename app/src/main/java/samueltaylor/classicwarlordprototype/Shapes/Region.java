@@ -155,7 +155,7 @@ public class Region {
         drawListBuffer = dlb.asShortBuffer();
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
-
+        SetupText();
     }
 
     /**
@@ -164,7 +164,6 @@ public class Region {
     int mUseGradient=0;
     boolean mUseGradientSetting=true;
     public void draw(float[] mvpMatrix) {
-        SetupText();
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
@@ -333,7 +332,7 @@ public class Region {
             }
             bombInfo.setText(t+s);
         }
-
+        SetupText();
     }
 
     public void setArmy(int size){
@@ -346,7 +345,7 @@ public class Region {
             }
             armyInfo.setText("R"+s);//R on text map is army symbol
         }
-
+        SetupText();
     }
 }
 
