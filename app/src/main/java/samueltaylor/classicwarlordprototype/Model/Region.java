@@ -1,11 +1,8 @@
 package samueltaylor.classicwarlordprototype.Model;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import samueltaylor.classicwarlordprototype.GameController;
 
 /**
  * Created by Sam on 05/07/2015.

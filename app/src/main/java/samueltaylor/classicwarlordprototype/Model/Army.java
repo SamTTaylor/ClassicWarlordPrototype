@@ -8,7 +8,6 @@ import android.util.Log;
 public class Army extends Object {
 
     private int size;
-    private Region location;
     private Player player;
 
 

@@ -246,6 +246,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
                 case "mountain":  color= new float[]{ 0.831f, 0.784f, 0.745f, 1.0f }; break;
                 case "light":  color= new float[]{ 1.0f, 1.0f, 1.0f, 1.0f }; break;
                 case "sea": color= new float[]{ 0.608f, 0.722f, 0.859f, 1.0f}; break;
+                default: color= new float[]{0.0f,0.0f,0.0f,1.0f}; break;
             }
             regions[i] = new Region(this, regionCoords, color);
             if(r.name!=null){

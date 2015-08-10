@@ -9,6 +9,10 @@ import java.util.Vector;
 
 import android.opengl.GLES20;
 
+//Imported class used to map the text texture atlas to textures in opengl
+//Source: http://androidblog.reindustries.com/a-real-opengl-es-2-0-2d-tutorial-part-8-rendering-text/
+//Openly available for the benefit of the Android community
+
 public class TextManager {
 
     private static final float RI_TEXT_UV_BOX_WIDTH = 0.125f;
