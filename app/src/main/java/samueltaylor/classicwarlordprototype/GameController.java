@@ -543,11 +543,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     @Override
     public void onLeftRoom(int statusCode, String roomId) {
         // we have left the room; return to main screen.
-        Log.e("Disconnected", "Disconnected");
-        if(mRoomId!=null){
-            leaveRoom();
-        }
-        loadMainMenu();
+        Log.e("Left", "Left");
+        leaveRoom();
     }
 
     // Called when we get disconnected from the room. We return to the main screen.
@@ -555,7 +552,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onDisconnectedFromRoom(Room room) {
         Log.e("Disconnected", "Disconnected");
         leaveRoom();
-        loadMainMenu();
     }
 
     // Show error message about game being cancelled and return to main screen.
