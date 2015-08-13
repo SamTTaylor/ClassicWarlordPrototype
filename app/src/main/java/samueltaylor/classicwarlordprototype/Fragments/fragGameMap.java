@@ -232,13 +232,11 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
 
     public void initialiseWorld(){
-
         int i = 0;
         regions = new Region[mWorld.size()];
         float[] color = null;
         for(SVGtoRegionParser.Region r : mWorld){
             regionCoords = r.path;
-
             switch (r.type){
                 case "rural": color= new float[]{ 0.651f, 0.871f, 0.78f, 1.0f }; break;
                 case "dense": color= new float[]{ 0.965f, 0.722f, 0.729f, 1.0f }; break;

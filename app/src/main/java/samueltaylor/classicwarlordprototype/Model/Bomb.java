@@ -41,8 +41,8 @@ public class Bomb extends Object{
     public void fireBomb(Region r, List<Empire> affectedEmpires, List<Region> affectedRegions){
         location.setBomb(null);//Take bomb from this location
         location=r;//Move bomb to location
-        if(r.getBomb()!=null){
-            this.bombtype=location.getBomb().getBombtype();//Ensure resulting explosion reflects any present bomb
+        if(r.getBomb()!=null && r.getBomb().getBombtype()>this.bombtype){
+            this.bombtype=location.getBomb().getBombtype();//Ensure resulting explosion reflects any present bomb if it is larger
         }
         location.setBomb(this);//I am the bomb now
         location.detonateBomb(affectedEmpires, affectedRegions);//Whatssappanin

@@ -1766,7 +1766,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     }
 
     private void dominateSea(int id, int previd){
-        showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize(), 0);
+        showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize(), 1);
         abombfromregion=previd;//Automatically win 1 A Bomb
         pastempire = new ArrayList<>();
         for(Region r : mModel.getRegion(previd).getEmpire().getRegions()){

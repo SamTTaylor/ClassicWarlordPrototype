@@ -33,13 +33,15 @@ public class SVGtoRegionParser {
 
     private List readWorld(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<Region> regions = new ArrayList();
+        //Start at the world tag
         parser.require(XmlPullParser.START_TAG, ns, "world");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
-            // Starts by looking for the first region tag
+            // For each region tag found, read that region's information
+            // into the regions array
             if (name.equals("region")) {
                 regions.add(readRegion(parser));
             } else {
