@@ -1767,11 +1767,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
     private void dominateSea(int id, int previd){
         showDialogFragment(5, "Capture hostile Sea from:\n'" + mModel.getRegion(previd).getName() + "'\nTo\n'" + mModel.getRegion(id).getName() + "'\nSelect Pledge:", mModel.getRegion(previd).getArmy().getSize(), 1);
-        abombfromregion=previd;//Automatically win 1 A Bomb
-        pastempire = new ArrayList<>();
-        for(Region r : mModel.getRegion(previd).getEmpire().getRegions()){
-            pastempire.add(r);
-        }
     }
 
     public void attackConfirmed(int pledge, int guesses){
@@ -2010,6 +2005,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
             if (dest.getArmy() != null) {
                 dest.wipeOut();
+                if(mModel.getRegion(targetregionid).getType().equals("sea") && iAmCurrentPlayer()){
+                    abombfromregion=sourceregionid;//Automatically win 1 A Bomb
+                    pastempire = new ArrayList<>();
+                    for(Region r : mModel.getRegion(sourceregionid).getEmpire().getRegions()){
+                        pastempire.add(r);
+                    }
+                }
             }
             //Add dest to a new empire (it will be joined later if it is still with the current empire)
             source.getArmy().getPlayer().newEmpire(dest,pledge);
@@ -2229,6 +2231,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         return false;
     }
 
+    public void setAbombfromregion(int i){
+        abombfromregion=i;
+    }
 
 
 

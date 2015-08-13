@@ -160,6 +160,10 @@ public class fragDialog extends Fragment {
                     ((GameController) getActivity()).confirmFireBomb(regionid);
                     ((GameController) getActivity()).removeDialogFragment();
                     break;
+                case 12://Sea domination
+                    ((GameController) getActivity()).takeRegionForCurrentPlayer(current, -1, -1, true);
+                    ((GameController) getActivity()).removeDialogFragment();
+                    break;
 
                 default:
                     ((GameController) getActivity()).removeDialogFragment();
