@@ -316,11 +316,11 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         moveArmy(merciacoords, londoncoords, 1);//Attack london with 3 men (Attack City)
         if(largescreen){placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
         moveArmy(londoncoords,merciacoords,1);
-        moveArmy(londoncoords, thamescoords, 1);//Dominate Sea
+        moveArmy(londoncoords, thamescoords, 0);//Dominate Sea
         placeBomb(londoncoords);
         moveArmy(merciacoords, walescoords, 1); //Attack mountain
         placeBomb(northumbriacoords);
-        moveArmy(walescoords, stgeorgeschannelcoords, 1);//Dominate Sea
+        moveArmy(walescoords, stgeorgeschannelcoords, 0);//Dominate Sea
         if(largescreen) {placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
         endTurn();
     }
@@ -358,10 +358,10 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         endTurn();//End bombing phase
         fillRegions();//Reinforce
         endTurn();
-        moveArmy(munstercoords, stgeorgeschannelcoords, 1);//Dominate Sea
+        moveArmy(munstercoords, stgeorgeschannelcoords, 0);//Dominate Sea
         placeBomb(munstercoords);
         moveArmy(ardennescoords, belgiumcoords, 1);
-        moveArmy(belgiumcoords, thamescoords, 1);//Dominate sea
+        moveArmy(belgiumcoords, thamescoords, 0);//Dominate sea
         placeBomb(belgiumcoords);
         endTurn();
     }

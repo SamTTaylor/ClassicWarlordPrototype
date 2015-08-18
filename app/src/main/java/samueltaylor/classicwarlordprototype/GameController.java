@@ -1100,8 +1100,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         for(int x=1; x<i; x++){
             bytes[x] = message.getBytes()[x-1];
         }
+        //Add my name to message
         message = getName(mMyId) + ": " + message + "\n";
+        //Add message to my own chat
         imfragment.appendChat(message);
+        //Send message to everyone else in the room
         for(Participant pa : mParticipants){
             if(mRoomId!=null){
                 Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
