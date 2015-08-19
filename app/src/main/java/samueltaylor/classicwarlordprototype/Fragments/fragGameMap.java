@@ -300,15 +300,16 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
         return shader;
     }
 
-    
+    public boolean allowmovement=true;
     public void moveScreenPosition(float x, float y) {
-        if(mMoveX-x>-mWorldWidth/2 && mMoveX-x<mWorldWidth/2){
-            mMoveX = mMoveX - x;
+        if(allowmovement){
+            if(mMoveX-x>-mWorldWidth/2 && mMoveX-x<mWorldWidth/2){
+                mMoveX = mMoveX - x;
+            }
+            if(mMoveY-y>-mWorldHeight/2 && mMoveY-y<mWorldHeight/2){
+                mMoveY = mMoveY - y;
+            }
         }
-        if(mMoveY-y>-mWorldHeight/2 && mMoveY-y<mWorldHeight/2){
-            mMoveY = mMoveY - y;
-        }
-
     }
 
     float mZoom = -4.5f;
@@ -368,6 +369,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
             //Manipulate it back to ID
             int regionnumber = (R << 7) | (G << 3) | B;
+            Log.e(regions[regionnumber].mName,String.valueOf(mTouchedPos[0]) + " : " + String.valueOf(mTouchedPos[1]));
             ((GameController)getActivity()).regionClicked(regionnumber);
         }
 
@@ -580,6 +582,7 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
     public void setTextManager(TextManager t){tm=t;}
 
     public float getmZoom(){return mZoom;}
+    public void setmZoomRenderLimit(float f){mZoomRenderLimit=f;}
     public float getmZoomRenderLimit(){return mZoomRenderLimit;}
 
     public int getmRegionProgram(){return mRegionProgram;}

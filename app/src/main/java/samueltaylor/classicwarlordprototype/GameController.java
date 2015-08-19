@@ -2104,7 +2104,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                             if(subphase==0 && playerHasHydrogenBombs()){
                                 showDialogFragment(11,"This will stop you firing any more H-Bombs this turn, are you sure you wish to fire at\n'"+mModel.getRegion(id).getName()+"'?",0,0);
                             } else {
-                                showDialogFragment(11,"Are you sure you wish to fire at\n"+mModel.getRegion(id).getName()+"'?",0,0);
+                                showDialogFragment(11,"Are you sure you wish to fire at\n'"+mModel.getRegion(id).getName()+"'?",0,0);
                             }
                         } else {
                             showDialogFragment(2, "The resulting explosion of an A-Bomb cannot destroy the source empire.", 0, 0);
@@ -2269,7 +2269,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void DeselectForCurrentPlayer(){
         mModel.getCurrentplayer().setSelectedregionid(-1);
         if(iAmCurrentPlayer()){
-            sendMySelectionData()   ;
+            sendMySelectionData();
             updateClickedRegions();
         }
     }

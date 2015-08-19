@@ -1,5 +1,6 @@
 package samueltaylor.classicwarlordprototype;
 
+import android.graphics.PointF;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.KeyEvent;
 import android.view.View;
@@ -10,6 +11,8 @@ import junit.framework.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import samueltaylor.classicwarlordprototype.GameController;
 
 /**
  * Created by Sam on 04/07/2015.
@@ -28,26 +31,65 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     private List<Float[]> mountaincoords;
     private List<Float[]> myMountainCoords;
 
+
+    private Float[] rockallcoords={321.0f,103.0f,386.0f,61.0f};private Float[] bergencoords={618.0f,70.0f,525.0f,86.0f};
     //Mountains
-    private Float[] rockallcoords={160.0f,193.0f};private Float[] orkneyscoords={205.0f,191.0f};private Float[] moraycoords={240.0f,200.0f};
-    private Float[] bergencoords={280.0f,205.0f};private Float[] fjordlandcoords={310.0f,180.0f};private Float[] telemarkcoords={332.0f,202.0f};
-    private Float[] northumbriacoords={248.0f,285.0f};private Float[] munstercoords={170.0f,348.0f};private Float[] walescoords={218.0f,337.0f};
-    private Float[] ardennescoords={334.0f,355.0f};private Float[] juracoords={350.0f,413.0f};private Float[] massifcentralcoords={317.0f,472.0f};
-    private Float[] savoiecoords={360.0f,440.0f};private Float[] alpscoords={377.0f,428.0f};private Float[] graubundencoords={400.0f,410.0f};
-    private Float[] tyrolcoords={440.0f,410.0f};private Float[] tauerncoords={450.0f,390.0f};private Float[] caledoniacoords={215.0f,243.0f};
+    private Float[] walescoords={478.0f,431.0f,415.0f,428.0f};
+    private Float[] telemarkcoords={825.0f,111.0f,647.0f,115.0f};
+    private Float[] northumbriacoords={557.0f,291.0f,492.0f,292.5f};private Float[] munstercoords={378.0f,477.0f,314.0f,429.0f};
+    private Float[] ardennescoords={730.0f,481.0f,635.0f,456.0f};private Float[] juracoords={795.0f,602.0f,704.0f,584.0f};
+    private Float[] savoiecoords={796.0f,698.0f,722.0f,653.0f};private Float[] graubundencoords={911.0f,618.0f,829.0f,574.0f};
+    private Float[] tyrolcoords={976.0f,604.0f,884.0f,594.0f};private Float[] tauerncoords={1013.0f,569.0f,910.0f,536.0f};
+    private Float[] massifcentralcoords={697.0f,737.0f,618.0f,688.0f};private Float[] caledoniacoords={455.0f,188.0f,368.f,177.0f};
 
     //Adjacent to mountains
-    private Float[] stgeorgeschannelcoords ={200.0f, 346f};private Float[] merciacoords ={245.0f,337.0f};
-    private Float[] yorkshirecoords ={256f, 300f};private Float[] belgiumcoords ={315.0f,338.0f};
-    private Float[] yorkshirecoordssm ={271f, 300f};
+    private Float[] stgeorgeschannelcoords ={442.0f, 441.0f,353.0f,421.5f};private Float[] merciacoords ={524.0f,422.0f,472.0f,403.0f};
+    private Float[] yorkshirecoords ={557.0f, 344f,474.0f,317.0f};private Float[] belgiumcoords ={706.0f,450.0f,645.0f,427.0f};
 
     //Extended movement
-    private Float[] thamescoords ={294.0f, 332.0f};private Float[] londoncoords ={276.0f, 340.0f};
+    private Float[] thamescoords ={669.0f, 419.0f,574.f,412.0f};private Float[] londoncoords ={596.0f, 439.0f,507.0f,422.0f};
 
+
+    private Float[] sizecheckcoords ={256f, 300f};
     View button;
 
-
     //Utility methods
+    private void clickRegion(Float[] f){
+        if(largescreen){
+            solo.clickOnScreen(f[0],f[1]);
+        } else {
+            solo.clickOnScreen(f[2], f[3]);
+        }
+    }
+
+    private void interactRegions(Float[] source, Float[] dest){
+        clickRegion(source);
+        clickRegion(dest);
+        if(solo.searchButton("OK")){
+            solo.clickOnButton("OK");//Confirm notification
+        }
+        if(solo.searchButton("Confirm")){
+           solo.clickOnButton("Confirm");//Confirm action
+        }
+    }
+
+    private void zoomIn(){
+        solo.clickLongOnScreen(sizecheckcoords[0], sizecheckcoords[1]);//Check if we are large screen or small screen by identifying a click at point, in case it needs distinguishing at some point
+        if(solo.searchText("Yorkshire")){largescreen=true;}
+        OK();OK();
+        PointF p1 = new PointF(0,0);
+        PointF p1e = new PointF(0,-13);
+        PointF p2 = new PointF(0,0);
+        PointF p2e = new PointF(0,13);
+        solo.pinchToZoom(p1, p2, p1e, p2e);
+        if(largescreen){
+            solo.drag(0,425,0,80,50);
+        } else {
+            solo.drag(0, 380, 0, 80, 50);
+        }
+        getActivity().mapfragment.allowmovement=false;
+    }
+
     private void waitForMyTurnWithDefenceListener(){
         while(solo.searchText("Send") && !((GameController)getActivity()).iAmCurrentPlayer()){
             if(solo.searchText("Has been attacked from") || solo.searchText("Incorrect guess, try again")){//Been attacked by the other player
@@ -56,6 +98,12 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
                 //Always guess base amount
             }
             OK();
+        }
+    }
+
+    private void OK(){
+        if(solo.searchButton("OK")){
+            solo.clickOnButton("OK");
         }
     }
 
@@ -97,10 +145,6 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     //MOUNTAIN SELECTION
     private void testMountainSelection() throws Exception{
         initialiseMountainsForSelection();
-        solo.clickLongOnScreen(yorkshirecoords[0], yorkshirecoords[1]);//Check if we are large screen or small screen by identifying a click at point, in case it needs distinguishing at some point
-        if(solo.searchText("Yorkshire")){largescreen=true;}
-        OK();
-        solo.sleep(4000);
         button = solo.getView(R.id.btnIcon);
         solo.clickOnView(button);
         myMountainCoords = new ArrayList<>();
@@ -108,7 +152,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
             if(((GameController)getActivity()).mModel.getCurrentphase()==0){//Only wait while in mountain selection phase, else complete selections and move on
                 waitForMyTurnWithDefenceListener();
             }
-            solo.clickOnScreen(f[0], f[1]);
+            clickRegion(f);
             if(solo.searchButton("Confirm")){//confirmation popup has appeared
                 if(solo.searchText("Caledonia")){player1=true;}
                 solo.clickOnButton("Confirm");//Claim mountain, else skip this mountain
@@ -129,8 +173,8 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         fillRegions();
         endTurnWithReinforcementConfirmation();
         //Add it back
-        solo.clickOnScreen(myMountainCoords.get(0)[0], myMountainCoords.get(0)[1]);
-        if(solo.searchButton("Confirm")){//confirmation popup has appeared
+        clickRegion(myMountainCoords.get(0));
+        if (solo.searchButton("Confirm")){//confirmation popup has appeared
             button = solo.getView(R.id.btnPlus);//Take reinforcement
             solo.clickOnView(button);
             solo.clickOnButton("Confirm");//Assign reinforcement
@@ -142,7 +186,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
 
     private void fillRegions(){
         for(Float[] f : myMountainCoords){
-            solo.clickOnScreen(f[0], f[1]);
+            clickRegion(f);
             if(solo.searchButton("Confirm")){//confirmation popup has appeared
                 button = solo.getView(R.id.btnPlus);//Add reinforcement
                 solo.clickOnView(button);
@@ -156,8 +200,8 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
 
     private void endTurnWithReinforcementConfirmation(){
         //Take one off of first region in order to trigger confirmation on end turn
-        solo.clickOnScreen(myMountainCoords.get(0)[0], myMountainCoords.get(0)[1]);
-        if(solo.searchButton("Confirm")){//confirmation popup has appeared
+        clickRegion(myMountainCoords.get(0));
+        if (solo.searchButton("Confirm")){//confirmation popup has appeared
             button = solo.getView(R.id.btnMinus);//Take reinforcement
             solo.clickOnView(button);
             solo.clickOnButton("Confirm");//Assign reinforcement
@@ -194,9 +238,9 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     }
 
     private void testIncorrectClick() {
-        solo.clickOnScreen(rockallcoords[0], rockallcoords[1]);
-        solo.clickOnScreen(bergencoords[0], bergencoords[1]);
-        solo.clickOnScreen(rockallcoords[0], rockallcoords[1]);
+        clickRegion(rockallcoords);
+        clickRegion(bergencoords);
+        clickRegion(rockallcoords);
         OK();
     }
 
@@ -204,38 +248,38 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         for(Float[] f : myMountainCoords) {
             if (f == northumbriacoords) {
                 //Capture down from Northumbria
-                solo.clickOnScreen(northumbriacoords[0],northumbriacoords[1]);
-                if(largescreen){solo.clickOnScreen(yorkshirecoords[0], yorkshirecoords[1]);} else {
-                    solo.clickOnScreen(yorkshirecoordssm[0], yorkshirecoordssm[1]);
-                }
+                clickRegion(northumbriacoords);
+                clickRegion(yorkshirecoords);
                 button = solo.getView(R.id.btnPlus);//Add reinforcement
                 solo.clickOnView(button);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
 
                 //Take London
-                if(largescreen){solo.clickOnScreen(yorkshirecoords[0], yorkshirecoords[1]);} else {
-                    solo.clickOnScreen(yorkshirecoordssm[0], yorkshirecoordssm[1]);
-                }
-                solo.clickOnScreen(merciacoords[0], merciacoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                clickRegion(yorkshirecoords);
+                clickRegion(merciacoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
             }
             if (f == walescoords) {
                 //Move inside empire to mercia then to londoncoords
-                solo.clickOnScreen(walescoords[0], walescoords[1]);
-                solo.clickOnScreen(merciacoords[0], merciacoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                clickRegion(walescoords);
+                clickRegion(merciacoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
-                solo.clickOnScreen(merciacoords[0], merciacoords[1]);
-                solo.clickOnScreen(londoncoords[0], londoncoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
+                clickRegion(merciacoords);
+                clickRegion(londoncoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
             }
         }
         endTurn();
@@ -243,31 +287,35 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     private void player2Move(){
         for(Float[] f : myMountainCoords) {
             if (f == munstercoords) {
-                solo.clickOnScreen(munstercoords[0], munstercoords[1]);
-                solo.clickOnScreen(stgeorgeschannelcoords[0], stgeorgeschannelcoords[1]);
+                clickRegion(munstercoords);
+                clickRegion(stgeorgeschannelcoords);
                 button = solo.getView(R.id.btnPlus);//Add reinforcement
                 solo.clickOnView(button);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
             }
             if (f == ardennescoords) {
-                solo.clickOnScreen(ardennescoords[0],ardennescoords[1]);
-                solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                clickRegion(ardennescoords);
+                clickRegion(belgiumcoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
-                solo.clickOnScreen(ardennescoords[0],ardennescoords[1]);
-                solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
+                clickRegion(ardennescoords);
+                clickRegion(belgiumcoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
 
-                solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
-                solo.clickOnScreen(thamescoords[0], thamescoords[1]);
-                button = solo.getView(R.id.btnPlus);//Add reinforcement
+                clickRegion(belgiumcoords);
+                clickRegion(thamescoords);
+                button = solo.getView(R.id.btnPlus);
                 solo.clickOnView(button);
                 solo.clickOnView(button);
-                solo.clickOnButton("Confirm");//Assign reinforcement
+                Assert.assertTrue(solo.searchButton("Confirm"));
+                solo.clickOnButton("Confirm");
             }
         }
         endTurn();
@@ -299,29 +347,29 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     }
 
     private void player1Attack(){//Note: Happens AFTER player2Attack
-        if(largescreen){moveArmy(northumbriacoords,yorkshirecoords, 5);} else {moveArmy(northumbriacoords,yorkshirecoordssm,5);}
-        solo.clickOnScreen(bergencoords[0], bergencoords[1]);//Trigger waiting for defender
+        moveArmy(northumbriacoords,yorkshirecoords, 5);
+        clickRegion(bergencoords);//Trigger waiting for defender
         OK();//Dismiss
         placeBomb(bergencoords);//Trigger must be inside previous empire
         OK();//Dismiss
-        solo.clickOnScreen(northumbriacoords[0], northumbriacoords[1]);
-        if(solo.searchButton("Confirm")){
-            solo.clickOnButton("Confirm");
-        }
-        if(largescreen){moveArmy(northumbriacoords, yorkshirecoords, 5);} else {moveArmy(northumbriacoords, yorkshirecoordssm, 5);}
+        clickRegion(northumbriacoords);
+        Assert.assertTrue(solo.searchButton("Confirm"));
+        solo.clickOnButton("Confirm");
+
+        moveArmy(northumbriacoords, yorkshirecoords, 5);
         placeBomb(northumbriacoords);//increase bomb size
-        if(largescreen){moveArmy(yorkshirecoords, merciacoords, 5);} else {moveArmy(yorkshirecoordssm, merciacoords, 5);} //Split empire from source and target
-        if(largescreen){placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
-        if(largescreen){moveArmy(merciacoords, yorkshirecoords, 1);} else {moveArmy(merciacoords, yorkshirecoordssm, 1);}//Rejoin empire
+        moveArmy(yorkshirecoords, merciacoords, 5); //Split empire from source and target
+        placeBomb(yorkshirecoords);
+        moveArmy(merciacoords, yorkshirecoords, 1);//Rejoin empire
         moveArmy(merciacoords, londoncoords, 1);//Attack london with 3 men (Attack City)
-        if(largescreen){placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
+        placeBomb(yorkshirecoords);
         moveArmy(londoncoords,merciacoords,1);
         moveArmy(londoncoords, thamescoords, 0);//Dominate Sea
         placeBomb(londoncoords);
         moveArmy(merciacoords, walescoords, 1); //Attack mountain
         placeBomb(northumbriacoords);
         moveArmy(walescoords, stgeorgeschannelcoords, 0);//Dominate Sea
-        if(largescreen) {placeBomb(yorkshirecoords);} else {placeBomb(yorkshirecoordssm);}
+        placeBomb(yorkshirecoords);
         endTurn();
     }
 
@@ -329,18 +377,17 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         moveArmy(ardennescoords, thamescoords, 2);//Reinforce Thames
         moveArmy(thamescoords, londoncoords, 2);//Attack City && Attack Land from Sea
 
-        solo.clickOnScreen(bergencoords[0], bergencoords[1]);//Trigger waiting for defender
+        clickRegion(bergencoords);//Trigger waiting for defender
         OK();//Dismiss
         placeBomb(bergencoords);//Trigger must be inside previous empire
         OK();//Dismiss
-        solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
-        if(solo.searchButton("Confirm")){
-            solo.clickOnButton("Confirm");
-        }
+        clickRegion(belgiumcoords);
+        Assert.assertTrue(solo.searchButton("Confirm"));
+        solo.clickOnButton("Confirm");
+
 
         moveArmy(thamescoords, londoncoords, 2);//Triggers split empire at source
         placeBomb(belgiumcoords);//Place bomb in belgium, triggers increase size of bomb
-
         moveArmy(londoncoords, thamescoords, 1);//Join empire again
         moveArmy(londoncoords, merciacoords, 2);//Attack normal/ split empire at dest
         placeBomb(belgiumcoords);//Place bomb in belgium, triggers increase size of bomb
@@ -349,7 +396,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         moveArmy(stgeorgeschannelcoords, walescoords, 2);//Attack wales with 3 men, Attack Mountain
         placeBomb(munstercoords);
         moveArmy(walescoords, merciacoords, 3);
-        if(largescreen){moveArmy(merciacoords, yorkshirecoords, 1);} else {moveArmy(merciacoords, yorkshirecoordssm, 1);}
+        moveArmy(merciacoords, yorkshirecoords, 1);
         placeBomb(ardennescoords);//For hydrogen bomb denial later
         endTurn();
     }
@@ -367,29 +414,26 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     }
 
     private void moveArmy(Float[] source, Float[] dest, int clicks) {
-        solo.clickOnScreen(source[0], source[1]);
-        solo.clickOnScreen(dest[0], dest[1]);
+        clickRegion(source);
+        clickRegion(dest);
         button = solo.getView(R.id.btnPlus);
         for (int i = 0; i < clicks; i++) {
             solo.clickOnView(button);
         }
+        Assert.assertTrue(solo.searchButton("Confirm"));
         solo.clickOnButton("Confirm");//Confirm attack
     }
 
     private void placeBomb(Float[] target){
-        while(!solo.searchText("earned")){solo.sleep(100);}//wait for bomb notification
+        while(!solo.searchText("earned")){solo.sleep(100);
+        }//wait for bomb notification
         OK();//Dismiss
-        solo.clickOnScreen(target[0], target[1]);
-        if(solo.searchButton("Confirm")){
+        clickRegion(target);
+        if(solo.searchText("Confirm")){
             solo.clickOnButton("Confirm");
         }
         OK();
-    }
-
-    private void OK(){
-        if(solo.searchButton("OK")){
-            solo.clickOnButton("OK");
-        }
+        solo.sleep(1000);
     }
 
     //BOMBING
@@ -417,32 +461,29 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     private void player1ABomb(){
         interactRegions(northumbriacoords, merciacoords);//Can't destroy empire
         interactRegions(londoncoords, munstercoords);//Out of range
-        if(largescreen){//Shattered empire + earn hydrogen bomb
-            interactRegions(yorkshirecoords, londoncoords);
-        } else {
-            interactRegions(yorkshirecoordssm, londoncoords);
-        }
+        //Shattered empire + earn hydrogen bomb
+        interactRegions(yorkshirecoords, londoncoords);
         placeBomb(northumbriacoords);//Can't place bomb on atom bomb
         OK();
-        if(largescreen){solo.clickOnScreen(yorkshirecoords[0], yorkshirecoords[1]);}else{solo.clickOnScreen(yorkshirecoordssm[0], yorkshirecoordssm[1]);}
-        if(solo.searchButton("Confirm")){
-            solo.clickOnButton("Confirm");
-        }
-        if(largescreen){interactRegions(yorkshirecoords, merciacoords);}else{interactRegions(yorkshirecoordssm,merciacoords);}//Can't fire Hydrogenbomb anymore
+        clickRegion(yorkshirecoords);
+        Assert.assertTrue(solo.searchButton("Confirm"));
+        solo.clickOnButton("Confirm");
+
+        interactRegions(yorkshirecoords, merciacoords);//Can't fire Hydrogenbomb anymore
         endTurn();//Move to reinforcement
         endTurn();//Move to attack/Move
         endTurn();//Move to next player
     }
     private void player2ABomb(){
-        interactRegions(munstercoords,stgeorgeschannelcoords);//Can't destroy empire
-        interactRegions(munstercoords,belgiumcoords);//Out of range
+        interactRegions(munstercoords, stgeorgeschannelcoords);//Can't destroy empire
+        interactRegions(munstercoords, belgiumcoords);//Out of range
         interactRegions(belgiumcoords,thamescoords);//Shattered empire, earn hydrogen bomb
         placeBomb(ardennescoords);//Can't place bomb on atom bomb
         OK();
-        solo.clickOnScreen(belgiumcoords[0], belgiumcoords[1]);
-        if(solo.searchButton("Confirm")){
-            solo.clickOnButton("Confirm");
-        }
+        clickRegion(belgiumcoords);
+        Assert.assertTrue(solo.searchButton("Confirm"));
+        solo.clickOnButton("Confirm");
+
         interactRegions(munstercoords, walescoords);//earn another hydrogen bomb
         placeBomb(munstercoords);
         interactRegions(munstercoords, stgeorgeschannelcoords);//Can't fire Hydrogen bomb anymore
@@ -452,11 +493,9 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     }
 
     private void player1HBomb(){
-        if(largescreen){//Detonate Hydrogen Bomb
-            interactRegions(yorkshirecoords,yorkshirecoords);
-        } else {
-            interactRegions(yorkshirecoordssm,yorkshirecoordssm);
-        }
+        //Detonate Hydrogen Bomb
+        interactRegions(yorkshirecoords,yorkshirecoords);
+
         endTurn();//Move to reinforcement
         endTurn();//Move to attack/Move
         endTurn();//Move to next player
@@ -464,17 +503,6 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
     private void player2HBomb(){
         //Detonate Hydrogen Bombs
         interactRegions(munstercoords,munstercoords);
-    }
-
-    private void interactRegions(Float[] source, Float[] dest){
-        solo.clickOnScreen(source[0], source[1]);
-        solo.clickOnScreen(dest[0], dest[1]);
-        if(solo.searchButton("OK")){
-            solo.clickOnButton("OK");//Confirm notification
-        }
-        if(solo.searchButton("Confirm")){
-            solo.clickOnButton("Confirm");//Confirm action
-        }
     }
 
 
@@ -489,6 +517,7 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
 
     public void testFull() throws Exception {
         testAutoMatch();
+        zoomIn();
         testMountainSelection();
         testReinforcement();
         testMove();
@@ -497,13 +526,10 @@ public class IntegrationTests extends ActivityInstrumentationTestCase2<GameContr
         Assert.assertTrue(solo.searchButton("AUTO-MATCH"));//Back to the main menu
     }
 
-
     @Override
     public void tearDown() throws Exception {
         solo.finishOpenedActivities();
         super.tearDown();
     }
-
-
 
 }
