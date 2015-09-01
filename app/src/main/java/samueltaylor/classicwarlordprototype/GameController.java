@@ -11,6 +11,7 @@ package samueltaylor.classicwarlordprototype;
         import android.content.Intent;
         import android.net.Uri;
         import android.os.Bundle;
+        import android.os.Handler;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
         import android.view.KeyEvent;
@@ -431,6 +432,7 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
             mRoomId=null;
             loadMainMenu();
+            resetGameVars();
         }
     }
 
@@ -701,6 +703,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     void resetGameVars() {
         mParticipantChoice.clear();
         mFinishedParticipants.clear();
+        abombfromregion=-1;
+        if(timerHandler!=null){
+            timerHandler=null;
+        }
     }
 
     // Start the gameplay phase of the game.
@@ -710,13 +716,40 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         loadGame();
         // prevent screen from sleeping
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
         // update the names on screen from room
         updatePlayers();
+        startTimer();
     }
 
 
+    Handler timerHandler;
+    void startTimer(){
+        // run the gameTick() to keep room open
+        timerHandler = new Handler();
+        timerHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(timerHandler!=null){
+                    gameTick();
+                    timerHandler.postDelayed(this, 60000);
+                }
+            }
+        }, 1000);
+    }
 
+    //Stop room timing out using single byte messages
+    void gameTick(){
+        // Buffer message as bytes and broadcast
+        byte[] bytes = new byte[1];
+        //Label message as IM
+        bytes[0] = 'Z';
+        //Send message to everyone else in the room
+        for(Participant pa : mParticipants){
+            if(mRoomId!=null){
+                Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient,null,bytes,mRoomId,pa.getParticipantId());
+            }
+        }
+    }
 
     /*
         FRAGMENT LOADING/UNLOADING METHODS
@@ -2285,21 +2318,17 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         }
     }
 
-    private void updateRegionCounters(int regionid){
-        if(mModel.getRegion(regionid).getArmy()!=null){
+    private void updateRegionCounters(int regionid) {
+        if (mModel.getRegion(regionid).getArmy() != null) {
             mapfragment.getRegion(regionid).setArmy(mModel.getRegion(regionid).getArmy().getSize());
         } else {
             mapfragment.getRegion(regionid).setArmy(0);
         }
-        if(mModel.getRegion(regionid).getBomb()!=null){
+        if (mModel.getRegion(regionid).getBomb() != null) {
             mapfragment.getRegion(regionid).setBomb(mModel.getRegion(regionid).getBomb().getBombtype(), mModel.getRegion(regionid).getBomb().getSize());
         } else {
             mapfragment.getRegion(regionid).setBomb(0, 0);
         }
         mapfragment.reRender();
     }
-
-
-    //TODO: Continue automated tests
-    //TODO: Start unit tests
 }
