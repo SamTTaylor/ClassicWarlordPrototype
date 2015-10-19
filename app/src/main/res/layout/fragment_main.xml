@@ -57,7 +57,8 @@
             android:textStyle="bold"
             android:elevation="5dp"
             android:background="@drawable/rectmenubutton"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:visibility="gone" />
 
         <Button
             android:layout_width="wrap_content"
