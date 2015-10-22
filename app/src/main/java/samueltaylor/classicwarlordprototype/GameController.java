@@ -13,6 +13,7 @@ package samueltaylor.classicwarlordprototype;
         import android.content.Intent;
         import android.net.Uri;
         import android.os.Bundle;
+        import android.os.CountDownTimer;
         import android.os.Handler;
         import android.support.v4.app.FragmentActivity;
         import android.util.Log;
@@ -63,7 +64,6 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
-        import samueltaylor.classicwarlordprototype.Model.Army;
         import samueltaylor.classicwarlordprototype.Model.Bomb;
         import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
@@ -682,8 +682,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             if(mModel.getPlayer(p.getParticipantId()).isConnected()){
                 for(String s : players){
                     if(s.equals(p.getParticipantId())) {
-                        if (waitingfordefenceresponse == mModel.getPlayer(p.getParticipantId())) {
-                            waitingfordefenceresponse=null;//undo any attacks
+                        if (defendingplayer == mModel.getPlayer(p.getParticipantId())) {
+                            defendingplayer =null;//undo any attacks
                         }
                         mModel.getPlayer(p.getParticipantId()).setConnected(false);
                         imfragment.appendChat(p.getDisplayName() + " disconnected.");
@@ -1091,7 +1091,11 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
                 showDialogFragment(9,"'"+mModel.getRegion(defenceinfomation[0]).getName()+"'\nHas been attacked from\n'"+mModel.getRegion(defenceinfomation[1]).getName()+"'\nBy "+mModel.getPlayer(rtm.getSenderParticipantId()).getColourstring()+" player\nMake defensive guess ("+(defenceinfomation[3]-defenceinfomation[4])+" remaining):", getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[0],getAttackLimitations(defenceinfomation[0], defenceinfomation[1])[1]);
                 break;
             case 'O'://sendDefenceConclusion, everyone receives the result of the attack
-                waitingfordefenceresponse=null;
+                if(defensePrompted){
+                    removeDialogFragment();
+                    defensePrompted=false;
+                }
+                defendingplayer =null;
                 b = new byte[4];
                 System.arraycopy(buf, 1, b, 0, b.length);
                 sel = ByteToRegionID(b);//Selected Region ID
@@ -1721,9 +1725,9 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
 
 
     //ATTACK PHASE
-    private Player waitingfordefenceresponse=null;
+    private Player defendingplayer =null;
     private int[] defenceinfomation;
-
+    private int defencetimeremaining=0;
 
     private void handleAttackMoveClick(int id){
         if(abombfromregion!=-1){//All A bombs must be placed immediately
@@ -1734,8 +1738,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             } else {
                 showDialogFragment(2, "Target region for bomb placement must be within the empire the source region was in prior to your attack.", 0, 0);
             }
-        } else if (waitingfordefenceresponse!=null) {
-            showDialogFragment(2, "Waiting for a guess from defender for your most recent attack...", 0, 0);
+        } else if (defendingplayer !=null) {
+            showDialogFragment(2, "Waiting for a guess from "+ defendingplayer.getColourstring()+" Player ("+defencetimeremaining+"s)...", 0, 0);
         } else{
             if(prevSelectedIsMine()){
                 if(regionIsNotMine(id) && regionIsAdjacentToPrev(id) && prevSelectedHasMoreThan1Army() && !regionIsScorched(id)){
@@ -1778,7 +1782,6 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             int[] attacklimitations = getAttackLimitations(id, previd);//Max is 0 min is 1
             attackLand(id, previd, attacklimitations[0], attacklimitations[1]);
         }
-
     }
 
     private int[] getAttackLimitations(int id, int previd){
@@ -1826,7 +1829,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         int prev=mModel.getCurrentplayer().getPrevselectedregionid();
         if(mModel.getRegion(id).getArmy().getPlayer().isConnected()){//Only prompt a defence if target player is connected
             sendDefencePrompt(prev, id, pledge, guesses);
-            waitingfordefenceresponse=mModel.getRegion(id).getArmy().getPlayer();
+            defendingplayer =mModel.getRegion(id).getArmy().getPlayer();
+            startDefenceTimer(id, prev, pledge);
             infofragment.setBtnEndTurnVisibility(false);
             notifyChat(mModel.getCurrentplayer().getColourstring()+" attacked " + mModel.getRegion(id).getName() + " from " + mModel.getRegion(prev).getName() + "!");
             //Save the empire that was, in preparation for bomb placement
@@ -1841,6 +1845,28 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
             }
             randomizedDefence(id, prev, pledge, guesses);
         }
+    }
+
+    private void startDefenceTimer(final int id, final int prev, final int pledge){
+        new CountDownTimer(30000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+               defencetimeremaining=(int)millisUntilFinished / 1000;
+            }
+
+            public void onFinish() {
+                if(defendingplayer!=null){
+                    notifyChat(mModel.getCurrentplayer().getColourstring() + " attacked " + mModel.getRegion(id).getArmy().getPlayer().getColourstring() + ", who timed out, and forfeited the battle.");
+                    defenceinfomation = new int[5];
+                    defenceinfomation[0]=id;
+                    defenceinfomation[1]=prev;
+                    defenceinfomation[2]=pledge;
+                    sendDefenceConclusion(false);
+                    resolveAttack(prev, id, pledge, false);
+                    defensePrompted=false;
+                }
+            }
+        }.start();
     }
 
     private void randomizedDefence(int sel, int prev, int pledge, int guesses){

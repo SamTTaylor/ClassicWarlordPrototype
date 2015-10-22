@@ -369,7 +369,6 @@ public class fragGameMap extends Fragment implements GLSurfaceView.Renderer{
 
             //Manipulate it back to ID
             int regionnumber = (R << 7) | (G << 3) | B;
-            Log.e(regions[regionnumber].mName,String.valueOf(mTouchedPos[0]) + " : " + String.valueOf(mTouchedPos[1]));
             ((GameController)getActivity()).regionClicked(regionnumber);
         }
 
