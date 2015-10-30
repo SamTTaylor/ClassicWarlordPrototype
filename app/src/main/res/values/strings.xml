@@ -46,7 +46,13 @@
     <string name="attack">Select an amount of armies to attack with (Must be between 1 and the amount of armies you have).</string>
     <string name="defend">You are under attack! Choose how many armies you think you opponent used.</string>
     <string name="exitgamebutton">Exit</string>
+    <string name="controls">This application is the first mobile version of the world domination strategy board game "Classic Warlord".
+        \n Classic Warlord was created by Mike Hayes, and the mobile application was built on behalf of the University of Sheffield by Samuel Taylor as part of the requirements for his MSc dissertation.
+        \n For more information on the board game and it\'s rules visit ClassicWarlord.com.
+        \n\n Gameplay is controlled by tapping on regions to interact with them at each stage of play; the current stage of play is displayed in the top right corner of the game screen and can be tapped on to expand for more information.
+        \n For example, to select a region simply tap on it, or if it is the attacking phase, tap on the region you wish to attack from,and then the region you wish to attack.
+        \n Players may pan and zoom on the map by dragging or pinching the screen. Information on the armies and bombs of each region are visible when zoomed in.
+        \n Players may inspect regions for more information by touching and holding down on that region.
+        \n Players may chat to other players by tapping on the bottom of the chat log, typing their message and then clicking enter or the "Send" button.</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

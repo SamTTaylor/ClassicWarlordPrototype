@@ -64,6 +64,7 @@ package samueltaylor.classicwarlordprototype;
         import samueltaylor.classicwarlordprototype.Fragments.fragInvitationReceived;
         import samueltaylor.classicwarlordprototype.Fragments.fragLoading;
         import samueltaylor.classicwarlordprototype.Fragments.fragMain;
+        import samueltaylor.classicwarlordprototype.Fragments.fragControls;
         import samueltaylor.classicwarlordprototype.Model.Bomb;
         import samueltaylor.classicwarlordprototype.Model.Empire;
         import samueltaylor.classicwarlordprototype.Model.GameModel;
@@ -76,7 +77,7 @@ package samueltaylor.classicwarlordprototype;
 public class GameController extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener,
         RoomStatusUpdateListener, RoomUpdateListener, OnInvitationReceivedListener, fragMain.OnFragmentInteractionListener, fragGameMap.OnFragmentInteractionListener, fragInvitationReceived.OnFragmentInteractionListener,
         fragIM.OnFragmentInteractionListener, fragGameHUDPlayers.OnFragmentInteractionListener, fragLoading.OnFragmentInteractionListener, fragInfo.OnFragmentInteractionListener, fragDialog.OnFragmentInteractionListener,
-        fragInspect.OnFragmentInteractionListener
+        fragInspect.OnFragmentInteractionListener, fragControls.OnFragmentInteractionListener
 {
 
     //Online gameplay stuff
@@ -910,17 +911,10 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
         transaction.commit();
     }
 
-    public void removeInspectFragment(){
+    public void removeFragment(Fragment fragment){
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(inspectfragment);
-        transaction.commit();
-    }
-
-    public void removeInfoFragment(){
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(infofragment);
+        transaction.remove(fragment);
         transaction.commit();
     }
 
@@ -944,6 +938,8 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     public void onAlertFragmentInteraction(Uri uri) {}
     @Override
     public void onInspectFragmentInteraction(Uri uri) {}
+    @Override
+    public void onRulesFragmentInteraction(Uri uri) {}
 
 
 
@@ -1582,13 +1578,13 @@ public class GameController extends FragmentActivity implements GoogleApiClient.
     private boolean checkVictory(){
         Player p = mModel.checkVictor();
         if(p!=null){
-            removeInfoFragment();
+            removeFragment(infofragment);
             showDialogFragment(2, p.getColourstring() + " Player is victorious.", 0, 0);//Dialog 2 is basic dialog
             victory=true;//All clicks are ignored while victory is true
             return true;
         } else {
             if(mModel.getDraw()){
-                removeInfoFragment();
+                removeFragment(infofragment);
                 showDialogFragment(2,"All players defeated, draw.", 0, 0);//Dialog 2 is basic dialog
                 victory=true;//All clicks are ignored while victory is true
                 return true;

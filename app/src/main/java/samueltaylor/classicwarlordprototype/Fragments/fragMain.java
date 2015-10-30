@@ -1,10 +1,11 @@
 package samueltaylor.classicwarlordprototype.Fragments;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +39,7 @@ public class fragMain extends Fragment {
     Button btnMatch;
     Button btnInvite;
     Button btnInvites;
-    Button btnSettings;
-    Button btnRules;
+    Button btnControls;
     Button btnGoogleAPI;
 
     /**
@@ -82,10 +82,17 @@ public class fragMain extends Fragment {
         btnMatch.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).startQuickGame();}});
         btnInvite = (Button) getActivity().findViewById(R.id.btnInvite);
         btnInvite.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).invite();}});
-        btnSettings = (Button) getActivity().findViewById(R.id.btnSettings);
-        btnSettings.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){/*TODO: Add settings*/}});
-        btnRules = (Button) getActivity().findViewById(R.id.btnRules);
-        btnRules.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){/*TODO: Add Rules*/}});
+        btnControls = (Button) getActivity().findViewById(R.id.btnControls);
+        btnControls.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragControls controls = new fragControls();
+                FragmentManager manager = getFragmentManager();
+                FragmentTransaction transaction = manager.beginTransaction();
+                transaction.add(R.id.activity_main_layout, controls, "controls");
+                transaction.commit();
+            }
+        });
 
         btnInvites = (Button) getActivity().findViewById(R.id.btnInvites);
         btnInvites.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){((GameController)getActivity()).seeinvites();}});

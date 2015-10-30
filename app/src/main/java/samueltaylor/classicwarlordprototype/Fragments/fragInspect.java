@@ -81,7 +81,7 @@ public class fragInspect extends Fragment {
             @Override
             public void onClick(View v) {
                 //Dismiss self
-                ((GameController) getActivity()).removeInspectFragment();
+                ((GameController) getActivity()).removeFragment(getFragmentManager().findFragmentByTag("inspect"));
             }});
     }
 

@@ -31,7 +31,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btnMatch"
-                android:layout_marginTop="20dp"
                 android:text="AUTO-MATCH"
                 android:width="200dp"
                 android:textStyle="bold"
@@ -54,22 +53,9 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/btnSettings"
+                android:id="@+id/btnControls"
                 android:layout_marginTop="10dp"
-                android:text="SETTINGS"
-                android:width="200dp"
-                android:textStyle="bold"
-                android:height="50dp"
-                android:elevation="5dp"
-                android:background="@drawable/rectmenubutton"
-                android:visibility="gone" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnRules"
-                android:layout_marginTop="10dp"
-                android:text="RULES"
+                android:text="CONTROLS"
                 android:width="200dp"
                 android:textStyle="bold"
                 android:height="50dp"

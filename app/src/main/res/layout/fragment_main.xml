@@ -49,30 +49,16 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnSettings"
+            android:id="@+id/btnControls"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:text="SETTINGS"
+            android:text="CONTROLS"
             android:width="200dp"
             android:textStyle="bold"
             android:elevation="5dp"
             android:background="@drawable/rectmenubutton"
             android:layout_weight="1"
-            android:visibility="gone" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnRules"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:text="RULES"
-            android:width="200dp"
-            android:textStyle="bold"
-            android:elevation="5dp"
-            android:background="@drawable/rectmenubutton"
-            android:layout_marginBottom="20dp"
-            android:layout_weight="1" />
+            android:layout_marginBottom="20dp" />
 
     </LinearLayout>
 

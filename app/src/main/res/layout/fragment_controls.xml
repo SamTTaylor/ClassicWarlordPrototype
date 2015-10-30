@@ -1,0 +1,55 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="samueltaylor.classicwarlordprototype.Fragments.fragControls"
+    android:background="@color/WarlordYellow">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left|top"
+        android:visibility="visible"
+        android:id="@+id/lytDisplay">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Rules"
+            android:id="@+id/textView8"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/infoText"
+            android:minWidth="250dp"
+            android:textSize="18dp"
+            android:background="#6FFFFFFF"
+            android:textStyle="bold"
+            android:editable="false"
+            android:maxWidth="250dp"
+            android:nestedScrollingEnabled="true"
+            android:layout_gravity="center_horizontal"
+            android:gravity="top|center_horizontal"
+            android:layout_marginBottom="60dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="20dp"
+            android:visibility="visible"
+            android:text="@string/controls" />
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Main Menu"
+        android:id="@+id/btnBack"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="@drawable/rectmenubutton"
+        android:layout_margin="10dp" />
+</FrameLayout>
