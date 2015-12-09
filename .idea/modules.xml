@@ -5,7 +5,9 @@
       <module fileurl="file://$PROJECT_DIR$/libraries/BaseGameUtils/BaseGameUtils.iml" filepath="$PROJECT_DIR$/libraries/BaseGameUtils/BaseGameUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/ClassicWarlordPrototype.iml" filepath="$PROJECT_DIR$/ClassicWarlordPrototype.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/libraries/libraries.iml" filepath="$PROJECT_DIR$/libraries/libraries.iml" />
+      <module fileurl="file://$PROJECT_DIR$/poly2tri/poly2tri.iml" filepath="$PROJECT_DIR$/poly2tri/poly2tri.iml" />
       <module fileurl="file://$PROJECT_DIR$/poly2tri/poly2tri.iml" filepath="$PROJECT_DIR$/poly2tri/poly2tri.iml" />
     </modules>
   </component>
